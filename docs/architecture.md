@@ -24,6 +24,7 @@ implementations for production components.
 | Domain model | `models.py` | dataclasses + enums | — |
 | Source validation | `source_validation.py` | weighted scoring | human review workflow |
 | Ingestion | `ingestion/` | Arabic normaliser, JSONL/text loaders | pypdf, ebooklib, bs4, OCR |
+| Source adapters | `ingestion/adapters/` | Qur'an (fawazahmed0), hadith (CC0 ThaqalaynData) w/ gradings | add adapters per upstream |
 | Embeddings | `retrieval/embeddings.py` | `HashingEmbedder` (feature hashing) | BGE-M3, E5, Jina, Nomic, OpenAI |
 | Vector store | `retrieval/vectorstore.py` | `InMemoryVectorStore` (brute force) | Qdrant, Weaviate, Milvus, Chroma |
 | Retrieval | `retrieval/retriever.py` | confidence-aware re-rank + consensus | +reranker (bge-reranker) |

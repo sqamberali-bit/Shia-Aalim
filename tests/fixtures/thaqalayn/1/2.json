@@ -1,0 +1,416 @@
+{
+  "data": {
+    "chapter_path": "/books/al-kafi:1:1:1",
+    "chapter_title": {
+      "en": "Chapter 1"
+    },
+    "nav": {
+      "next": "/books/al-kafi:1:1:1:2",
+      "up": "/books/al-kafi:1:1:1"
+    },
+    "verse": {
+      "ai": {
+        "ai_attribution": {
+          "generated_date": "2026-02-28",
+          "model": "claude-sonnet-4-6",
+          "pipeline_version": "2.0.0"
+        },
+        "available_languages": [
+          "bn",
+          "de",
+          "en",
+          "es",
+          "fa",
+          "fr",
+          "id",
+          "ru",
+          "tr",
+          "ur",
+          "zh"
+        ],
+        "chunks": [
+          {
+            "chunk_type": "body",
+            "word_end": 15,
+            "word_start": 0
+          },
+          {
+            "chunk_type": "body",
+            "word_end": 34,
+            "word_start": 15
+          },
+          {
+            "chunk_type": "body",
+            "word_end": 48,
+            "word_start": 34
+          }
+        ],
+        "content_type": "cosmological",
+        "diacritics_status": "completed",
+        "isnad_matn": {
+          "has_chain": true,
+          "narrators": [
+            {
+              "ambiguity_note": null,
+              "canonical_id": 1237,
+              "identity_confidence": "definite",
+              "known_identity": "Muhammad ibn Ya'qub al-Kulayni (d. 329 AH), author of al-Kafi",
+              "name_ar": "أَبُو جَعْفَرٍ مُحَمَّدُ بْنُ يَعْقُوبَ",
+              "name_en": "Abu Ja'far Muhammad ibn Ya'qub",
+              "position": 1,
+              "role": "author"
+            },
+            {
+              "ambiguity_note": "Generic reference to multiple unnamed companions of al-Kulayni. One named specifically as Muhammad ibn Yahya al-'Attar.",
+              "canonical_id": 6,
+              "identity_confidence": "ambiguous",
+              "known_identity": null,
+              "name_ar": "عِدَّةٌ مِنْ أَصْحَابِنَا",
+              "name_en": "A number of our companions",
+              "position": 2,
+              "role": "narrator"
+            },
+            {
+              "ambiguity_note": null,
+              "canonical_id": 601,
+              "identity_confidence": "definite",
+              "known_identity": "Muhammad ibn Yahya al-'Attar al-Qummi, a prominent Shi'a hadith transmitter and teacher of al-Kulayni",
+              "name_ar": "مُحَمَّدُ بْنُ يَحْيَى الْعَطَّارُ",
+              "name_en": "Muhammad ibn Yahya al-'Attar",
+              "position": 3,
+              "role": "narrator"
+            },
+            {
+              "ambiguity_note": "Likely Ahmad ibn Muhammad ibn 'Isa al-Ash'ari, based on common chains in al-Kafi from Muhammad ibn Yahya",
+              "canonical_id": 5,
+              "identity_confidence": "likely",
+              "known_identity": "Ahmad ibn Muhammad ibn 'Isa al-Ash'ari al-Qummi",
+              "name_ar": "أَحْمَدُ بْنُ مُحَمَّدٍ",
+              "name_en": "Ahmad ibn Muhammad",
+              "position": 4,
+              "role": "narrator"
+            },
+            {
+              "ambiguity_note": null,
+              "canonical_id": 53,
+              "identity_confidence": "definite",
+              "known_identity": "al-Hasan ibn Mahbub al-Sarrad (d. 224 AH), a major Shi'a hadith transmitter and jurist",
+              "name_ar": "الْحَسَنُ بْنُ مَحْبُوبٍ",
+              "name_en": "al-Hasan ibn Mahbub",
+              "position": 5,
+              "role": "narrator"
+            },
+            {
+              "ambiguity_note": null,
+              "canonical_id": 75,
+              "identity_confidence": "definite",
+              "known_identity": "al-'Ala' ibn Razin al-Qalla, a reliable companion of Imam al-Baqir and Imam al-Sadiq",
+              "name_ar": "الْعَلَاءُ بْنُ رَزِينٍ",
+              "name_en": "al-'Ala' ibn Razin",
+              "position": 6,
+              "role": "narrator"
+            },
+            {
+              "ambiguity_note": null,
+              "canonical_id": 16,
+              "identity_confidence": "definite",
+              "known_identity": "Muhammad ibn Muslim al-Thaqafi al-Kufi (d. 150 AH), one of the most prolific narrators from Imams al-Baqir and al-Sadiq",
+              "name_ar": "مُحَمَّدُ بْنُ مُسْلِمٍ",
+              "name_en": "Muhammad ibn Muslim",
+              "position": 7,
+              "role": "narrator"
+            },
+            {
+              "ambiguity_note": null,
+              "canonical_id": 1915,
+              "identity_confidence": "definite",
+              "known_identity": "Imam Muhammad al-Baqir (AS), the fifth Imam (d. 114 AH)",
+              "name_ar": "أَبُو جَعْفَرٍ",
+              "name_en": "Abu Ja'far",
+              "position": 8,
+              "role": "imam"
+            }
+          ]
+        },
+        "key_phrases": [
+          {
+            "category": "prophetic_formula",
+            "phrase_ar": "وَعِزَّتِي وَجَلَالِي",
+            "phrase_en": "By My Might and My Majesty"
+          },
+          {
+            "category": "theological_concept",
+            "phrase_ar": "خَلَقَ اللَّهُ الْعَقْلَ",
+            "phrase_en": "God created the Intellect"
+          }
+        ],
+        "key_terms_keys": [
+          "الْعَقْل",
+          "وَعِزَّتِي وَجَلَالِي",
+          "اسْتَنْطَقَهُ",
+          "أَكْمَلْتُكَ"
+        ],
+        "related_quran": [
+          {
+            "ref": "2:31",
+            "relationship": "thematic"
+          },
+          {
+            "ref": "7:172",
+            "relationship": "thematic"
+          }
+        ],
+        "tags": [
+          "theology",
+          "knowledge",
+          "ethics"
+        ],
+        "topics": [
+          "reasoning",
+          "divine_attributes",
+          "divine_knowledge"
+        ],
+        "word_analysis": [
+          {
+            "pos": "CONJ",
+            "word": "لَمَّا"
+          },
+          {
+            "pos": "V",
+            "word": "خَلَقَ"
+          },
+          {
+            "pos": "N",
+            "word": "اللَّهُ"
+          },
+          {
+            "pos": "N",
+            "word": "الْعَقْلَ"
+          },
+          {
+            "pos": "V",
+            "word": "اسْتَنْطَقَهُ"
+          },
+          {
+            "pos": "CONJ",
+            "word": "ثُمَّ"
+          },
+          {
+            "pos": "V",
+            "word": "قَالَ"
+          },
+          {
+            "pos": "PREP",
+            "word": "لَهُ"
+          },
+          {
+            "pos": "V",
+            "word": "أَقْبِلْ"
+          },
+          {
+            "pos": "V",
+            "word": "فَأَقْبَلَ"
+          },
+          {
+            "pos": "CONJ",
+            "word": "ثُمَّ"
+          },
+          {
+            "pos": "V",
+            "word": "قَالَ"
+          },
+          {
+            "pos": "PREP",
+            "word": "لَهُ"
+          },
+          {
+            "pos": "V",
+            "word": "أَدْبِرْ"
+          },
+          {
+            "pos": "V",
+            "word": "فَأَدْبَرَ"
+          },
+          {
+            "pos": "CONJ",
+            "word": "ثُمَّ"
+          },
+          {
+            "pos": "V",
+            "word": "قَالَ"
+          },
+          {
+            "pos": "CONJ",
+            "word": "وَ"
+          },
+          {
+            "pos": "N",
+            "word": "عِزَّتِي"
+          },
+          {
+            "pos": "CONJ",
+            "word": "وَ"
+          },
+          {
+            "pos": "N",
+            "word": "جَلَالِي"
+          },
+          {
+            "pos": "NEG",
+            "word": "مَا"
+          },
+          {
+            "pos": "V",
+            "word": "خَلَقْتُ"
+          },
+          {
+            "pos": "N",
+            "word": "خَلْقاً"
+          },
+          {
+            "pos": "PRON",
+            "word": "هُوَ"
+          },
+          {
+            "pos": "ADJ",
+            "word": "أَحَبُّ"
+          },
+          {
+            "pos": "PREP",
+            "word": "إِلَيَّ"
+          },
+          {
+            "pos": "PREP",
+            "word": "مِنْكَ"
+          },
+          {
+            "pos": "CONJ",
+            "word": "وَ"
+          },
+          {
+            "pos": "NEG",
+            "word": "لَا"
+          },
+          {
+            "pos": "V",
+            "word": "أَكْمَلْتُكَ"
+          },
+          {
+            "pos": "PART",
+            "word": "إِلَّا"
+          },
+          {
+            "pos": "PREP",
+            "word": "فِيمَنْ"
+          },
+          {
+            "pos": "V",
+            "word": "أُحِبُّ"
+          },
+          {
+            "pos": "PART",
+            "word": "أَمَا"
+          },
+          {
+            "pos": "PART",
+            "word": "إِنِّي"
+          },
+          {
+            "pos": "PRON",
+            "word": "إِيَّاكَ"
+          },
+          {
+            "pos": "V",
+            "word": "آمُرُ"
+          },
+          {
+            "pos": "CONJ",
+            "word": "وَ"
+          },
+          {
+            "pos": "PRON",
+            "word": "إِيَّاكَ"
+          },
+          {
+            "pos": "V",
+            "word": "أَنْهَى"
+          },
+          {
+            "pos": "CONJ",
+            "word": "وَ"
+          },
+          {
+            "pos": "PRON",
+            "word": "إِيَّاكَ"
+          },
+          {
+            "pos": "V",
+            "word": "أُعَاقِبُ"
+          },
+          {
+            "pos": "CONJ",
+            "word": "وَ"
+          },
+          {
+            "pos": "PRON",
+            "word": "إِيَّاكَ"
+          },
+          {
+            "pos": "V",
+            "word": "أُثِيبُ"
+          },
+          {
+            "pos": "PART",
+            "word": "."
+          }
+        ]
+      },
+      "index": 1,
+      "local_index": 1,
+      "narrator_chain": {
+        "parts": [
+          {
+            "kind": "plain",
+            "text": "أَخْبَرَنَا "
+          },
+          {
+            "kind": "narrator",
+            "path": "/people/narrators/1237",
+            "text": "أَبُو جَعْفَرٍ مُحَمَّدُ بْنُ يَعْقُوبَ"
+          },
+          {
+            "kind": "plain",
+            "text": " قَالَ"
+          }
+        ]
+      },
+      "part_type": "Hadith",
+      "path": "/books/al-kafi:1:1:1:1",
+      "text": [
+        " حَدَّثَنِي عِدَّةٌ مِنْ أَصْحَابِنَا مِنْهُمْ مُحَمَّدُ بْنُ يَحْيَى الْعَطَّارُ عَنْ أَحْمَدَ بْنِ مُحَمَّدٍ عَنِ الْحَسَنِ بْنِ مَحْبُوبٍ عَنِ الْعَلَاءِ بْنِ رَزِينٍ عَنْ مُحَمَّدِ بْنِ مُسْلِمٍ عَنْ أَبِي جَعْفَرٍ ( عليه السلام ) قَالَ لَمَّا خَلَقَ اللَّهُ الْعَقْلَ اسْتَنْطَقَهُ ثُمَّ قَالَ لَهُ أَقْبِلْ فَأَقْبَلَ ثُمَّ قَالَ لَهُ أَدْبِرْ فَأَدْبَرَ ثُمَّ قَالَ وَ عِزَّتِي وَ جَلَالِي مَا خَلَقْتُ خَلْقاً هُوَ أَحَبُّ إِلَيَّ مِنْكَ وَ لَا أَكْمَلْتُكَ إِلَّا فِيمَنْ أُحِبُّ أَمَا إِنِّي إِيَّاكَ آمُرُ وَ إِيَّاكَ أَنْهَى وَ إِيَّاكَ أُعَاقِبُ وَ إِيَّاكَ أُثِيبُ ."
+      ],
+      "translations": {
+        "en.hubeali": [
+          "Abu Ja’far Muhammad Bin Yaqoub informed us saying, ‘It was narrated to us by a number of our companions, from them was Muhammad Bin Yahya Al Attar, from Ahmad bin Muhammad, from Al Hassan Bin Mahboub, from Al A’ala Bin Razeyn, from Muhammad Bin Muslim, ",
+          "(It has been narrated) from Abu Ja’far<sup>asws</sup> having said: ‘When Allah<sup>azwj</sup> Created the ‘الْعَقْلَ’ (<span class=\"iTxt\">Aql</span> - intellect)<a id=\"_ftnref1\"></a><sup>[1]</sup>, He<sup>azwj</sup> Interrogated it, then Said to it: “Come!” So it came. Then Said to it: “Turn back!” So it turned back. Then He<sup>azwj</sup> Said: “By My<sup>azwj</sup> Might and My<sup>azwj</sup> Majesy! I<sup>azwj</sup> did not Create any creature which is more Beloved to Me<sup>azwj</sup> than you, nor will I<sup>azwj</sup> Perfect you except among the ones whom I<sup>azwj</sup> Love. But, it is (based on) you that I<sup>azwj</sup> shall Command, and for you I<sup>azwj</sup> shall Forbid, and for you I<sup>azwj</sup> shall Punish, and for you I<sup>azwj</sup> shall Reward”’."
+        ]
+      }
+    },
+    "verse_translations": [
+      "en.hubeali",
+      "bn.ai",
+      "de.ai",
+      "en.ai",
+      "es.ai",
+      "fa.ai",
+      "fr.ai",
+      "id.ai",
+      "ru.ai",
+      "tr.ai",
+      "ur.ai",
+      "zh.ai"
+    ]
+  },
+  "index": "al-kafi:1:1:1:1",
+  "kind": "verse_detail"
+}

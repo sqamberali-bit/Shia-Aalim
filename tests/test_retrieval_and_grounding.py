@@ -1,17 +1,12 @@
-from conftest import DATA
+from conftest import DATA, sample_corpus
 
 from shia_aalim.generation.answer import AnswerGenerator
 from shia_aalim.generation.lecture import LectureGenerator
 from shia_aalim.grounding.verify import check_answer_grounding, validate_citations
-from shia_aalim.ingestion.loaders import iter_knowledge_dir
 from shia_aalim.models import Citation, ConfidenceLevel, EvidenceType
 from shia_aalim.research_loop import build_index
 from shia_aalim.retrieval.embeddings import HashingEmbedder, cosine
 from shia_aalim.sources import load_registry_ids
-
-
-def _corpus():
-    return list(iter_knowledge_dir(DATA / "knowledge"))
 
 
 def test_embedder_similarity_is_symmetric_and_bounded():
@@ -24,45 +19,54 @@ def test_embedder_similarity_is_symmetric_and_bounded():
 
 
 def test_retriever_finds_relevant_verse():
-    docs = _corpus()
-    retriever = build_index(docs)
-    results = retriever.retrieve("purification of the Ahl al-Bayt", k=3)
+    retriever = build_index(sample_corpus())
+    results = retriever.retrieve("purification of the People of the House", k=3)
     assert results
-    top_ids = [r.document.id for r in results]
-    assert "quran-33-33" in top_ids
+    assert "quran-33-33" in [r.document.id for r in results]
 
 
 def test_retriever_type_filter():
-    docs = _corpus()
-    retriever = build_index(docs)
-    results = retriever.retrieve(
-        "guardian wali", k=5, evidence_types=[EvidenceType.QURAN]
-    )
-    assert all(r.document.evidence_type is EvidenceType.QURAN for r in results)
+    retriever = build_index(sample_corpus())
+    results = retriever.retrieve("intellect worship paradise", k=5, evidence_types=[EvidenceType.HADITH])
+    assert results
+    assert all(r.document.evidence_type is EvidenceType.HADITH for r in results)
 
 
 def test_answer_generator_is_extractive_and_grounded():
-    docs = _corpus()
-    retriever = build_index(docs)
+    retriever = build_index(sample_corpus())
     known = load_registry_ids(DATA / "sources" / "registry.yaml")
     gen = AnswerGenerator(retriever, known_source_ids=known)
-    answer = gen.answer("love for the near relatives", k=3)
+    answer = gen.answer("love for the near relatives kinship", k=3)
     assert answer.claims
-    # every claim statement is verbatim evidence => carries a citation
-    assert all(c.citations for c in answer.claims)
+    assert all(c.citations for c in answer.claims)  # extractive => always cited
     md = gen.format_markdown(answer)
     assert "Qur'an 42:23" in md
 
 
-def test_answer_when_no_evidence_refuses_to_answer():
-    docs = _corpus()
-    retriever = build_index(docs)
+def test_answer_refuses_when_below_similarity_floor():
+    retriever = build_index(sample_corpus())
     gen = AnswerGenerator(retriever)
-    answer = gen.answer("quantum chromodynamics lagrangian derivation", k=3)
-    # HashingEmbedder may still return low-similarity docs; if so they are the
-    # only evidence — but a totally unrelated query should yield a caveat either
-    # way (no evidence OR low-confidence warning).
+    # A query with no lexical/character overlap with any doc => nothing clears the floor.
+    answer = gen.answer("zxqw vbnm plkj fghd", k=3, min_similarity=0.15)
+    assert not answer.claims
     assert answer.caveats
+
+
+def test_confidence_reranking_prefers_stronger_source():
+    # Two near-identical passages; the higher-confidence one should rank first.
+    from shia_aalim.models import Document
+
+    def doc(i, conf):
+        return Document(
+            id=f"d{i}", text="the intellect aql is the proof hujjah of Allah",
+            evidence_type=EvidenceType.HADITH,
+            citation=Citation(source_id="al-kafi", evidence_type=EvidenceType.HADITH,
+                              volume="1", hadith_number=str(i)),
+            confidence=conf,
+        )
+    retriever = build_index([doc(1, ConfidenceLevel.UNVERIFIED), doc(2, ConfidenceLevel.HIGH)])
+    top = retriever.retrieve("intellect aql proof hujjah of Allah", k=2)
+    assert top[0].document.confidence is ConfidenceLevel.HIGH
 
 
 def test_validate_citations_flags_unknown_source():
@@ -75,36 +79,24 @@ def test_validate_citations_flags_unknown_source():
 def test_grounding_rejects_unsupported_claim():
     from shia_aalim.models import Answer, Claim
 
-    docs = _corpus()
-    retriever = build_index(docs)
+    retriever = build_index(sample_corpus())
     evidence = retriever.retrieve("purification", k=3)
     fabricated = Answer(
         question="q",
-        claims=[
-            Claim(
-                statement="The Eiffel Tower was completed in 1889 in Paris.",
-                evidence_type=EvidenceType.HISTORICAL,
-                confidence=ConfidenceLevel.HIGH,
-            )
-        ],
+        claims=[Claim(
+            statement="The Eiffel Tower was completed in 1889 in Paris.",
+            evidence_type=EvidenceType.HISTORICAL,
+            confidence=ConfidenceLevel.HIGH,
+        )],
     )
     report = check_answer_grounding(fabricated, evidence)
     assert not report.grounded
 
 
 def test_lecture_has_all_sections():
-    docs = _corpus()
-    retriever = build_index(docs)
-    lecture = LectureGenerator(retriever).generate("purification of the Ahl al-Bayt")
+    lecture = LectureGenerator(build_index(sample_corpus())).generate("purification of the household")
     titles = [s.title for s in lecture.sections]
-    for expected in [
-        "Executive Summary",
-        "Qur'anic Foundations",
-        "Hadith Foundations",
-        "Scholarly Analysis",
-        "Conclusion",
-        "Suggested Reading",
-    ]:
+    for expected in ["Executive Summary", "Qur'anic Foundations", "Hadith Foundations",
+                     "Scholarly Analysis", "Conclusion", "Suggested Reading"]:
         assert expected in titles
-    md = lecture.to_markdown()
-    assert "Integrity notice" in md
+    assert "Integrity notice" in lecture.to_markdown()

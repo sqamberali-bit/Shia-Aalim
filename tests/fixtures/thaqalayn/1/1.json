@@ -1,0 +1,447 @@
+{
+  "data": {
+    "chapter_path": "/books/al-kafi:1:3:3",
+    "chapter_title": {
+      "ar": "بَابُ أَنَّهُ لَا يُعْرَفُ إِلَّا بِهِ",
+      "en": "Chapter 3 – He<sup>azwj</sup> cannot be recognised except by Him<sup>azwj</sup>"
+    },
+    "gradings": [
+      "Allamah Baqir al-Majlisi: <span> كالصحيح   </span> - Mir‘at al ‘Uqul Fi Sharh Akhbar Al al Rasul (1/300)",
+      "Shaykh Baqir al-Behbudi: <span>صحيح</span> - Sahih al-Kafi"
+    ],
+    "nav": {
+      "prev": "/books/al-kafi:1:3:3:2",
+      "up": "/books/al-kafi:1:3:3"
+    },
+    "verse": {
+      "ai": {
+        "ai_attribution": {
+          "generated_date": "2026-02-28",
+          "model": "claude-sonnet-4-6",
+          "pipeline_version": "2.0.0"
+        },
+        "available_languages": [
+          "bn",
+          "de",
+          "en",
+          "es",
+          "fa",
+          "fr",
+          "id",
+          "ru",
+          "tr",
+          "ur",
+          "zh"
+        ],
+        "chunks": [
+          {
+            "chunk_type": "isnad",
+            "word_end": 16,
+            "word_start": 0
+          },
+          {
+            "chunk_type": "body",
+            "word_end": 45,
+            "word_start": 16
+          }
+        ],
+        "content_type": "theological",
+        "diacritics_status": "completed",
+        "isnad_matn": {
+          "has_chain": true,
+          "narrators": [
+            {
+              "ambiguity_note": "Several transmitters with this name; likely Muhammad ibn Ismail al-Barmaki or al-Naysaburi",
+              "canonical_id": 17,
+              "identity_confidence": "ambiguous",
+              "known_identity": null,
+              "name_ar": "مُحَمَّدُ بْنُ إِسْمَاعِيلَ",
+              "name_en": "Muhammad ibn Ismail",
+              "position": 1,
+              "role": "narrator",
+              "word_ranges": [
+                {
+                  "word_end": 3,
+                  "word_start": 0
+                }
+              ]
+            },
+            {
+              "ambiguity_note": null,
+              "canonical_id": 33,
+              "identity_confidence": "definite",
+              "known_identity": "Al-Fadl ibn Shadhan al-Naysaburi, prominent Shia scholar and companion of Imam al-Hadi and al-Askari (d. 260 AH)",
+              "name_ar": "الْفَضْلُ بْنُ شَاذَانَ",
+              "name_en": "al-Fadl ibn Shadhan",
+              "position": 2,
+              "role": "narrator",
+              "word_ranges": [
+                {
+                  "word_end": 7,
+                  "word_start": 4
+                }
+              ]
+            },
+            {
+              "ambiguity_note": null,
+              "canonical_id": 30,
+              "identity_confidence": "definite",
+              "known_identity": "Safwan ibn Yahya al-Bayya', a highly trusted narrator and companion of Imam al-Ridha (a.s.)",
+              "name_ar": "صَفْوَانُ بْنُ يَحْيَى",
+              "name_en": "Safwan ibn Yahya",
+              "position": 3,
+              "role": "narrator",
+              "word_ranges": [
+                {
+                  "word_end": 11,
+                  "word_start": 8
+                }
+              ]
+            },
+            {
+              "ambiguity_note": null,
+              "canonical_id": 108,
+              "identity_confidence": "definite",
+              "known_identity": "Mansur ibn Hazim al-Bajali al-Kufi, a companion of Imam al-Sadiq and Imam al-Kazim (a.s.), known for his debates on theology",
+              "name_ar": "مَنْصُورُ بْنُ حَازِمٍ",
+              "name_en": "Mansur ibn Hazim",
+              "position": 4,
+              "role": "companion",
+              "word_ranges": [
+                {
+                  "word_end": 15,
+                  "word_start": 12
+                }
+              ]
+            },
+            {
+              "ambiguity_note": null,
+              "identity_confidence": "definite",
+              "known_identity": "Imam Ja'far ibn Muhammad al-Sadiq (a.s.), the sixth Imam (83-148 AH)",
+              "name_ar": "أَبُو عَبْدِ اللَّهِ عَلَيْهِ السَّلَامُ",
+              "name_en": "Abu Abdillah (Imam al-Sadiq)",
+              "position": 5,
+              "role": "imam",
+              "word_ranges": [
+                {
+                  "word_end": 22,
+                  "word_start": 17
+                }
+              ]
+            }
+          ]
+        },
+        "key_phrases": [
+          {
+            "category": "prophetic_formula",
+            "phrase_ar": "جَلَّ جَلَالُهُ",
+            "phrase_en": "Majestic is His Majesty"
+          },
+          {
+            "category": "theological_concept",
+            "phrase_ar": "الْعِبَادُ يُعْرَفُونَ بِاللَّهِ",
+            "phrase_en": "The servants are recognized through Allah"
+          },
+          {
+            "category": "prophetic_formula",
+            "phrase_ar": "رَحِمَكَ اللَّهُ",
+            "phrase_en": "May Allah have mercy on you"
+          }
+        ],
+        "key_terms_keys": [
+          "جَلَّ جَلَالُهُ",
+          "يُعْرَفَ بِخَلْقِهِ",
+          "الْعِبَادُ يُعْرَفُونَ بِاللَّهِ"
+        ],
+        "related_quran": [
+          {
+            "ref": "41:53",
+            "relationship": "thematic"
+          },
+          {
+            "ref": "51:20",
+            "relationship": "thematic"
+          }
+        ],
+        "tags": [
+          "theology",
+          "knowledge",
+          "ethics"
+        ],
+        "topics": [
+          "tawhid",
+          "divine_attributes",
+          "divine_knowledge",
+          "imamate"
+        ],
+        "word_analysis": [
+          {
+            "pos": "N",
+            "word": "مُحَمَّدُ"
+          },
+          {
+            "pos": "N",
+            "word": "بْنُ"
+          },
+          {
+            "pos": "N",
+            "word": "إِسْمَاعِيلَ"
+          },
+          {
+            "pos": "PREP",
+            "word": "عَنِ"
+          },
+          {
+            "pos": "N",
+            "word": "الْفَضْلِ"
+          },
+          {
+            "pos": "N",
+            "word": "بْنِ"
+          },
+          {
+            "pos": "N",
+            "word": "شَاذَانَ"
+          },
+          {
+            "pos": "PREP",
+            "word": "عَنْ"
+          },
+          {
+            "pos": "N",
+            "word": "صَفْوَانَ"
+          },
+          {
+            "pos": "N",
+            "word": "بْنِ"
+          },
+          {
+            "pos": "N",
+            "word": "يَحْيَى"
+          },
+          {
+            "pos": "PREP",
+            "word": "عَنْ"
+          },
+          {
+            "pos": "N",
+            "word": "مَنْصُورِ"
+          },
+          {
+            "pos": "N",
+            "word": "بْنِ"
+          },
+          {
+            "pos": "N",
+            "word": "حَازِمٍ"
+          },
+          {
+            "pos": "V",
+            "word": "قَالَ"
+          },
+          {
+            "pos": "V",
+            "word": "قُلْتُ"
+          },
+          {
+            "pos": "PREP",
+            "word": "لِأَبِي"
+          },
+          {
+            "pos": "N",
+            "word": "عَبْدِ"
+          },
+          {
+            "pos": "N",
+            "word": "اللَّهِ"
+          },
+          {
+            "pos": "PREP",
+            "word": "عَلَيْهِ"
+          },
+          {
+            "pos": "N",
+            "word": "السَّلَامُ"
+          },
+          {
+            "pos": "PART",
+            "word": "إِنِّي"
+          },
+          {
+            "pos": "V",
+            "word": "نَاظَرْتُ"
+          },
+          {
+            "pos": "N",
+            "word": "قَوْماً"
+          },
+          {
+            "pos": "V",
+            "word": "فَقُلْتُ"
+          },
+          {
+            "pos": "PREP",
+            "word": "لَهُمْ"
+          },
+          {
+            "pos": "PART",
+            "word": "إِنَّ"
+          },
+          {
+            "pos": "N",
+            "word": "اللَّهَ"
+          },
+          {
+            "pos": "V",
+            "word": "جَلَّ"
+          },
+          {
+            "pos": "N",
+            "word": "جَلَالُهُ"
+          },
+          {
+            "pos": "ADJ",
+            "word": "أَجَلُّ"
+          },
+          {
+            "pos": "ADJ",
+            "word": "وَأَعَزُّ"
+          },
+          {
+            "pos": "ADJ",
+            "word": "وَأَكْرَمُ"
+          },
+          {
+            "pos": "PREP",
+            "word": "مِنْ"
+          },
+          {
+            "pos": "PART",
+            "word": "أَنْ"
+          },
+          {
+            "pos": "V",
+            "word": "يُعْرَفَ"
+          },
+          {
+            "pos": "PREP",
+            "word": "بِخَلْقِهِ"
+          },
+          {
+            "pos": "PART",
+            "word": "بَلِ"
+          },
+          {
+            "pos": "N",
+            "word": "الْعِبَادُ"
+          },
+          {
+            "pos": "V",
+            "word": "يُعْرَفُونَ"
+          },
+          {
+            "pos": "PREP",
+            "word": "بِاللَّهِ"
+          },
+          {
+            "pos": "V",
+            "word": "فَقَالَ"
+          },
+          {
+            "pos": "V",
+            "word": "رَحِمَكَ"
+          },
+          {
+            "pos": "N",
+            "word": "اللَّهُ"
+          }
+        ]
+      },
+      "gradings": [
+        "Allamah Baqir al-Majlisi: <span> كالصحيح   </span> - Mir‘at al ‘Uqul Fi Sharh Akhbar Al al Rasul (1/300)",
+        "Shaykh Baqir al-Behbudi: <span>صحيح</span> - Sahih al-Kafi"
+      ],
+      "index": 229,
+      "local_index": 3,
+      "narrator_chain": {
+        "parts": [
+          {
+            "kind": "narrator",
+            "path": "/people/narrators/17",
+            "text": "مُحَمَّدُ بْنُ إِسْمَاعِيلَ"
+          },
+          {
+            "kind": "plain",
+            "text": " عَنِ "
+          },
+          {
+            "kind": "narrator",
+            "path": "/people/narrators/33",
+            "text": "الْفَضْلِ بْنِ شَاذَانَ"
+          },
+          {
+            "kind": "plain",
+            "text": " عَنْ "
+          },
+          {
+            "kind": "narrator",
+            "path": "/people/narrators/30",
+            "text": "صَفْوَانَ بْنِ يَحْيَى"
+          },
+          {
+            "kind": "plain",
+            "text": " عَنْ "
+          },
+          {
+            "kind": "narrator",
+            "path": "/people/narrators/108",
+            "text": "مَنْصُورِ بْنِ حَازِمٍ"
+          },
+          {
+            "kind": "plain",
+            "text": " قَالَ"
+          }
+        ]
+      },
+      "part_type": "Hadith",
+      "path": "/books/al-kafi:1:3:3:3",
+      "relations": {
+        "Shared Chain": [
+          "/books/al-kafi:1:4:1:2",
+          "/books/al-kafi:1:4:8:15",
+          "/books/al-kafi:4:3:135:2",
+          "/books/al-kafi:4:3:21:18"
+        ]
+      },
+      "text": [
+        " قُلْتُ لِأَبِي عَبْدِ اللَّهِ ( عليه السلام ) إِنِّي نَاظَرْتُ قَوْماً فَقُلْتُ لَهُمْ إِنَّ اللَّهَ جَلَّ جَلَالُهُ أَجَلُّ وَ أَعَزُّ وَ أَكْرَمُ مِنْ أَنْ يُعْرَفَ بِخَلْقِهِ بَلِ الْعِبَادُ يُعْرَفُونَ بِاللَّهِ فَقَالَ رَحِمَكَ اللَّهُ ."
+      ],
+      "translations": {
+        "en.hubeali": [
+          "Muhammad Bin Ismail, from Al Fazl Bin Shazan, from Safwan Bin Yahya, from Mansour Bin Hazim who said, ",
+          "‘I said to Abu Abdullah<sup>asws</sup>, ‘I debated a group, so I said to them that Allah<sup>azwj</sup>, Majestic is His<sup>azwj</sup> Majesty is more Majestic and more Mighty, and more Benevolent than that He<sup>azwj</sup> should be recognised through His<sup>azwj</sup> creatures. But it is the creatures who are being recognised through Allah<sup>azwj</sup>’. So he<sup>asws</sup> said: ‘May Allah<sup>azwj</sup> have Mercy on you’."
+        ],
+        "en.sarwar": [
+          " 3. Muhammad ibn Isma‘il has narrated the following from al-Fadl ibn shadhan from Safwan ibn Yahya from Mansur ibn Hazim who has said that I spoke to Imam abu ‘Abdallah (a.s.) saying, “I debated certain people and said to them, ‘Allah, Glory be to Him, is far Glorious, Majestic and Honorable than being defined by means of His creatures. In fact, the existence of the creatures is proved through the existence of Allah.’” The Imam (a.s.) said, “May Allah bestow up on you blessings.”"
+        ]
+      }
+    },
+    "verse_translations": [
+      "en.hubeali",
+      "en.sarwar",
+      "bn.ai",
+      "de.ai",
+      "en.ai",
+      "es.ai",
+      "fa.ai",
+      "fr.ai",
+      "id.ai",
+      "ru.ai",
+      "tr.ai",
+      "ur.ai",
+      "zh.ai"
+    ]
+  },
+  "index": "al-kafi:1:3:3:3",
+  "kind": "verse_detail"
+}

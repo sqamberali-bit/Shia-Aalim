@@ -99,11 +99,12 @@ docs/                        Architecture, validation, ingestion, citation, land
 src/shia_aalim/              The package (model, ingestion, retrieval, grounding, generation, eval, loop)
 data/schema/                 JSON Schemas for documents, citations, sources
 data/sources/registry.yaml   Registered, citable sources with confidence
-data/knowledge/              Ingested knowledge (.jsonl) — seed data is clearly labelled
+src/shia_aalim/ingestion/adapters/  Verified-source ingestion adapters (Qur'an, ThaqalaynData hadith)
+data/knowledge/              Ingested knowledge (.jsonl) — Qur'an + al-Kāfī, with citations
 prompts/                     System prompts encoding the charter for any LLM synthesizer
 templates/                   Lecture template
-scripts/                     demo.py, run_research_loop.py
-tests/                       Test suite (32 tests, stdlib-only)
+scripts/                     demo.py, run_research_loop.py, ingest.py
+tests/                       Test suite (45 tests, stdlib-only) + fixtures
 ```
 
 ## Scholarly integrity & scope
@@ -121,10 +122,21 @@ tests/                       Test suite (32 tests, stdlib-only)
 
 ## Status & roadmap
 
-This is **iteration 1**: a complete, tested, runnable foundation. The immediate
-next step is validated ingestion of real corpora (ThaqalaynAPI, Tanzil/QUL,
-Shiavault, Hubeali) and wiring a semantic embedding model + LLM synthesizer
-behind the existing interfaces. See [`docs/roadmap.md`](docs/roadmap.md).
+**Iteration 2 (in progress): real corpora ingested.** The knowledge base now
+holds the complete Qur'an (canonical Uthmani Arabic + Ali Quli Qarai
+translation, 6236 verses) and Twelver hadith from al-Kāfī (Books of Tawḥīd and
+Intellect, 254 narrations) — the latter with their Arabic *matn*, attributed
+translations, and **rijāl gradings** (Majlisī, Behbudi) carried through
+verbatim, so weak narrations are flagged, never asserted. All from verified,
+permissively-licensed GitHub datasets ([fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api),
+CC0 [ThaqalaynData](https://github.com/narmafraz/ThaqalaynData)) via tested
+adapters (`src/shia_aalim/ingestion/adapters/`, `scripts/ingest.py`).
+
+Integrity holds on the real corpus (citation accuracy 1.0, hallucination 0.0,
+verified by `tests/test_corpus_integrity.py`). The measured recall@5 ≈ 0.40 with
+the lexical baseline is the honest signal driving the next step: a semantic
+embedder (BGE-M3) behind the existing `EmbeddingProvider` interface, then an LLM
+synthesizer. See [`docs/roadmap.md`](docs/roadmap.md).
 
 ## License
 

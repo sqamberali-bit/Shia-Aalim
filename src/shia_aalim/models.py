@@ -229,6 +229,10 @@ class Document:
             "language": self.language,
         }
 
+    def to_json_line(self) -> str:
+        """Serialise to a single-line JSON string for ``.jsonl`` knowledge files."""
+        return json.dumps(self.to_dict(), ensure_ascii=False, separators=(",", ":"))
+
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Document":
         cit = d["citation"]

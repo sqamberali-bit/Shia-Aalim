@@ -4,6 +4,28 @@ How to grow the knowledge base **without** violating the charter. The golden
 rule: a document is only born once it has a verifiable citation to a registered
 source. If you don't have the locator, you don't have the document.
 
+## What is already ingested (Iteration 2)
+
+Run [`scripts/ingest.py`](../scripts/ingest.py) to (re)build the knowledge base
+from verified GitHub-hosted datasets — the reachable channel in the hosted
+environment. Two tested adapters exist:
+
+| Adapter | Upstream | Output | Notes |
+|---|---|---|---|
+| `adapters/quran.py` | [fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api) | 6236 verses (Arabic Uthmani + Ali Quli Qarai) | one Document/verse, Arabic in citation |
+| `adapters/thaqalayn.py` | [narmafraz/ThaqalaynData](https://github.com/narmafraz/ThaqalaynData) (CC0) | al-Kāfī Tawḥīd + Intellect | carries matn, Hubeali translation, **rijāl gradings** |
+
+```bash
+# editions/data are fetched from GitHub raw, then ingested:
+python scripts/ingest.py --quran-dir <dir-with-quran-*.json> \
+                         --thaqalayn-dir <clone-of-ThaqalaynData>
+```
+
+The hadith adapter parses each narration's gradings (e.g. Majlisī's *Mir'āt
+al-'Uqūl*), preserves every grader's verdict in `grade_source`, and sets
+document confidence to the **most conservative** grade — so a narration any
+authority calls weak is never promoted to fact.
+
 ## The pipeline
 
 ```

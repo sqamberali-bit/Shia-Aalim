@@ -29,6 +29,16 @@ sources:
     confidence: high
     notes: "Canonical text. Ingest verbatim from Tanzil (Uthmani) for exact orthography."
 
+  - id: quran-qarai
+    title: "Qur'an — English translation (Ali Quli Qarai)"
+    kind: quran
+    translator: "Ali Quli Qarai"
+    language: en
+    url: "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-aliquliqarai.min.json"
+    license: "Open dataset (fawazahmed0/quran-api)"
+    confidence: high
+    notes: "Phrase-by-phrase modern translation widely respected in Twelver scholarship. This is the translation currently ingested (data/knowledge/quran/quran.jsonl), paired with the canonical Uthmani Arabic."
+
   - id: tanzil-shakir
     title: "Qur'an — English translation (M. H. Shakir)"
     kind: quran
@@ -37,7 +47,17 @@ sources:
     url: "https://tanzil.net/trans/"
     license: "Distributed by Tanzil; attribution required"
     confidence: high
-    notes: "Widely used English rendering; verify wording against the Tanzil canonical file."
+    notes: "Alternative English rendering; verify wording against the Tanzil canonical file."
+
+  - id: thaqalayn-data
+    title: "ThaqalaynData — structured Twelver hadith corpus (data behind thaqalayn.net)"
+    kind: hadith
+    author: "narmafraz (compiler); translations & gradings as attributed per hadith"
+    language: ar
+    url: "https://github.com/narmafraz/ThaqalaynData"
+    license: "CC0 1.0 Universal (public domain)"
+    confidence: high
+    notes: "Provenance/tooling source for ingested hadith. Each narration carries its own translation (e.g. Hubeali) and rijal gradings (e.g. Majlisi's Mir'at al-'Uqul, Behbudi's Sahih al-Kafi), which are preserved verbatim. Citations still resolve to the underlying collection (e.g. al-kafi), not to this entry."
 
   # ---- Tafsir ----
   - id: al-mizan

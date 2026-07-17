@@ -1,7 +1,6 @@
-from conftest import DATA
+from conftest import DATA, sample_corpus
 
 from shia_aalim.evaluation.metrics import GoldQuery, evaluate, retrieval_precision_recall
-from shia_aalim.ingestion.loaders import iter_knowledge_dir
 from shia_aalim.models import ConfidenceLevel, EvidenceType
 from shia_aalim.research_loop import LoopConfig, build_index, run_loop
 from shia_aalim.sources import load_registry_ids, load_sources
@@ -24,17 +23,17 @@ def test_precision_recall_basic():
 
 
 def test_evaluate_over_gold_set():
-    docs = list(iter_knowledge_dir(DATA / "knowledge"))
+    docs = sample_corpus()
     retriever = build_index(docs)
     known = load_registry_ids(DATA / "sources" / "registry.yaml")
     gold = [
-        GoldQuery("purification of the Ahl al-Bayt", {"quran-33-33"}),
-        GoldQuery("love for the near relatives", {"quran-42-23"}),
+        GoldQuery("purification of the People of the House", {"quran-33-33"}),
+        GoldQuery("love for the near relatives kinship", {"quran-42-23"}),
     ]
     summary = evaluate(gold, retriever, docs, known, k=5)
     assert summary.n_queries == 2
-    assert 0.0 <= summary.precision_at_k <= 1.0
-    assert summary.recall_at_k > 0.0  # the relevant verses are retrievable
+    assert summary.recall_at_k > 0.0
+    assert summary.citation_accuracy > 0.0
     assert 0.0 <= summary.source_coverage <= 1.0
 
 
@@ -43,20 +42,11 @@ def test_research_loop_runs_and_recommends(tmp_path):
     config = LoopConfig(
         knowledge_dir=DATA / "knowledge",
         registry_source_ids=load_registry_ids(DATA / "sources" / "registry.yaml"),
-        gold=[GoldQuery("purification", {"quran-33-33"})],
+        gold=[GoldQuery("purification of the People of the House", {"quran-33-33"})],
         log_path=log,
     )
     reports = run_loop(config, iterations=2)
     assert len(reports) == 2
     assert reports[0].recommendations
-    # deltas populated on the second iteration
     assert reports[1].deltas != {}
-    assert log.exists()
-    assert log.read_text().count("\n") == 2
-
-
-def test_placeholder_hadith_is_unverified_and_flagged():
-    docs = list(iter_knowledge_dir(DATA / "knowledge"))
-    placeholders = [d for d in docs if "placeholder" in d.tags]
-    assert placeholders, "expected the labelled hadith placeholder"
-    assert all(d.confidence is ConfidenceLevel.UNVERIFIED for d in placeholders)
+    assert log.exists() and log.read_text().count("\n") == 2

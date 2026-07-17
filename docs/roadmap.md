@@ -18,16 +18,24 @@ the research loop updates.
 - [x] Bounded, logged research/improvement loop with recommendations
 - [x] Source registry (25+ works) + labelled seed knowledge
 - [x] Verified landscape research of existing systems & open data sources
-- [x] 32 passing tests, runnable demos, full docs
+- [x] Passing test suite, runnable demos, full docs
 
-## Iteration 2 — Real corpora & semantic retrieval
+## Iteration 2 — Real corpora & semantic retrieval (in progress)
 
-- [ ] Ingest Qurʾān (Tanzil/QUL) with Arabic + multiple translations, verified
-- [ ] Ingest Twelver hadith via ThaqalaynAPI (Four Books) with exact locators
+- [x] Ingest the complete Qurʾān (canonical Uthmani Arabic + Ali Quli Qarai
+      translation), verified — 6236 verses, HIGH confidence
+- [x] Ingest Twelver hadith with exact locators **and rijāl gradings** — al-Kāfī
+      Books of Tawḥīd (218) + Intellect (36) from CC0 ThaqalaynData; grade +
+      attributable grade_source carried through, confidence derived
+      conservatively from the grade(s)
+- [x] Reusable, tested ingestion adapters (`ingestion/adapters/`) + `scripts/ingest.py`
+- [x] Real-corpus integrity tests (every citation complete + registered; grades honest)
 - [ ] Swap in a semantic embedder (BGE-M3) behind `EmbeddingProvider`; benchmark
-      vs the hashing baseline on a domain gold set
+      vs the hashing baseline (measured recall@5 ≈ 0.40 on the current gold set —
+      the loop already recommends this upgrade)
 - [ ] Stand up Qdrant behind `VectorStore`; persistence + filtering
 - [ ] Add a reranker stage (bge-reranker) and re-measure precision/recall
+- [ ] Ingest the remaining Four Books (Faqīh, Tahdhīb, Istibṣār) + Nahj al-Balāgha
 - [ ] Grow the evaluation gold set to 100+ labelled queries
 
 ## Iteration 3 — Grounded synthesis & lectures
