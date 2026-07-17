@@ -135,6 +135,14 @@ GitHub datasets ([fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-ap
 CC0 [ThaqalaynData](https://github.com/narmafraz/ThaqalaynData)) via tested
 adapters (`src/shia_aalim/ingestion/adapters/`, `scripts/ingest.py`).
 
+On top of that, further al-Saduq/al-Mufid hadith collections (al-Khiṣāl, both
+Amālī, ʿUyūn Akhbār al-Riḍā, al-Tawḥīd) and a **prose tier** — Tafsīr al-Mīzān
+(partial), Sīra, Maqtal al-Husayn, Kitāb al-Irshād, and al-Ṣaḥīfa
+al-Sajjādiyya — are ingested from the [Shiavault](https://github.com/shiavault/shiavault-library)
+al-islam.org mirror, with coarser chapter-level citations at *medium* confidence
+(clearly a lower evidence tier than the graded hadith corpora). **The corpus is
+now 57,708 cited documents across 16 works.**
+
 Integrity holds on the real corpus (citation accuracy 1.0, hallucination 0.0,
 verified by `tests/test_corpus_integrity.py`). The measured recall@5 ≈ 0.40 with
 the lexical baseline is the honest signal driving the next step: a semantic

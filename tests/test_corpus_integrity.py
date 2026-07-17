@@ -71,3 +71,14 @@ def test_no_placeholder_or_do_not_cite_content_remains():
         assert "placeholder" not in d.tags
         assert "do-not-cite" not in d.tags
         assert "SCHEMA PLACEHOLDER" not in d.text
+
+
+def test_prose_works_are_medium_confidence_and_complete():
+    prose = [d for d in _corpus() if "prose" in d.tags]
+    assert len(prose) >= 3000  # al-Mizan (partial) + Sahifa + Seerah/Maqtal/Irshad
+    types = {d.evidence_type.value for d in prose}
+    assert "tafsir" in types and "historical" in types
+    for d in prose:
+        # prose is a translation/secondary tier — never asserted above medium
+        assert d.confidence.rank <= ConfidenceLevel.MEDIUM.rank
+        assert d.citation.is_complete()  # chapter + section locator

@@ -144,16 +144,25 @@ def _citation_locators(
             "hadith_number": part,
             "id_suffix": "-".join(segments),
         }
-    # hierarchical
+    # hierarchical: last segment is the hadith; the rest is the chapter path.
+    # Only call the first segment a "volume" when there is a genuine
+    # volume+chapter hierarchy above the hadith (>=3 segments); with just
+    # [chapter, hadith] there is no volume level, so keep the chapter locator.
     if len(segments) < 2:
         return None
-    volume = segments[0] if len(segments) >= 3 else ""
-    middle = segments[1:-1]
-    chapter = book_title + (f", {':'.join(middle)}" if middle else "")
+    hadith_number = segments[-1]
+    prefix = segments[:-1]
+    if len(prefix) >= 2:
+        volume = prefix[0]
+        chapter_segs = prefix[1:]
+    else:
+        volume = ""
+        chapter_segs = prefix
+    chapter = book_title + (f", {':'.join(chapter_segs)}" if chapter_segs else "")
     return {
         "volume": volume,
         "chapter": chapter,
-        "hadith_number": segments[-1],
+        "hadith_number": hadith_number,
         "id_suffix": "-".join(segments),
     }
 

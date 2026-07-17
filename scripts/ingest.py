@@ -31,8 +31,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from shia_aalim.ingestion.adapters.quran import build_quran_documents  # noqa: E402
+from shia_aalim.ingestion.adapters.shiavault import build_prose_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.thaqalayn import build_hadith_documents  # noqa: E402
-from shia_aalim.models import Document  # noqa: E402
+from shia_aalim.models import ConfidenceLevel, Document, EvidenceType  # noqa: E402
 
 KNOWLEDGE = ROOT / "data" / "knowledge"
 
@@ -70,6 +71,28 @@ HADITH_TARGETS = [
     ("books/tahdhib-al-ahkam", "tahdhib-al-ahkam", "Tahdhib al-Ahkam", "tahdhib-al-ahkam.jsonl", ["en.hubeali", "en.bab-ul-qaim-publications"], "hierarchical", "via ThaqalaynData (CC0)"),
     ("books/al-istibsar", "al-istibsar", "al-Istibsar", "al-istibsar.jsonl", ["en.hubeali", "en.bab-ul-qaim-publications"], "hierarchical", "via ThaqalaynData (CC0)"),
     ("books/nahj-al-balagha", "nahj-al-balagha", "Nahj al-Balagha", "nahj-al-balagha.jsonl", ["en.sayed-ali-raza"], "nahj", "Sayed Ali Raza (via ThaqalaynData, CC0)"),
+    # al-Saduq / al-Mufid secondary hadith collections (CC0 ThaqalaynData)
+    ("books/uyun-akhbar-al-rida", "uyun-akhbar-al-rida", "Uyun Akhbar al-Rida (al-Saduq)", "uyun-akhbar-al-rida.jsonl", ["en.dr-ali-peiravi"], "hierarchical", "Dr Ali Peiravi (via ThaqalaynData, CC0)"),
+    ("books/al-amali-saduq", "al-amali-saduq", "al-Amali (al-Saduq)", "al-amali-saduq.jsonl", ["en.bilal-muhammad"], "hierarchical", "Bilal Muhammad (via ThaqalaynData, CC0)"),
+    ("books/al-amali-mufid", "al-amali-mufid", "al-Amali (al-Mufid)", "al-amali-mufid.jsonl", ["en.mulla-asgharali-m-m-jaffer"], "hierarchical", "Mulla Asgharali M M Jaffer (via ThaqalaynData, CC0)"),
+    ("books/al-khisal", "al-khisal", "al-Khisal (al-Saduq)", "al-khisal.jsonl", ["en.dr-ali-peiravi"], "hierarchical", "Dr Ali Peiravi (via ThaqalaynData, CC0)"),
+    ("books/al-tawhid", "al-tawhid-saduq", "Kitab al-Tawhid (al-Saduq)", "al-tawhid-saduq.jsonl", ["en.sayed-ali-raza-rizvi"], "hierarchical", "Sayed Ali Raza Rizvi (via ThaqalaynData, CC0)"),
+]
+
+# Prose works from the Shiavault Markdown mirror (al-islam.org). These are
+# tafsir / biography / history / translated supplications — coarser,
+# chapter-level citations, medium confidence (translations / secondary works).
+# (rel path, source_id, EvidenceType, volume-or-None, out shard)
+PROSE_TARGETS = [
+    ("books/al-mizan-an-exegesis-of-the-qur-an-volume-one", "al-mizan", "tafsir", "1", "al-mizan-v1.jsonl"),
+    ("books/al-mizan-an-exegesis-of-the-qur-an-volume-two", "al-mizan", "tafsir", "2", "al-mizan-v2.jsonl"),
+    ("books/al-mizan-an-exegesis-of-the-qur-an-volume-four", "al-mizan", "tafsir", "4", "al-mizan-v4.jsonl"),
+    ("books/al-mizan-an-exegesis-of-the-quran-volume-seven", "al-mizan", "tafsir", "7", "al-mizan-v7.jsonl"),
+    ("books/al-mizan-an-exegesis-of-the-qur-an-volume-eight", "al-mizan", "tafsir", "8", "al-mizan-v8.jsonl"),
+    ("books/as-sahifa-al-kamilah-al-sajjadiyya", "sahifa-sajjadiyya", "hadith", None, "sahifa-sajjadiyya.jsonl"),
+    ("books/the-message", "the-message-subhani", "historical", None, "seerah-the-message.jsonl"),
+    ("books/maqtal-al-husayn", "maqtal-al-husayn", "historical", None, "maqtal-al-husayn.jsonl"),
+    ("books/kitab-al-irshad-1", "kitab-al-irshad", "historical", None, "kitab-al-irshad.jsonl"),
 ]
 
 
@@ -148,13 +171,35 @@ def ingest_hadith(thaqalayn_dir: Path) -> int:
     return total
 
 
+def ingest_prose(shiavault_dir: Path) -> int:
+    """Ingest Shiavault Markdown prose works (tafsir / supplications / history)."""
+    total = 0
+    for rel, source_id, etype, volume, out in PROSE_TARGETS:
+        book_dir = shiavault_dir / rel
+        if not book_dir.exists():
+            print(f"  [skip] {rel} not found under {shiavault_dir}")
+            continue
+        docs = build_prose_documents(
+            book_dir,
+            source_id=source_id,
+            evidence_type=EvidenceType(etype),
+            confidence=ConfidenceLevel.MEDIUM,
+            volume=volume,
+        )
+        if docs:
+            write_jsonl(docs, KNOWLEDGE / "prose" / out)
+            total += len(docs)
+    return total
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--quran-dir", default=os.environ.get("QURAN_DIR"))
     parser.add_argument("--thaqalayn-dir", default=os.environ.get("THAQALAYN_DATA_DIR"))
+    parser.add_argument("--shiavault-dir", default=os.environ.get("SHIAVAULT_DIR"))
     args = parser.parse_args()
 
-    n_quran = n_hadith = 0
+    n_quran = n_hadith = n_prose = 0
     if args.quran_dir:
         print("Ingesting Qur'an...")
         n_quran = ingest_quran(Path(args.quran_dir))
@@ -167,7 +212,13 @@ def main() -> int:
     else:
         print("  [skip] no --thaqalayn-dir / THAQALAYN_DATA_DIR")
 
-    print(f"\nDone. {n_quran} Qur'an verses, {n_hadith} hadith ingested.")
+    if args.shiavault_dir:
+        print("Ingesting prose (Shiavault)...")
+        n_prose = ingest_prose(Path(args.shiavault_dir))
+    else:
+        print("  [skip] no --shiavault-dir / SHIAVAULT_DIR")
+
+    print(f"\nDone. {n_quran} Qur'an verses, {n_hadith} hadith, {n_prose} prose passages ingested.")
     return 0
 
 

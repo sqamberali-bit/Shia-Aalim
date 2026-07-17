@@ -33,7 +33,15 @@ the research loop updates.
 - [x] Reusable, tested ingestion adapters (`ingestion/adapters/`, variable-depth
       paths + Nahj Sermon/Letter/Saying scheme + al-Kāfī volume auto-enumeration
       with real Book titles) + `scripts/ingest.py`
+- [x] Further al-Saduq/al-Mufid hadith collections (al-Khiṣāl, both Amālī, ʿUyūn
+      Akhbār al-Riḍā, al-Tawḥīd = 4280) from CC0 ThaqalaynData
+- [x] Prose tier via a new Shiavault Markdown adapter — Tafsīr al-Mīzān
+      (partial: vols 1,2,4,7,8), Sīra (*The Message*), Maqtal al-Husayn, Kitāb
+      al-Irshād, al-Ṣaḥīfa al-Sajjādiyya = 4862 passages, chapter-level
+      citations, medium confidence. **Corpus now 57,708 docs across 16 works.**
 - [x] Real-corpus integrity tests (every citation complete + registered; grades honest)
+- [ ] Upload-needed (not on GitHub): Biḥār al-Anwār, Wasāʾil al-Shīʿa, Mustadrak
+      al-Wasāʾil, Mafātīḥ al-Jinān; enrich Faqīh/Tahdhīb/Istibṣār with Kitāb titles
 - [ ] Swap in a semantic embedder (BGE-M3) behind `EmbeddingProvider`; benchmark
       vs the hashing baseline (measured recall@5 ≈ 0.40 on the current gold set —
       the loop already recommends this upgrade)

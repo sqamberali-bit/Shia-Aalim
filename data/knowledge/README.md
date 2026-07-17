@@ -5,7 +5,8 @@ This directory holds the ingested, citable knowledge as newline-delimited JSON
 
 ## What is ingested (Iteration 2 — real corpora)
 
-**Totals: 6236 Qur'an verses + 42,330 hadith — the complete Four Books and Nahj al-Balāgha.**
+**Totals: 57,708 cited documents across 16 works** — 6236 Qur'an verses, 46,652
+hadith, and 4,862 prose passages (tafsīr, biography, history, supplications).
 
 | File | Content | Count | Source | Confidence |
 |---|---|---|---|---|
@@ -15,6 +16,28 @@ This directory holds the ingested, citable knowledge as newline-delimited JSON
 | `hadith/tahdhib-al-ahkam.jsonl` | Tahdhīb al-Aḥkām (complete) | 13,201 hadith | ThaqalaynData (CC0) | per-grade |
 | `hadith/al-istibsar.jsonl` | al-Istibṣār (complete) | 4220 hadith | ThaqalaynData (CC0) | per-grade |
 | `hadith/nahj-al-balagha.jsonl` | Nahj al-Balāgha — Sermons, Letters, Sayings (complete) | 2260 units | ThaqalaynData (CC0) | high |
+| `hadith/al-khisal.jsonl` | al-Khiṣāl (al-Saduq) | 1282 | ThaqalaynData (CC0) | per-grade |
+| `hadith/al-amali-saduq.jsonl` · `al-amali-mufid.jsonl` | al-Amālī of al-Saduq (1082) + al-Mufid (387) | 1469 | ThaqalaynData (CC0) | per-grade |
+| `hadith/uyun-akhbar-al-rida.jsonl` | ʿUyūn Akhbār al-Riḍā (al-Saduq) | 954 | ThaqalaynData (CC0) | per-grade |
+| `hadith/al-tawhid-saduq.jsonl` | Kitāb al-Tawḥīd (al-Saduq — standalone, distinct from al-Kāfī's Book of Tawḥīd) | 575 | ThaqalaynData (CC0) | per-grade |
+
+### Prose works (`prose/*.jsonl`) — coarser, chapter-level citations
+
+Translations / secondary works from the [Shiavault](https://github.com/shiavault/shiavault-library)
+al-islam.org Markdown mirror. Chunked as prose with **book + chapter + section**
+locators (no ḥadīth number or rijāl grade), confidence capped at **medium**.
+
+| File(s) | Content | Passages | Type |
+|---|---|---|---|
+| `prose/al-mizan-v{1,2,4,7,8}.jsonl` | Tafsīr al-Mīzān — English (ʿAllāma Ṭabāṭabāʾī). **Partial: only vols 1, 2, 4, 7, 8 exist on the mirror** (3, 5, 6 absent) | 1837 | tafsīr |
+| `prose/seerah-the-message.jsonl` | *The Message* — Sīra of the Prophet (Ja'far Subhani) | 1197 | historical |
+| `prose/maqtal-al-husayn.jsonl` | *Maqtal al-Husayn* — the events of Karbala | 878 | historical |
+| `prose/sahifa-sajjadiyya.jsonl` | al-Ṣaḥīfa al-Sajjādiyya (supplications; Arabic + English) | 582 | (words of the Imam) |
+| `prose/kitab-al-irshad.jsonl` | *Kitāb al-Irshād* — biography of the Twelve Imams (al-Mufid) | 368 | historical |
+
+Prose passages are a **different evidence tier** from the per-narration hadith
+corpora: verify Maqtal/history reports against primary maqātil, and treat the
+al-Mīzān text as an English rendering.
 
 All **Four Books are ingested in full** — al-Kāfī (all 8 volumes: Uṣūl, Furūʿ,
 Rawḍa), Man Lā Yaḥḍuruhu al-Faqīh, Tahdhīb al-Aḥkām, al-Istibṣār — plus the

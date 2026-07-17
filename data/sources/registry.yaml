@@ -174,8 +174,19 @@ sources:
     title: "al-Amālī (Shaykh al-Saduq)"
     kind: hadith
     author: "Shaykh al-Saduq"
+    translator: "Bilal Muhammad (English, as ingested)"
     language: ar
     confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: al-amali-mufid
+    title: "al-Amālī (Shaykh al-Mufid)"
+    kind: hadith
+    author: "Shaykh al-Mufid"
+    translator: "Mulla Asgharali M. M. Jaffer (English, as ingested)"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
 
   - id: al-khisal
     title: "al-Khiṣāl"
@@ -235,3 +246,36 @@ sources:
     url: "https://www.sistani.org/"
     confidence: high
     notes: "For taqlid-level fiqh cite the official istifta/ruling, not paraphrase."
+
+  # ---- Prose / secondary works (ingested from the Shiavault al-islam.org mirror) ----
+  # These are English translations / secondary works, chunked as prose with
+  # chapter-level citations (no hadith grade). Confidence capped at medium.
+  - id: the-message-subhani
+    title: "The Message (Seerah of the Prophet)"
+    kind: historical
+    author: "Ayatollah Ja'far Subhani"
+    language: en
+    url: "https://www.al-islam.org/message-ayatullah-jafar-subhani"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Biography of Prophet Muhammad (S). Prose, chapter-level citations."
+
+  - id: maqtal-al-husayn
+    title: "Maqtal al-Husayn (Martyrdom of Imam Husayn)"
+    kind: historical
+    author: "Compiled (English translation, al-islam.org)"
+    language: en
+    url: "https://www.al-islam.org/maqtal-al-husayn"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "History of Karbala. Prose, chapter-level citations; corroborate reports against primary maqatil."
+
+  - id: kitab-al-irshad
+    title: "Kitab al-Irshad (The Book of Guidance)"
+    kind: historical
+    author: "Shaykh al-Mufid"
+    language: en
+    url: "https://www.al-islam.org/kitab-al-irshad-shaykh-al-mufid"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Classical biography of the Twelve Imams. Prose, chapter-level citations."

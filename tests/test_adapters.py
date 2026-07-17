@@ -66,6 +66,23 @@ def test_parse_grading_empty_is_ungraded():
     assert parse_grading([])[0] is HadithGrade.UNGRADED
 
 
+def test_citation_locators_variable_depth():
+    from shia_aalim.ingestion.adapters.thaqalayn import _citation_locators, _decode_segments
+
+    # 4-segment (al-Kafi vol:book:chapter:hadith)
+    loc = _citation_locators(_decode_segments("/books/al-kafi:1:3:5:2"), "Bk", "hierarchical")
+    assert loc["volume"] == "1" and loc["hadith_number"] == "2" and "3:5" in loc["chapter"]
+    # 3-segment (Faqih vol:chapter:hadith)
+    loc = _citation_locators(_decode_segments("/books/x:2:7:4"), "Bk", "hierarchical")
+    assert loc["volume"] == "2" and loc["hadith_number"] == "4"
+    # 2-segment (al-Amali al-Saduq chapter:hadith) — chapter preserved, no volume
+    loc = _citation_locators(_decode_segments("/books/x:9:3"), "Bk", "hierarchical")
+    assert loc["volume"] == "" and loc["hadith_number"] == "3" and "9" in loc["chapter"]
+    # nahj (section -> Sermon/Letter/Saying)
+    loc = _citation_locators(_decode_segments("/books/nahj:2:5:1"), "Nahj", "nahj")
+    assert loc["chapter"] == "Letter 5"
+
+
 def test_build_hadith_documents_from_fixtures():
     docs = build_hadith_documents(
         FIXTURES / "thaqalayn" / "1", source_id="al-kafi", book_title="Book of Tawheed"
