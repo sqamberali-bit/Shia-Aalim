@@ -21,7 +21,9 @@ Environment fallbacks: QURAN_DIR, THAQALAYN_DATA_DIR.
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import re as _re
 import sys
 from pathlib import Path
 
@@ -71,6 +73,59 @@ HADITH_TARGETS = [
 ]
 
 
+# al-Kafi volumes to auto-enumerate as whole (each volume's books are read from
+# its on-disk index, so every Book gets its real English title in the citation).
+# Volume 1 (Usul) is ingested explicitly above; 2-7 are Furu', 8 is Rawda.
+AL_KAFI_AUTO_VOLUMES = [2, 3, 4, 5, 6, 7, 8]
+
+
+def _clean_title(title: str) -> str:
+    return _re.sub(r"<[^>]+>", "", title or "").strip()
+
+
+def ingest_al_kafi_volumes(thaqalayn_dir: Path) -> int:
+    """Ingest whole al-Kafi volumes (Furu' + Rawda) by reading each volume index.
+
+    Enumerates the Books inside each volume from ``books/al-kafi/<v>.json`` so
+    every narration is cited under its real Book title, then writes one shard
+    per volume (``al-kafi-vol<v>.jsonl``).
+    """
+    total = 0
+    for vol in AL_KAFI_AUTO_VOLUMES:
+        index_path = thaqalayn_dir / "books" / "al-kafi" / f"{vol}.json"
+        if not index_path.exists():
+            print(f"  [skip] al-Kafi volume {vol} index not found")
+            continue
+        try:
+            index = json.loads(index_path.read_text(encoding="utf-8"))
+        except (ValueError, OSError) as exc:
+            print(f"  [skip] al-Kafi volume {vol} index unreadable: {exc}")
+            continue
+        vol_docs: list[Document] = []
+        for book in index.get("data", {}).get("chapters", []):
+            segs = str(book.get("path", "")).split(":")[1:]  # e.g. ['2','1']
+            if len(segs) < 2:
+                continue
+            local_book = segs[1]
+            book_dir = thaqalayn_dir / "books" / "al-kafi" / str(vol) / local_book
+            if not book_dir.exists():
+                continue
+            title = _clean_title(book.get("titles", {}).get("en", f"al-Kafi vol {vol}"))
+            vol_docs += build_hadith_documents(
+                book_dir,
+                source_id="al-kafi",
+                book_title=f"{title} (al-Kafi, vol {vol})",
+                translation_keys=["en.hubeali"],
+                translation_name="Hubeali (via ThaqalaynData, CC0)",
+                citation_style="hierarchical",
+            )
+        if vol_docs:
+            vol_docs.sort(key=lambda d: [int(n) for n in _re.findall(r"\d+", d.id)])
+            write_jsonl(vol_docs, KNOWLEDGE / "hadith" / f"al-kafi-vol{vol}.jsonl")
+            total += len(vol_docs)
+    return total
+
+
 def ingest_hadith(thaqalayn_dir: Path) -> int:
     total = 0
     for rel, source_id, title, out, keys, style, tname in HADITH_TARGETS:
@@ -89,6 +144,7 @@ def ingest_hadith(thaqalayn_dir: Path) -> int:
         if docs:
             write_jsonl(docs, KNOWLEDGE / "hadith" / out)
             total += len(docs)
+    total += ingest_al_kafi_volumes(thaqalayn_dir)
     return total
 
 

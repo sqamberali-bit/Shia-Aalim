@@ -24,16 +24,16 @@ the research loop updates.
 
 - [x] Ingest the complete Qurʾān (canonical Uthmani Arabic + Ali Quli Qarai
       translation), verified — 6236 verses, HIGH confidence
-- [x] Ingest Twelver hadith with exact locators **and rijāl gradings** — the
-      Four Books + Nahj al-Balāgha from CC0 ThaqalaynData: complete Man Lā
-      Yaḥḍuruhu al-Faqīh (6382), Tahdhīb al-Aḥkām (13,201), al-Istibṣār (4220),
-      Uṣūl al-Kāfī vol. 1 (1463), Nahj al-Balāgha (2260) = **27,526 hadith**.
-      Grade + attributable grade_source carried through; confidence derived
-      conservatively from the grade(s)
+- [x] Ingest the **complete Four Books + Nahj al-Balāgha** with exact locators
+      **and rijāl gradings**, from CC0 ThaqalaynData: al-Kāfī in full (all 8
+      volumes — Uṣūl, Furūʿ, Rawḍa = 16,267), Man Lā Yaḥḍuruhu al-Faqīh (6382),
+      Tahdhīb al-Aḥkām (13,201), al-Istibṣār (4220), Nahj al-Balāgha (2260) =
+      **42,330 hadith**. Grade + attributable grade_source carried through;
+      confidence derived conservatively from the grade(s)
 - [x] Reusable, tested ingestion adapters (`ingestion/adapters/`, variable-depth
-      paths + Nahj Sermon/Letter/Saying scheme) + `scripts/ingest.py`
+      paths + Nahj Sermon/Letter/Saying scheme + al-Kāfī volume auto-enumeration
+      with real Book titles) + `scripts/ingest.py`
 - [x] Real-corpus integrity tests (every citation complete + registered; grades honest)
-- [ ] Ingest al-Kāfī Furūʿ + Rawḍa volumes (one-command extension) to complete al-Kāfī
 - [ ] Swap in a semantic embedder (BGE-M3) behind `EmbeddingProvider`; benchmark
       vs the hashing baseline (measured recall@5 ≈ 0.40 on the current gold set —
       the loop already recommends this upgrade)

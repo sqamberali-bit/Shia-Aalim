@@ -124,16 +124,16 @@ tests/                       Test suite (45 tests, stdlib-only) + fixtures
 
 **Iteration 2 (in progress): real corpora ingested.** The knowledge base now
 holds the complete Qur'an (canonical Uthmani Arabic + Ali Quli Qarai
-translation, 6236 verses) and **27,526 Twelver hadith** — the Four Books and
-Nahj al-Balāgha: complete Man Lā Yaḥḍuruhu al-Faqīh (6382), Tahdhīb al-Aḥkām
-(13,201), al-Istibṣār (4220), Uṣūl al-Kāfī vol. 1 (1463), and Nahj al-Balāgha
-(2260). Each hadith carries its Arabic *matn*, an attributed translation, and —
-where the source records them — **rijāl gradings** (Majlisī, Behbudi) carried
-through verbatim, so weak narrations are flagged, never asserted. All from
-verified, permissively-licensed GitHub datasets
-([fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api), CC0
-[ThaqalaynData](https://github.com/narmafraz/ThaqalaynData)) via tested adapters
-(`src/shia_aalim/ingestion/adapters/`, `scripts/ingest.py`).
+translation, 6236 verses) and **42,330 Twelver hadith** — the **complete Four
+Books** and Nahj al-Balāgha: al-Kāfī in full (all 8 volumes, 16,267), Man Lā
+Yaḥḍuruhu al-Faqīh (6382), Tahdhīb al-Aḥkām (13,201), al-Istibṣār (4220), and
+Nahj al-Balāgha (2260). That is **48,566 cited documents.** Each hadith carries
+its Arabic *matn*, an attributed translation, and — where the source records
+them — **rijāl gradings** (Majlisī, Behbudi) carried through verbatim, so weak
+narrations are flagged, never asserted. All from verified, permissively-licensed
+GitHub datasets ([fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api),
+CC0 [ThaqalaynData](https://github.com/narmafraz/ThaqalaynData)) via tested
+adapters (`src/shia_aalim/ingestion/adapters/`, `scripts/ingest.py`).
 
 Integrity holds on the real corpus (citation accuracy 1.0, hallucination 0.0,
 verified by `tests/test_corpus_integrity.py`). The measured recall@5 ≈ 0.40 with
