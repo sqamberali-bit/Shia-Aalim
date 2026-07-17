@@ -56,18 +56,36 @@ def ingest_quran(quran_dir: Path) -> int:
     return len(docs)
 
 
+# Per-book ingestion config. Each book uses its own translator and citation
+# style. Candidate translation keys are tried in order (first present wins).
+HADITH_TARGETS = [
+    # rel path,               source_id,       book_title,                               out file,                  translation_keys,                       style,           translation_name
+    ("books/al-kafi/1/3", "al-kafi", "Book of Tawheed (al-Kafi, Kitab al-Tawhid)", "al-kafi-tawhid.jsonl", ["en.hubeali"], "hierarchical", "Hubeali (via ThaqalaynData, CC0)"),
+    ("books/al-kafi/1/1", "al-kafi", "Book of Intellect and Ignorance (al-Kafi)", "al-kafi-intellect.jsonl", ["en.hubeali"], "hierarchical", "Hubeali (via ThaqalaynData, CC0)"),
+    ("books/al-kafi/1/4", "al-kafi", "Book of Divine Authority (al-Kafi, Kitab al-Hujjah)", "al-kafi-hujjah.jsonl", ["en.hubeali"], "hierarchical", "Hubeali (via ThaqalaynData, CC0)"),
+    ("books/al-kafi/1/2", "al-kafi", "Book of Excellence of Knowledge (al-Kafi)", "al-kafi-knowledge.jsonl", ["en.hubeali"], "hierarchical", "Hubeali (via ThaqalaynData, CC0)"),
+    ("books/man-la-yahduruhu-al-faqih", "man-la-yahduruhu-al-faqih", "Man la yahduruhu al-Faqih", "man-la-yahduruhu-al-faqih.jsonl", ["en.bab-ul-qaim-publications", "en.hubeali"], "hierarchical", "Bab ul Qaim Publications (via ThaqalaynData, CC0)"),
+    ("books/tahdhib-al-ahkam", "tahdhib-al-ahkam", "Tahdhib al-Ahkam", "tahdhib-al-ahkam.jsonl", ["en.hubeali", "en.bab-ul-qaim-publications"], "hierarchical", "via ThaqalaynData (CC0)"),
+    ("books/al-istibsar", "al-istibsar", "al-Istibsar", "al-istibsar.jsonl", ["en.hubeali", "en.bab-ul-qaim-publications"], "hierarchical", "via ThaqalaynData (CC0)"),
+    ("books/nahj-al-balagha", "nahj-al-balagha", "Nahj al-Balagha", "nahj-al-balagha.jsonl", ["en.sayed-ali-raza"], "nahj", "Sayed Ali Raza (via ThaqalaynData, CC0)"),
+]
+
+
 def ingest_hadith(thaqalayn_dir: Path) -> int:
     total = 0
-    targets = [
-        ("books/al-kafi/1/3", "al-kafi", "Book of Tawheed (al-Kafi, Kitab al-Tawhid)", "al-kafi-tawhid.jsonl"),
-        ("books/al-kafi/1/1", "al-kafi", "Book of Intellect and Ignorance (al-Kafi)", "al-kafi-intellect.jsonl"),
-    ]
-    for rel, source_id, title, out in targets:
+    for rel, source_id, title, out, keys, style, tname in HADITH_TARGETS:
         book_dir = thaqalayn_dir / rel
         if not book_dir.exists():
             print(f"  [skip] {rel} not found under {thaqalayn_dir}")
             continue
-        docs = build_hadith_documents(book_dir, source_id=source_id, book_title=title)
+        docs = build_hadith_documents(
+            book_dir,
+            source_id=source_id,
+            book_title=title,
+            translation_keys=keys,
+            translation_name=tname,
+            citation_style=style,
+        )
         if docs:
             write_jsonl(docs, KNOWLEDGE / "hadith" / out)
             total += len(docs)

@@ -109,14 +109,62 @@ def _confidence_from_grades(grades: list[HadithGrade]) -> ConfidenceLevel:
     return min(levels, key=lambda c: c.rank)
 
 
-def _decode_path(path: str) -> Optional[tuple[str, str, str, str]]:
-    """'/books/al-kafi:1:3:3:2' -> (volume, book_idx, chapter_idx, hadith_idx)."""
+def _decode_segments(path: str) -> list[str]:
+    """'/books/al-kafi:1:3:3:2' -> ['1','3','3','2'] (drops the slug head)."""
     if ":" not in path:
+        return []
+    return path.split(":")[1:]
+
+
+# Nahj al-Balagha's three top-level sections map to its classical citation types.
+_NAHJ_SECTIONS = {"1": "Sermon", "2": "Letter", "3": "Saying"}
+
+
+def _citation_locators(
+    segments: list[str], book_title: str, style: str
+) -> Optional[dict[str, str]]:
+    """Map raw path segments to citation locators for a given book style.
+
+    * ``hierarchical`` (al-Kafi/Faqih/Tahdhib/Istibsar): the first segment is the
+      volume, the last is the hadith number, and any middle segments form the
+      chapter path — this copes with both 4-segment (al-Kafi) and 3-segment
+      (Faqih) layouts.
+    * ``nahj``: sections are Sermon/Letter/Saying; we cite by that type + number
+      and keep the sub-part as the hadith locator.
+    """
+    if not segments:
         return None
-    segs = path.split(":")[1:]  # drop the '/books/<slug>' head
-    if len(segs) < 4:
+    if style == "nahj":
+        section = segments[0]
+        kind = _NAHJ_SECTIONS.get(section, "Part")
+        number = segments[1] if len(segments) > 1 else section
+        part = segments[-1] if len(segments) > 2 else "1"
+        return {
+            "chapter": f"{kind} {number}",
+            "hadith_number": part,
+            "id_suffix": "-".join(segments),
+        }
+    # hierarchical
+    if len(segments) < 2:
         return None
-    return segs[0], segs[1], segs[2], segs[3]
+    volume = segments[0] if len(segments) >= 3 else ""
+    middle = segments[1:-1]
+    chapter = book_title + (f", {':'.join(middle)}" if middle else "")
+    return {
+        "volume": volume,
+        "chapter": chapter,
+        "hadith_number": segments[-1],
+        "id_suffix": "-".join(segments),
+    }
+
+
+def _pick_translation(translations: dict, keys: list[str]) -> tuple[str, str]:
+    """Return (joined_text, key) for the first available candidate key."""
+    for key in keys:
+        parts = translations.get(key)
+        if parts:
+            return _WS.sub(" ", " ".join(parts)).strip(), key
+    return "", ""
 
 
 def _iter_verse_files(book_dir: Path) -> Iterable[Path]:
@@ -135,8 +183,9 @@ def build_hadith_documents(
     *,
     source_id: str,
     book_title: str,
-    translation_key: str = "en.hubeali",
+    translation_keys: Optional[list[str]] = None,
     translation_name: str = "Hubeali (via ThaqalaynData, CC0)",
+    citation_style: str = "hierarchical",
 ) -> list[Document]:
     """Build hadith :class:`Document`s from a ThaqalaynData book directory.
 
@@ -144,8 +193,13 @@ def build_hadith_documents(
     English retrieval); the Arabic matn+isnād is preserved in
     ``citation.arabic_text``, and ``grade``/``grade_source`` carry the real rijāl
     assessment. Confidence is derived conservatively from the grade(s).
+
+    ``translation_keys`` is a candidate list (books use different translators);
+    the first present key wins. ``citation_style`` selects the locator mapping
+    (``hierarchical`` for the Four Books, ``nahj`` for Nahj al-Balāgha).
     """
     book_dir = Path(book_dir)
+    keys = translation_keys or ["en.hubeali"]
     docs: list[Document] = []
     for path in _iter_verse_files(book_dir):
         try:
@@ -163,16 +217,13 @@ def build_hadith_documents(
             ar_parts = text_field or []
         arabic = _WS.sub(" ", " ".join(ar_parts)).strip()
 
-        translations = verse.get("translations", {})
-        en_parts = translations.get(translation_key, [])
-        english = _WS.sub(" ", " ".join(en_parts)).strip()
+        english, _ = _pick_translation(verse.get("translations", {}), keys)
         if not english and not arabic:
             continue
 
-        decoded = _decode_path(verse.get("path", ""))
-        if not decoded:
+        loc = _citation_locators(_decode_segments(verse.get("path", "")), book_title, citation_style)
+        if not loc:
             continue
-        volume, book_idx, chapter_idx, hadith_idx = decoded
 
         grade, grade_source, grades = parse_grading(verse.get("gradings"))
         confidence = _confidence_from_grades(grades)
@@ -180,9 +231,9 @@ def build_hadith_documents(
         citation = Citation(
             source_id=source_id,
             evidence_type=EvidenceType.HADITH,
-            volume=volume,
-            chapter=f"{book_title}, bab {chapter_idx}",
-            hadith_number=hadith_idx,
+            volume=loc.get("volume") or None,
+            chapter=loc.get("chapter"),
+            hadith_number=loc.get("hadith_number"),
             arabic_text=arabic or None,
             translation=english or None,
             translation_source=translation_name if english else None,
@@ -191,7 +242,7 @@ def build_hadith_documents(
         )
         docs.append(
             Document(
-                id=f"{source_id}-{volume}-{book_idx}-{chapter_idx}-{hadith_idx}",
+                id=f"{source_id}-{loc['id_suffix']}",
                 text=english or arabic,
                 evidence_type=EvidenceType.HADITH,
                 citation=citation,

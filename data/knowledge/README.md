@@ -5,11 +5,26 @@ This directory holds the ingested, citable knowledge as newline-delimited JSON
 
 ## What is ingested (Iteration 2 — real corpora)
 
+**Totals: 6236 Qur'an verses + 27,526 hadith across the Four Books and Nahj al-Balāgha.**
+
 | File | Content | Count | Source | Confidence |
 |---|---|---|---|---|
 | `quran/quran.jsonl` | Complete Qur'an — English (Ali Quli Qarai) with canonical Uthmani Arabic in each citation | 6236 verses | [fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api) editions `ara-quranuthmanihaf` + `eng-aliquliqarai` | high |
-| `hadith/al-kafi-tawhid.jsonl` | al-Kāfī, Book of Tawḥīd (Kitāb al-Tawḥīd) | 218 hadith | [narmafraz/ThaqalaynData](https://github.com/narmafraz/ThaqalaynData) (CC0) | per-grade |
-| `hadith/al-kafi-intellect.jsonl` | al-Kāfī, Book of Intellect and Ignorance | 36 hadith | ThaqalaynData (CC0) | per-grade |
+| `hadith/al-kafi-*.jsonl` | Uṣūl al-Kāfī vol. 1 — Books of Tawḥīd (218), Intellect (36), Divine Authority/Ḥujjah (1032), Excellence of Knowledge (177) | 1463 hadith | [narmafraz/ThaqalaynData](https://github.com/narmafraz/ThaqalaynData) (CC0) | per-grade |
+| `hadith/man-la-yahduruhu-al-faqih.jsonl` | Man Lā Yaḥḍuruhu al-Faqīh (complete) | 6382 hadith | ThaqalaynData (CC0) | per-grade |
+| `hadith/tahdhib-al-ahkam.jsonl` | Tahdhīb al-Aḥkām (complete) | 13,201 hadith | ThaqalaynData (CC0) | per-grade |
+| `hadith/al-istibsar.jsonl` | al-Istibṣār (complete) | 4220 hadith | ThaqalaynData (CC0) | per-grade |
+| `hadith/nahj-al-balagha.jsonl` | Nahj al-Balāgha — Sermons, Letters, Sayings (complete) | 2260 units | ThaqalaynData (CC0) | high |
+
+Three of the Four Books (Faqīh, Tahdhīb, Istibṣār) are ingested in full; from
+al-Kāfī, the doctrinal **Uṣūl** (vol. 1) is ingested (its jurisprudential
+**Furūʿ** volumes are a one-command extension via `scripts/ingest.py`). Nahj
+al-Balāgha is cited by Sermon/Letter/Saying number.
+
+The fiqh collections and Nahj are largely **ungraded** in this dataset (marked
+`ungraded`, confidence `medium` — a real, cited narration whose chain
+authenticity is simply not recorded here, never asserted as authentic); al-Kāfī
+carries real gradings (ṣaḥīḥ/ḥasan/muwaththaq/ḍaʿīf/majhūl/mursal).
 
 Every hadith carries its Arabic *matn*+*isnād*, the attributed **Hubeali**
 English translation, and its **rijāl gradings** verbatim (e.g. Allāma

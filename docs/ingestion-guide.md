@@ -13,7 +13,12 @@ environment. Two tested adapters exist:
 | Adapter | Upstream | Output | Notes |
 |---|---|---|---|
 | `adapters/quran.py` | [fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api) | 6236 verses (Arabic Uthmani + Ali Quli Qarai) | one Document/verse, Arabic in citation |
-| `adapters/thaqalayn.py` | [narmafraz/ThaqalaynData](https://github.com/narmafraz/ThaqalaynData) (CC0) | al-Kāfī Tawḥīd + Intellect | carries matn, Hubeali translation, **rijāl gradings** |
+| `adapters/thaqalayn.py` | [narmafraz/ThaqalaynData](https://github.com/narmafraz/ThaqalaynData) (CC0) | Four Books + Nahj (27,526 hadith) | carries matn, attributed translation, **rijāl gradings**; variable-depth paths + Nahj Sermon/Letter/Saying scheme |
+
+The hadith adapter is configured per-book in `scripts/ingest.py` (`HADITH_TARGETS`):
+each entry sets the collection, title, translator candidate keys, output shard,
+and citation style (`hierarchical` for the Four Books, `nahj` for Nahj
+al-Balāgha). Add al-Kāfī's Furūʿ/Rawḍa volumes there to complete al-Kāfī.
 
 ```bash
 # editions/data are fetched from GitHub raw, then ingested:

@@ -23,7 +23,12 @@ def test_corpus_is_substantial():
     quran = [d for d in docs if d.evidence_type is EvidenceType.QURAN]
     hadith = [d for d in docs if d.evidence_type is EvidenceType.HADITH]
     assert len(quran) == 6236  # complete Qur'an
-    assert len(hadith) >= 200  # al-Kafi Books of Tawheed + Intellect
+    assert len(hadith) >= 25000  # Faqih + Tahdhib + Istibsar + Usul al-Kafi + Nahj
+    # every one of the Four Books + Nahj is represented
+    sources = {d.citation.source_id for d in hadith}
+    for expected in ["al-kafi", "man-la-yahduruhu-al-faqih", "tahdhib-al-ahkam",
+                     "al-istibsar", "nahj-al-balagha"]:
+        assert expected in sources
 
 
 def test_every_citation_is_complete_and_registered():

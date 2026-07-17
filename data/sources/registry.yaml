@@ -114,9 +114,11 @@ sources:
     title: "Man Lā Yaḥḍuruhu al-Faqīh"
     kind: hadith
     author: "Shaykh al-Saduq (Ibn Babawayh al-Qummi)"
+    translator: "Bab ul Qaim Publications (English, as ingested)"
     language: ar
     url: "https://thaqalayn.net/"
     confidence: high
+    notes: "Ingested in full from CC0 ThaqalaynData. Grade individual narrations."
 
   - id: tahdhib-al-ahkam
     title: "Tahdhīb al-Aḥkām"
@@ -125,6 +127,7 @@ sources:
     language: ar
     url: "https://thaqalayn.net/"
     confidence: high
+    notes: "Ingested from CC0 ThaqalaynData. Fiqh-hadith; grade individual narrations."
 
   - id: al-istibsar
     title: "al-Istibṣār"
@@ -133,6 +136,7 @@ sources:
     language: ar
     url: "https://thaqalayn.net/"
     confidence: high
+    notes: "Ingested from CC0 ThaqalaynData. Fiqh-hadith; grade individual narrations."
 
   # ---- Hadith: later comprehensive & secondary collections ----
   - id: bihar-al-anwar
@@ -192,10 +196,11 @@ sources:
     title: "Nahj al-Balāgha"
     kind: hadith
     author: "Compiled by al-Sharif al-Radi (words of Imam Ali ibn Abi Talib)"
+    translator: "Sayed Ali Raza (English, as ingested)"
     language: ar
     url: "https://al-islam.org/nahjul-balagha-part-1-sermons"
     confidence: high
-    notes: "Standard numbering by sermon (khutba) / letter (kitab) / saying (hikma)."
+    notes: "Ingested in full from CC0 ThaqalaynData. Cited by sermon (khutba) / letter (kitab) / saying (hikma) number."
 
   - id: sahifa-sajjadiyya
     title: "al-Ṣaḥīfa al-Sajjādiyya"

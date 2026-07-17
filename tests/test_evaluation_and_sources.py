@@ -38,9 +38,16 @@ def test_evaluate_over_gold_set():
 
 
 def test_research_loop_runs_and_recommends(tmp_path):
+    # Use a small tmp knowledge dir so the loop is fast and deterministic
+    # (indexing the full ~34k-doc corpus is an integration concern, not a unit one).
+    kdir = tmp_path / "knowledge"
+    kdir.mkdir()
+    (kdir / "sample.jsonl").write_text(
+        "\n".join(d.to_json_line() for d in sample_corpus()), encoding="utf-8"
+    )
     log = tmp_path / "iters.jsonl"
     config = LoopConfig(
-        knowledge_dir=DATA / "knowledge",
+        knowledge_dir=kdir,
         registry_source_ids=load_registry_ids(DATA / "sources" / "registry.yaml"),
         gold=[GoldQuery("purification of the People of the House", {"quran-33-33"})],
         log_path=log,
