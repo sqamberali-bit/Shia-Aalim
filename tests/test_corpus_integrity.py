@@ -7,15 +7,30 @@ fabricated placeholders remain, and hadith gradings are carried through honestly
 
 from collections import Counter
 
-from conftest import DATA
+import pytest
+from conftest import DATA, full_corpus_available
 
 from shia_aalim.ingestion.loaders import iter_knowledge_dir
 from shia_aalim.models import ConfidenceLevel, EvidenceType
 from shia_aalim.sources import load_registry_ids
 
+# The full corpus is external (out-of-git). Skip these integrity checks unless it
+# has been built/fetched locally — the committed sample is exercised separately.
+pytestmark = pytest.mark.skipif(
+    not full_corpus_available(),
+    reason="full corpus not present; build with scripts/ingest.py or "
+    "fetch with scripts/fetch_data.py --from-bundle",
+)
+
 
 def _corpus():
-    return list(iter_knowledge_dir(DATA / "knowledge"))
+    # Exclude the committed sample/ (a subset) so it isn't double-counted.
+    docs = []
+    for sub in ("quran", "hadith", "prose"):
+        d = DATA / "knowledge" / sub
+        if d.exists():
+            docs += list(iter_knowledge_dir(d))
+    return docs
 
 
 def test_corpus_is_substantial():

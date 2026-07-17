@@ -31,12 +31,25 @@ open system that advertises verifiable lecture/khuṭba preparation**. Shia-Aali
 targets exactly that gap, with scholarly integrity as the first requirement, not
 an afterthought.
 
-## Quick start (no dependencies required)
+## The corpus is external
 
-The core runs on the Python standard library alone.
+The built knowledge base (~124 MB, 57k docs) is **derived data and lives outside
+git** — see [`docs/data-management.md`](docs/data-management.md). A fresh checkout
+ships a small **sample** so everything runs; get the full corpus by rebuilding
+from sources (`scripts/ingest.py`) or fetching a bundle:
 
 ```bash
-# Answer a question from the seed knowledge base (evidence + citations only)
+python scripts/fetch_data.py --status                  # what's present vs the manifest
+python scripts/fetch_data.py --from-bundle <url|path>  # fetch + verify + extract a snapshot
+```
+
+## Quick start (no dependencies required)
+
+The core runs on the Python standard library alone. These work on the committed
+sample out of the box:
+
+```bash
+# Answer a question from the knowledge base (evidence + citations only)
 python scripts/demo.py "purification of the Ahl al-Bayt"
 
 # Draft a structured lecture outline
@@ -99,12 +112,13 @@ docs/                        Architecture, validation, ingestion, citation, land
 src/shia_aalim/              The package (model, ingestion, retrieval, grounding, generation, eval, loop)
 data/schema/                 JSON Schemas for documents, citations, sources
 data/sources/registry.yaml   Registered, citable sources with confidence
-src/shia_aalim/ingestion/adapters/  Verified-source ingestion adapters (Qur'an, ThaqalaynData hadith)
-data/knowledge/              Ingested knowledge (.jsonl) — Qur'an + al-Kāfī, with citations
+data/manifest.yaml           Corpus manifest — what's in the (external) corpus + how to rebuild/fetch
+src/shia_aalim/ingestion/adapters/  Verified-source adapters (Qur'an, ThaqalaynData hadith, Shiavault prose)
+data/knowledge/              Built corpus (external/git-ignored) + a small committed sample/
 prompts/                     System prompts encoding the charter for any LLM synthesizer
 templates/                   Lecture template
-scripts/                     demo.py, run_research_loop.py, ingest.py
-tests/                       Test suite (45 tests, stdlib-only) + fixtures
+scripts/                     demo.py, run_research_loop.py, ingest.py, fetch_data.py
+tests/                       Test suite (53 tests, stdlib-only) + fixtures
 ```
 
 ## Scholarly integrity & scope

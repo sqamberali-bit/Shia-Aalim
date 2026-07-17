@@ -24,6 +24,15 @@ data/cache/
 embeddings/*.bin
 *.faiss
 
+# --- External-data corpus (see docs/data-management.md) ---
+# The built knowledge base is derived data and lives OUTSIDE git: rebuild it with
+# scripts/ingest.py or fetch a bundle with scripts/fetch_data.py. Only the small
+# committed sample (for demos/tests) is kept in-repo.
+data/knowledge/**/*.jsonl
+!data/knowledge/sample/*.jsonl
+# Local corpus bundles
+data/bundles/
+
 # OS
 .DS_Store
 Thumbs.db

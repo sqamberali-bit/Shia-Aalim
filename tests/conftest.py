@@ -10,6 +10,20 @@ DATA = ROOT / "data"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
+def full_corpus_available() -> bool:
+    """True only when the full (external) corpus has been built/fetched locally.
+
+    The built corpus lives outside git (see docs/data-management.md), so on a
+    bare checkout only the small committed sample is present. Corpus-integrity
+    tests skip unless the real corpus is here.
+    """
+    quran = DATA / "knowledge" / "quran" / "quran.jsonl"
+    try:
+        return quran.exists() and sum(1 for _ in quran.open("rb")) >= 6000
+    except OSError:
+        return False
+
+
 def sample_corpus():
     """A small, topic-distinct corpus for deterministic retrieval/grounding tests.
 

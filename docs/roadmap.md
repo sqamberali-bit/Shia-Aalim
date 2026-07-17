@@ -40,8 +40,13 @@ the research loop updates.
       al-Irshād, al-Ṣaḥīfa al-Sajjādiyya = 4862 passages, chapter-level
       citations, medium confidence. **Corpus now 57,708 docs across 16 works.**
 - [x] Real-corpus integrity tests (every citation complete + registered; grades honest)
-- [ ] Upload-needed (not on GitHub): Biḥār al-Anwār, Wasāʾil al-Shīʿa, Mustadrak
-      al-Wasāʾil, Mafātīḥ al-Jinān; enrich Faqīh/Tahdhīb/Istibṣār with Kitāb titles
+- [x] External-data infrastructure — the built corpus now lives outside git
+      (`data/manifest.yaml` + `scripts/fetch_data.py` for status/bundle/fetch;
+      small committed sample; integrity tests skip on bare checkouts). See
+      [`docs/data-management.md`](data-management.md). Chosen over Git LFS
+      because the corpus is derived and outgrows the LFS free tier.
+- [ ] Upload-needed (not on GitHub): Biḥār al-Anwār (101 vols), Wasāʾil al-Shīʿa,
+      Mustadrak al-Wasāʾil, Mafātīḥ al-Jinān; enrich Faqīh/Tahdhīb/Istibṣār with Kitāb titles
 - [ ] Swap in a semantic embedder (BGE-M3) behind `EmbeddingProvider`; benchmark
       vs the hashing baseline (measured recall@5 ≈ 0.40 on the current gold set —
       the loop already recommends this upgrade)

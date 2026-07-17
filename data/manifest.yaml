@@ -1,0 +1,130 @@
+# -----------------------------------------------------------------------------
+# Corpus manifest — the source of truth for the (external) knowledge base.
+#
+# The built corpus (data/knowledge/**/*.jsonl) is DERIVED data and is NOT stored
+# in git (see docs/data-management.md). This manifest records what the corpus
+# contains, where each work comes from, and how to reconstruct it:
+#
+#   * rebuild from GitHub sources:  python scripts/ingest.py  (see per-work `build`)
+#   * fetch a prebuilt bundle:      python scripts/fetch_data.py --from-bundle <url|path>
+#   * check what you have locally:   python scripts/fetch_data.py --status
+#
+# `expected_docs` lets --status flag drift. The `bundle` block is filled in when
+# a corpus snapshot is published (e.g. as a GitHub Release asset).
+# -----------------------------------------------------------------------------
+
+version: 1
+total_expected_docs: 57708
+
+# A published snapshot of the full built corpus. Leave url/sha256 null until a
+# bundle is produced with `scripts/fetch_data.py --make-bundle` and hosted.
+bundle:
+  url: null
+  sha256: null
+  size_bytes: null
+  format: "tar.gz of data/knowledge/ (excluding sample/)"
+
+# Reachable ingestion sources (GitHub only in the hosted environment).
+sources:
+  quran-api:
+    repo: https://github.com/fawazahmed0/quran-api
+    license: open dataset
+  thaqalayn-data:
+    repo: https://github.com/narmafraz/ThaqalaynData
+    license: CC0-1.0
+  shiavault:
+    repo: https://github.com/shiavault/shiavault-library
+    license: per-book (al-islam.org mirror)
+
+works:
+  # ---- Qur'an ----
+  - id: quran
+    tier: quran
+    expected_docs: 6236
+    output: data/knowledge/quran/quran.jsonl
+    build: {source: quran-api, adapter: quran}
+
+  # ---- Hadith (structured, graded where recorded) ----
+  - id: al-kafi
+    tier: hadith
+    expected_docs: 16267
+    output: data/knowledge/hadith/al-kafi-*.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: tahdhib-al-ahkam
+    tier: hadith
+    expected_docs: 13201
+    output: data/knowledge/hadith/tahdhib-al-ahkam.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: man-la-yahduruhu-al-faqih
+    tier: hadith
+    expected_docs: 6382
+    output: data/knowledge/hadith/man-la-yahduruhu-al-faqih.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: al-istibsar
+    tier: hadith
+    expected_docs: 4220
+    output: data/knowledge/hadith/al-istibsar.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: nahj-al-balagha
+    tier: hadith
+    expected_docs: 2260
+    output: data/knowledge/hadith/nahj-al-balagha.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: al-khisal
+    tier: hadith
+    expected_docs: 1282
+    output: data/knowledge/hadith/al-khisal.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: al-amali
+    tier: hadith
+    expected_docs: 1469
+    output: data/knowledge/hadith/al-amali-*.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: uyun-akhbar-al-rida
+    tier: hadith
+    expected_docs: 954
+    output: data/knowledge/hadith/uyun-akhbar-al-rida.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: al-tawhid-saduq
+    tier: hadith
+    expected_docs: 575
+    output: data/knowledge/hadith/al-tawhid-saduq.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+
+  # ---- Prose (translations / secondary works, medium confidence) ----
+  - id: al-mizan
+    tier: prose
+    expected_docs: 1837
+    output: data/knowledge/prose/al-mizan-v*.jsonl
+    build: {source: shiavault, adapter: shiavault}
+    note: "Partial English al-Mizan (vols 1,2,4,7,8 only on the mirror)."
+  - id: the-message-subhani
+    tier: prose
+    expected_docs: 1197
+    output: data/knowledge/prose/seerah-the-message.jsonl
+    build: {source: shiavault, adapter: shiavault}
+  - id: maqtal-al-husayn
+    tier: prose
+    expected_docs: 878
+    output: data/knowledge/prose/maqtal-al-husayn.jsonl
+    build: {source: shiavault, adapter: shiavault}
+  - id: sahifa-sajjadiyya
+    tier: prose
+    expected_docs: 582
+    output: data/knowledge/prose/sahifa-sajjadiyya.jsonl
+    build: {source: shiavault, adapter: shiavault}
+  - id: kitab-al-irshad
+    tier: prose
+    expected_docs: 368
+    output: data/knowledge/prose/kitab-al-irshad.jsonl
+    build: {source: shiavault, adapter: shiavault}
+
+  # ---- Upload-needed works (not reachable on GitHub) ----
+  # Provide the source files (JSON/EPUB/PDF), ingest locally, then publish a
+  # bundle. These carry no `build.source` because they cannot be auto-fetched.
+  - id: bihar-al-anwar
+    tier: hadith
+    expected_docs: null
+    output: data/knowledge/hadith/bihar-al-anwar-*.jsonl
+    build: {source: upload, adapter: tbd}
+    note: "Bihar al-Anwar (101 vols). Not on GitHub; upload source files (hubeali PDF/EPUB) to ingest."
