@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shia-aalim/schema/citation.schema.json",
+  "title": "Citation",
+  "description": "A precise, independently-verifiable pointer into a registered Source. Required locators depend on evidence_type (see conditional rules).",
+  "type": "object",
+  "required": ["source_id", "evidence_type"],
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "description": "Must match an id in data/sources/registry.yaml. No invented sources."
+    },
+    "evidence_type": {
+      "type": "string",
+      "enum": ["quran", "tafsir", "hadith", "historical", "scholarly_opinion", "biographical", "linguistic"]
+    },
+    "surah": { "type": ["integer", "null"], "minimum": 1, "maximum": 114 },
+    "ayah": { "type": ["integer", "null"], "minimum": 1 },
+    "volume": { "type": ["string", "null"] },
+    "page": { "type": ["string", "null"] },
+    "hadith_number": { "type": ["string", "null"] },
+    "chapter": { "type": ["string", "null"] },
+    "arabic_text": { "type": ["string", "null"] },
+    "translation": { "type": ["string", "null"] },
+    "translation_source": { "type": ["string", "null"] },
+    "grade": {
+      "type": "string",
+      "enum": ["sahih", "hasan", "muwaththaq", "daif", "majhul", "mursal", "ungraded"],
+      "default": "ungraded",
+      "description": "Must come from an attributable rijal source (grade_source); never derived by the system."
+    },
+    "grade_source": { "type": ["string", "null"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "evidence_type": { "const": "quran" } } },
+      "then": { "required": ["surah", "ayah"] }
+    },
+    {
+      "if": { "properties": { "evidence_type": { "const": "hadith" } } },
+      "then": {
+        "anyOf": [
+          { "required": ["hadith_number"] },
+          { "required": ["page"] },
+          { "required": ["volume"] }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+# Copy to config/settings.yaml (git-ignored) and adjust. Provider API keys must
+# come from environment variables, NOT this file — never commit secrets.
+
+knowledge:
+  dir: data/knowledge
+  registry: data/sources/registry.yaml
+
+retrieval:
+  embedding:
+    provider: hashing        # hashing | bge | e5 | jina | openai
+    model: null              # e.g. BAAI/bge-m3 when provider != hashing
+    dim: 512                 # used by the hashing baseline
+  vector_store:
+    backend: memory          # memory | qdrant | chroma | weaviate
+    url: null                # e.g. http://localhost:6333 for qdrant
+  k: 6
+  oversample: 4
+  min_confidence: low        # high | medium | low | unverified
+
+grounding:
+  min_similarity: 0.15       # similarity floor below which the system refuses to answer
+  min_overlap: 0.25          # claim/evidence lexical-overlap threshold
+
+generation:
+  synthesizer:
+    provider: none           # none (extractive) | claude | openai | local
+    model: null              # e.g. claude-... ; read the key from an env var
+  answer_system_prompt: prompts/answer_system.md
+  lecture_system_prompt: prompts/lecture_system.md
+
+evaluation:
+  gold_set: null             # path to a labelled gold-set file (JSONL)
+
+loop:
+  log_path: research/logs/iterations.jsonl

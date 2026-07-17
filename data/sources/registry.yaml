@@ -1,0 +1,212 @@
+# -----------------------------------------------------------------------------
+# Authoritative source registry for Shia-Aalim.
+#
+# This file lists the *bibliographic* sources the system is permitted to cite.
+# Every `citation.source_id` in the knowledge base MUST resolve to an `id` here;
+# the grounding layer rejects citations to unregistered sources (guards against
+# invented books).
+#
+# `confidence` here reflects the standing of the WORK within the Twelver
+# tradition and is a ceiling — an individual narration inside a highly-regarded
+# collection may still be graded weak (da'if) at the citation level. Assign it
+# via docs/source-validation-framework.md, not ad hoc.
+#
+# The entries below are bibliographic facts (title/author/kind). Access URLs and
+# licensing are drawn from docs/landscape-existing-solutions.md (verified
+# 2026-07). Text CONTENT is NOT stored here — it is ingested separately with
+# per-passage citations.
+# -----------------------------------------------------------------------------
+
+sources:
+  # ---- Qur'an ----
+  - id: quran
+    title: "The Holy Qur'an"
+    kind: quran
+    author: null
+    language: ar
+    url: "https://tanzil.net/"
+    license: "Text: public; Tanzil distribution requires attribution + backlink"
+    confidence: high
+    notes: "Canonical text. Ingest verbatim from Tanzil (Uthmani) for exact orthography."
+
+  - id: tanzil-shakir
+    title: "Qur'an — English translation (M. H. Shakir)"
+    kind: quran
+    translator: "Mohammedali Habib Shakir"
+    language: en
+    url: "https://tanzil.net/trans/"
+    license: "Distributed by Tanzil; attribution required"
+    confidence: high
+    notes: "Widely used English rendering; verify wording against the Tanzil canonical file."
+
+  # ---- Tafsir ----
+  - id: al-mizan
+    title: "Tafsir al-Mizan (al-Mīzān fī Tafsīr al-Qurʾān)"
+    kind: tafsir
+    author: "Sayyid Muhammad Husayn al-Tabatabai"
+    language: ar
+    url: "https://almizan.org/"
+    confidence: high
+    notes: "Major 20th-c. Twelver tafsir. English/Arabic editions on al-islam.org."
+
+  - id: majma-al-bayan
+    title: "Majmaʿ al-Bayān fī Tafsīr al-Qurʾān"
+    kind: tafsir
+    author: "al-Fadl ibn al-Hasan al-Tabrisi (al-Tabarsi)"
+    language: ar
+    confidence: high
+
+  - id: tafsir-nemuneh
+    title: "Tafsir Nemuneh (Amthal)"
+    kind: tafsir
+    author: "Ayatollah Nasir Makarem Shirazi (team)"
+    language: fa
+    confidence: high
+
+  - id: tafsir-al-qummi
+    title: "Tafsīr al-Qummī"
+    kind: tafsir
+    author: "Ali ibn Ibrahim al-Qummi"
+    language: ar
+    confidence: medium
+    notes: "Early tafsir; some transmitted material is debated — grade at passage level."
+
+  - id: tafsir-al-burhan
+    title: "al-Burhān fī Tafsīr al-Qurʾān"
+    kind: tafsir
+    author: "Sayyid Hashim al-Bahrani"
+    language: ar
+    confidence: medium
+    notes: "Narration-based tafsir; individual reports require rijal evaluation."
+
+  # ---- Hadith: the Four Books (al-Kutub al-Arbaʿa) ----
+  - id: al-kafi
+    title: "al-Kāfī"
+    kind: hadith
+    author: "Muhammad ibn Yaʿqub al-Kulayni"
+    language: ar
+    url: "https://thaqalayn.net/"
+    license: "Machine-readable via ThaqalaynAPI (GPL-3.0)"
+    confidence: high
+    notes: "Foremost of the Four Books. Grade each narration; not every report is sahih."
+
+  - id: man-la-yahduruhu-al-faqih
+    title: "Man Lā Yaḥḍuruhu al-Faqīh"
+    kind: hadith
+    author: "Shaykh al-Saduq (Ibn Babawayh al-Qummi)"
+    language: ar
+    url: "https://thaqalayn.net/"
+    confidence: high
+
+  - id: tahdhib-al-ahkam
+    title: "Tahdhīb al-Aḥkām"
+    kind: hadith
+    author: "Shaykh al-Tusi (Muhammad ibn al-Hasan)"
+    language: ar
+    url: "https://thaqalayn.net/"
+    confidence: high
+
+  - id: al-istibsar
+    title: "al-Istibṣār"
+    kind: hadith
+    author: "Shaykh al-Tusi (Muhammad ibn al-Hasan)"
+    language: ar
+    url: "https://thaqalayn.net/"
+    confidence: high
+
+  # ---- Hadith: later comprehensive & secondary collections ----
+  - id: bihar-al-anwar
+    title: "Biḥār al-Anwār"
+    kind: hadith
+    author: "Allama Muhammad Baqir al-Majlisi"
+    language: ar
+    url: "https://hubeali.com/"
+    confidence: medium
+    notes: "Encyclopaedic compilation; includes strong and weak reports — grade per narration."
+
+  - id: wasail-al-shia
+    title: "Wasāʾil al-Shīʿa"
+    kind: hadith
+    author: "Shaykh al-Hurr al-Amili"
+    language: ar
+    confidence: high
+    notes: "Major fiqh-hadith collection organised by legal topic."
+
+  - id: mustadrak-al-wasail
+    title: "Mustadrak al-Wasāʾil"
+    kind: hadith
+    author: "Mirza Husayn al-Nuri al-Tabarsi"
+    language: ar
+    confidence: medium
+
+  - id: uyun-akhbar-al-rida
+    title: "ʿUyūn Akhbār al-Riḍā"
+    kind: hadith
+    author: "Shaykh al-Saduq"
+    language: ar
+    confidence: medium
+
+  - id: al-amali-saduq
+    title: "al-Amālī (Shaykh al-Saduq)"
+    kind: hadith
+    author: "Shaykh al-Saduq"
+    language: ar
+    confidence: medium
+
+  - id: al-khisal
+    title: "al-Khiṣāl"
+    kind: hadith
+    author: "Shaykh al-Saduq"
+    language: ar
+    confidence: medium
+
+  - id: al-tawhid-saduq
+    title: "al-Tawḥīd (Shaykh al-Saduq)"
+    kind: hadith
+    author: "Shaykh al-Saduq"
+    language: ar
+    confidence: medium
+
+  # ---- Classical primary sources ----
+  - id: nahj-al-balagha
+    title: "Nahj al-Balāgha"
+    kind: hadith
+    author: "Compiled by al-Sharif al-Radi (words of Imam Ali ibn Abi Talib)"
+    language: ar
+    url: "https://al-islam.org/nahjul-balagha-part-1-sermons"
+    confidence: high
+    notes: "Standard numbering by sermon (khutba) / letter (kitab) / saying (hikma)."
+
+  - id: sahifa-sajjadiyya
+    title: "al-Ṣaḥīfa al-Sajjādiyya"
+    kind: hadith
+    author: "Imam Ali ibn al-Husayn Zayn al-Abidin (al-Sajjad)"
+    language: ar
+    url: "https://al-islam.org/sahifa-sajjadiyya"
+    confidence: high
+    notes: "Supplications numbered; cite by supplication number."
+
+  - id: mafatih-al-jinan
+    title: "Mafātīḥ al-Jinān"
+    kind: scholarly_opinion
+    author: "Shaykh Abbas al-Qummi"
+    language: ar
+    confidence: high
+    notes: "Compilation of du'a/ziyarat; a devotional manual, cite compiler + section."
+
+  # ---- Scholarly works (representative; expand continuously) ----
+  - id: mutahhari-works
+    title: "Collected Works of Murtada Mutahhari"
+    kind: scholarly_opinion
+    author: "Shahid Murtada Mutahhari"
+    language: fa
+    confidence: high
+
+  - id: sistani-rulings
+    title: "Rulings & works of Ayatollah al-Sistani"
+    kind: scholarly_opinion
+    author: "Ayatollah Sayyid Ali al-Sistani"
+    language: ar
+    url: "https://www.sistani.org/"
+    confidence: high
+    notes: "For taqlid-level fiqh cite the official istifta/ruling, not paraphrase."

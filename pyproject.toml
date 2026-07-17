@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shia-aalim"
+version = "0.1.0"
+description = "A research-grade, evidence-first Twelver (Ithna Ashari) Shia Islamic research and lecture assistant."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Shia-Aalim contributors" }]
+keywords = ["shia", "islam", "twelver", "rag", "research", "hadith", "quran", "tafsir"]
+
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+ingest = ["pypdf>=4.0", "ebooklib>=0.18", "beautifulsoup4>=4.12", "lxml>=5.0"]
+embeddings = ["sentence-transformers>=2.7"]
+vectorstores = ["qdrant-client>=1.9"]
+llm = ["anthropic>=0.40"]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

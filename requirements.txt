@@ -1,0 +1,37 @@
+# ---------------------------------------------------------------------------
+# Shia-Aalim runtime dependencies
+#
+# The CORE of this project runs on the Python standard library ONLY, so the
+# knowledge model, source-validation, grounding, evaluation and the reference
+# retrieval pipeline all work (and are tested) with zero third-party installs.
+#
+# The packages below are OPTIONAL and pluggable. Install only the ones you need
+# for the providers you actually wire up (see docs/architecture.md). They are
+# intentionally left UNPINNED-by-default and commented so `pip install -r` on a
+# minimal box never fails; uncomment + pin the ones you use.
+# ---------------------------------------------------------------------------
+
+# --- Config / data ---
+PyYAML>=6.0
+
+# --- Optional: document ingestion ---
+# pypdf>=4.0            # PDF text extraction
+# ebooklib>=0.18        # EPUB
+# beautifulsoup4>=4.12  # HTML/XML parsing
+# lxml>=5.0
+
+# --- Optional: embeddings ---
+# sentence-transformers>=2.7   # BGE / E5 / Nomic local embeddings
+# FlagEmbedding>=1.2           # BGE family
+
+# --- Optional: vector stores ---
+# qdrant-client>=1.9
+# chromadb>=0.5
+# weaviate-client>=4.6
+
+# --- Optional: LLM providers ---
+# anthropic>=0.40      # Claude
+# openai>=1.30         # GPT / OpenAI-compatible endpoints
+
+# --- Dev / test ---
+# pytest>=8.0

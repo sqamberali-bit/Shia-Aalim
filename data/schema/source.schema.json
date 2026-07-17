@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shia-aalim/schema/source.schema.json",
+  "title": "Source",
+  "description": "A bibliographic source registered in data/sources/registry.yaml.",
+  "type": "object",
+  "required": ["id", "title", "kind", "confidence"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "description": "Stable slug used by citations." },
+    "title": { "type": "string" },
+    "kind": {
+      "type": "string",
+      "enum": ["quran", "tafsir", "hadith", "historical", "scholarly_opinion", "biographical", "linguistic"]
+    },
+    "author": { "type": ["string", "null"] },
+    "translator": { "type": ["string", "null"] },
+    "publisher": { "type": ["string", "null"] },
+    "language": { "type": "string", "default": "ar" },
+    "url": { "type": ["string", "null"] },
+    "license": { "type": ["string", "null"] },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low", "unverified"]
+    },
+    "notes": { "type": ["string", "null"] }
+  }
+}

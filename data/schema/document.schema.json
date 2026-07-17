@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shia-aalim/schema/document.schema.json",
+  "title": "KnowledgeDocument",
+  "description": "A retrievable unit of text with attached, verifiable provenance. One JSON object per line in a .jsonl knowledge file.",
+  "type": "object",
+  "required": ["text", "evidence_type", "citation"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable id. If omitted, a content hash is assigned at load time."
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The passage to index and (in extractive mode) quote verbatim."
+    },
+    "evidence_type": {
+      "type": "string",
+      "enum": ["quran", "tafsir", "hadith", "historical", "scholarly_opinion", "biographical", "linguistic"]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low", "unverified"],
+      "default": "unverified",
+      "description": "Assigned by the source-validation framework, never guessed."
+    },
+    "view_status": {
+      "type": ["string", "null"],
+      "enum": ["consensus", "majority", "minority", "disputed", "popular_unverified", null]
+    },
+    "language": { "type": "string", "default": "ar" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "citation": { "$ref": "citation.schema.json" }
+  }
+}
