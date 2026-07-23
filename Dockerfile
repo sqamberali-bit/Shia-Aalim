@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir -e ".[web]"
 # (~122k docs incl. Biḥār 101 vols + al-Mīzān 40 vols; needs ~2–4 GB RAM).
 #   • Hugging Face Spaces (no build args): change the default below to "full".
 #   • Render / Cloud Run: set the CORPUS build arg to "full" in the dashboard.
-ARG CORPUS=public
+ARG CORPUS=full
 RUN if [ "$CORPUS" = "full" ]; then \
         bash scripts/fetch_full_corpus.sh; \
     else \
