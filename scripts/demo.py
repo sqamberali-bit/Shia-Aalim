@@ -38,13 +38,14 @@ def main() -> int:
     print(f"Loaded {len(docs)} documents from the knowledge base.\n")
     retriever = build_index(docs)
 
+    synthesizer = make_synthesizer(args.synthesize)
+
     if args.lecture:
-        lecture = LectureGenerator(retriever).generate(args.query)
+        lecture = LectureGenerator(retriever, synthesizer=synthesizer).generate(args.query)
         print(lecture.to_markdown())
         return 0
 
     known = load_registry_ids(ROOT / "data" / "sources" / "registry.yaml")
-    synthesizer = make_synthesizer(args.synthesize)
     gen = AnswerGenerator(retriever, synthesizer=synthesizer, known_source_ids=known)
     answer = gen.answer(args.query, k=args.k)
     print(gen.format_markdown(answer))

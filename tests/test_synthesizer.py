@@ -111,3 +111,42 @@ def test_answer_survives_synthesizer_exception():
     ans = _gen(Broken()).answer("purification of the People of the House", k=3)
     assert ans.summary is None
     assert ans.claims  # extractive evidence still returned
+
+
+# ---- Lecture narrative synthesis ----
+
+def _lecture(synth):
+    from shia_aalim.generation.lecture import LectureGenerator
+    return LectureGenerator(build_index(sample_corpus()), synthesizer=synth).generate(
+        "purification of the People of the House"
+    )
+
+
+def test_lecture_without_synthesizer_keeps_lecturer_notes():
+    lec = _lecture(None)
+    es = next(s for s in lec.sections if s.title == "Executive Summary")
+    assert not es.synthesized and es.note
+
+
+def test_lecture_synthesizes_grounded_narrative_sections():
+    lec = _lecture(MockSynthesizer())
+    grounded = ["Executive Summary", "Introduction", "Practical Lessons",
+                "Common Misconceptions", "Conclusion"]
+    for title in grounded:
+        s = next(x for x in lec.sections if x.title == title)
+        assert s.synthesized and s.body and not s.note
+    # Reflection Points is never auto-written (open questions, not grounded claims)
+    refl = next(s for s in lec.sections if s.title == "Reflection Points")
+    assert not refl.synthesized and refl.note
+    assert "Synthesized" in lec.to_markdown()
+
+
+def test_lecture_withholds_ungrounded_synthesis():
+    class Hallucinator:
+        def synthesize(self, q, ev):
+            return "Aliens have colonised the surface of Mars this week."
+
+    lec = _lecture(Hallucinator())
+    es = next(s for s in lec.sections if s.title == "Executive Summary")
+    assert not es.synthesized
+    assert "withheld" in es.note.lower()

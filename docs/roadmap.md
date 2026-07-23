@@ -77,9 +77,12 @@ the research loop updates.
       (`verify_synthesis`): invented citations, wrong attribution, and
       uncited/hallucinated sentences are rejected and the prose withheld in
       favour of the extractive cited evidence. `demo.py --synthesize`.
+- [x] Grounded lecture synthesis — the narrative sections (Executive Summary,
+      Introduction, Practical Lessons, Common Misconceptions, Conclusion) are
+      auto-written from a pooled evidence set and verified; ungrounded prose is
+      withheld back to the lecturer prompt. Reflection Points stays a human task.
 - [ ] Add LLM-based entailment to complement the lexical grounding gate
 - [ ] Query decomposition for multi-part questions
-- [ ] Full lecture generation with sourced tafsīr/hadith/history sections
 - [ ] Human-in-the-loop review UI for confidence promotion
 
 ## Iteration 4 — Depth & rigour
