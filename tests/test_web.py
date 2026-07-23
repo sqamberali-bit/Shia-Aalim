@@ -2,10 +2,7 @@ import pytest
 
 from conftest import DATA, sample_corpus
 
-from shia_aalim.research_loop import build_index
 from shia_aalim.sources import load_registry_ids
-from shia_aalim.generation.answer import AnswerGenerator
-from shia_aalim.generation.lecture import LectureGenerator
 from shia_aalim import web
 
 # The web layer is an optional extra; skip cleanly where FastAPI isn't installed.
@@ -14,17 +11,18 @@ TestClient = pytest.importorskip("fastapi.testclient").TestClient
 REGISTRY = DATA / "sources" / "registry.yaml"
 
 
-def _sample_stack() -> web.Stack:
-    """Build a Stack over the tiny in-memory sample corpus (no disk load)."""
+def _sample_stack(embedders=("tfidf",)) -> web.Stack:
+    """Build a Stack over the tiny in-memory sample corpus (no disk load).
+
+    The default embedder's index is built eagerly (mirroring build_stack); any
+    extra embedders build lazily on first query, exactly as in production.
+    """
     docs = sample_corpus()
-    retriever = build_index(docs)
     known = load_registry_ids(REGISTRY)
-    return web.Stack(
-        answers=AnswerGenerator(retriever, known_source_ids=known),
-        lectures=LectureGenerator(retriever),
-        n_documents=len(docs),
-        config=web.AppConfig(),
-    )
+    config = web.AppConfig(embedders=list(embedders))
+    stack = web.Stack(docs, config, known)
+    stack.engine(config.default_embedder)
+    return stack
 
 
 @pytest.fixture
@@ -45,7 +43,10 @@ def test_status_reports_corpus(client):
     assert r.status_code == 200
     body = r.json()
     assert body["documents"] == len(sample_corpus())
-    assert body["embedder"] == "tfidf"
+    assert body["default_embedder"] == "tfidf"
+    specs = {e["spec"]: e for e in body["embedders"]}
+    assert "tfidf" in specs and specs["tfidf"]["state"] == "ready"
+    assert specs["tfidf"]["default"] is True
 
 
 def test_answer_returns_cited_claims(client):
@@ -100,3 +101,32 @@ def test_lecture_requires_topic(client):
     r = client.post("/api/lecture", json={"topic": ""})
     assert r.status_code == 400
     assert r.json()["error"]
+
+
+def test_answer_payload_carries_markdown_and_embedder(client):
+    r = client.post("/api/answer", json={"question": "intellect", "k": 2})
+    body = r.json()
+    assert body["markdown"].lstrip().startswith("## ")
+    assert body["embedder"] == "tfidf"
+
+
+def test_unknown_embedder_is_rejected_gracefully(client):
+    # an embedder that isn't enabled must 503 with a helpful message, not crash
+    r = client.post("/api/answer", json={"question": "intellect", "embedder": "st:BAAI/bge-m3"})
+    assert r.status_code == 503
+    assert "not available" in r.json()["error"]
+
+
+def test_second_embedder_listed_and_builds_lazily():
+    # offer tfidf + hashing; hashing is 'lazy' until first queried, then 'ready'
+    app = web.create_app(stack=_sample_stack(embedders=("tfidf", "hashing")))
+    client = TestClient(app)
+    specs = {e["spec"]: e for e in client.get("/api/status").json()["embedders"]}
+    assert specs["hashing"]["state"] == "lazy"
+
+    r = client.post("/api/answer", json={"question": "intellect", "embedder": "hashing"})
+    assert r.status_code == 200
+    assert r.json()["embedder"] == "hashing"
+
+    specs = {e["spec"]: e for e in client.get("/api/status").json()["embedders"]}
+    assert specs["hashing"]["state"] == "ready"

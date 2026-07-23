@@ -18,13 +18,39 @@ pip install -e ".[web]"          # fastapi + uvicorn (optional extra)
 python -m shia_aalim.web         # serve on http://127.0.0.1:8000
 ```
 
-Open <http://127.0.0.1:8000>. The corpus is loaded and indexed once at startup
-with the dependency-free TF-IDF embedder (the same default as the CLI), so it
-runs anywhere the CLI does — no GPU, no API key, no network.
+Open <http://127.0.0.1:8000>. The corpus is loaded at startup and the default
+(dependency-free TF-IDF) index is built then, so it runs anywhere the CLI does —
+no GPU, no API key, no network.
 
 Without the extra installed, importing the module or starting the server prints
 a clear install hint rather than a stack trace; the CLI keeps working with no
 extras at all.
+
+## Switching the retrieval index
+
+Pass more than one embedder as a comma-separated list to offer a **retrieval
+index** dropdown in the UI (the first is the default and is built at startup):
+
+```bash
+python -m shia_aalim.web --embedder "tfidf,st:BAAI/bge-m3"
+```
+
+Each embedder has its own index (the vectors differ), so switching means
+querying a different retriever. Non-default indexes are built **lazily on first
+use** and cached — startup stays fast, and if a semantic model isn't reachable
+(the hosted sandbox blocks the HuggingFace Hub) the query returns a clear
+"index unavailable" message and the toggle marks it *unavailable* instead of
+crashing the server. `/api/status` reports each embedder's state
+(`ready` / `lazy` / `failed`). Requests may also name the index explicitly with
+an `"embedder"` field.
+
+## Exporting a result
+
+Every answer and lecture result has **⧉ Copy Markdown** and **⭳ Download .md**
+buttons. Both use the same Markdown the CLI prints (`format_markdown` /
+`Lecture.to_markdown`) — the `markdown` field returned by `/api/answer` and
+`/api/lecture` — so what you copy into your notes or a lecture file is identical
+to the terminal output, citations and all.
 
 ## Options
 
@@ -53,11 +79,15 @@ python -m shia_aalim.web \
 
 The page is backed by three JSON endpoints (usable directly, e.g. from scripts):
 
-| Method & path      | Body                                  | Returns |
-|--------------------|---------------------------------------|---------|
-| `GET  /api/status` | —                                     | corpus size + configured providers |
-| `POST /api/answer` | `{"question": "...", "k": 6}`         | `{answer, markdown}` — `answer` is `Answer.to_dict()` |
-| `POST /api/lecture`| `{"topic": "...", "depth": 4}`        | topic + the 11-section framework, evidence per section |
+| Method & path      | Body                                              | Returns |
+|--------------------|---------------------------------------------------|---------|
+| `GET  /api/status` | —                                                 | corpus size, each embedder's state, providers |
+| `POST /api/answer` | `{"question": "...", "k": 6, "embedder": "..."}`  | `{answer, markdown, embedder}` — `answer` is `Answer.to_dict()` |
+| `POST /api/lecture`| `{"topic": "...", "depth": 4, "embedder": "..."}` | topic + the 11-section framework, evidence per section, `markdown` |
+
+`embedder` is optional (defaults to the startup default). Naming one that isn't
+enabled, or a semantic model that can't be built here, returns HTTP 503 with an
+explanatory `error`.
 
 `GET /` serves the single, self-contained HTML page (no external assets, works
 offline). FastAPI also exposes interactive API docs at `/docs`.

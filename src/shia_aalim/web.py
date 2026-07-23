@@ -16,15 +16,18 @@ The browser just renders that structured output.
 
 FastAPI/uvicorn are optional extras; importing this module (or calling
 :func:`create_app`) without them raises a clear install hint rather than a bare
-``ImportError``. The corpus is loaded and indexed once at startup with the same
-dependency-free TF-IDF embedder as the CLI, so it runs anywhere the CLI does.
+``ImportError``. The corpus is loaded once at startup; each configured embedder's
+index is built lazily on first use (the default is built at startup so the
+corpus is validated), so the front-end runs anywhere the CLI does and a
+switchable semantic embedder that isn't reachable degrades to a clear message
+rather than crashing the server.
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -34,10 +37,9 @@ from .generation.lecture import Lecture, LectureGenerator
 from .generation.synthesizer import make_synthesizer
 from .grounding.entailment import make_judge
 from .ingestion.loaders import iter_knowledge_dir
-from .models import Answer
+from .models import Answer, Document
 from .research_loop import build_index
 from .retrieval.embeddings import make_embedder
-from .retrieval.retriever import Retriever
 from .sources import load_registry_ids
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -61,14 +63,20 @@ try:
     class AskBody(_BaseModel):
         question: str = ""
         k: Optional[int] = None
+        embedder: Optional[str] = None  # which index to query; None = default
 
     class LectureBody(_BaseModel):
         topic: str = ""
         depth: Optional[int] = None
+        embedder: Optional[str] = None
 
 except ImportError:  # pragma: no cover - only without the web extra
     AskBody = None  # type: ignore
     LectureBody = None  # type: ignore
+
+
+class EmbedderUnavailable(RuntimeError):
+    """A configured embedder could not be built (e.g. semantic model unreachable)."""
 
 
 @dataclass
@@ -77,25 +85,107 @@ class AppConfig:
 
     knowledge_dir: Path = DEFAULT_KNOWLEDGE_DIR
     registry_path: Path = DEFAULT_REGISTRY
-    embedder: str = "tfidf"
+    embedders: list[str] = field(default_factory=lambda: ["tfidf"])
     synthesize: str = "none"
     judge: str = "lexical"
     decompose: str = "none"
     default_k: int = 6
 
+    @property
+    def default_embedder(self) -> str:
+        return self.embedders[0]
+
 
 @dataclass
-class Stack:
-    """The built, ready-to-serve generators plus a little corpus metadata."""
+class Engine:
+    """The two generators bound to one embedder's index."""
 
     answers: AnswerGenerator
     lectures: LectureGenerator
-    n_documents: int
-    config: AppConfig
+
+
+class Stack:
+    """Holds the corpus and builds a per-embedder :class:`Engine` on demand.
+
+    Each embedder needs its *own* index (the vectors differ), so switching
+    embedders means querying a different retriever. Indexes are built lazily and
+    cached: the default embedder is built eagerly (validating the corpus at
+    startup); any additional configured embedder is built the first time it is
+    requested, and a build failure (e.g. an unreachable semantic model) is cached
+    and surfaced as :class:`EmbedderUnavailable` rather than retried or crashed.
+    """
+
+    def __init__(
+        self, docs: list[Document], config: AppConfig, known: Optional[set[str]] = None
+    ) -> None:
+        self.docs = docs
+        self.config = config
+        self.known = known
+        # Providers are index-independent, so build them once and share.
+        self._synthesizer = make_synthesizer(config.synthesize)
+        self._judge = make_judge(config.judge)
+        self._decomposer = make_decomposer(config.decompose)
+        self._engines: dict[str, Engine] = {}
+        self._errors: dict[str, str] = {}
+
+    @property
+    def n_documents(self) -> int:
+        return len(self.docs)
+
+    @property
+    def embedders(self) -> list[str]:
+        return list(self.config.embedders)
+
+    @property
+    def default_embedder(self) -> str:
+        return self.config.default_embedder
+
+    def embedder_state(self, spec: str) -> str:
+        """``ready`` (built), ``failed`` (build errored), or ``lazy`` (not yet built)."""
+        if spec in self._engines:
+            return "ready"
+        if spec in self._errors:
+            return "failed"
+        return "lazy"
+
+    def error_for(self, spec: str) -> Optional[str]:
+        return self._errors.get(spec)
+
+    def engine(self, spec: Optional[str] = None) -> Engine:
+        """Return the Engine for ``spec`` (default embedder if None), building it once."""
+        spec = spec or self.default_embedder
+        if spec not in self.config.embedders:
+            raise EmbedderUnavailable(
+                f"Embedder {spec!r} is not enabled. Available: "
+                + ", ".join(self.config.embedders)
+            )
+        if spec in self._engines:
+            return self._engines[spec]
+        if spec in self._errors:
+            raise EmbedderUnavailable(self._errors[spec])
+        try:
+            retriever = build_index(self.docs, embedder=make_embedder(spec))
+        except Exception as exc:  # noqa: BLE001 - report, don't crash the server
+            self._errors[spec] = str(exc)
+            raise EmbedderUnavailable(str(exc)) from exc
+        engine = Engine(
+            answers=AnswerGenerator(
+                retriever,
+                synthesizer=self._synthesizer,
+                known_source_ids=self.known,
+                judge=self._judge,
+                decomposer=self._decomposer,
+            ),
+            lectures=LectureGenerator(
+                retriever, synthesizer=self._synthesizer, judge=self._judge
+            ),
+        )
+        self._engines[spec] = engine
+        return engine
 
 
 def build_stack(config: Optional[AppConfig] = None) -> Stack:
-    """Load the corpus, build the index, and wire up the generators.
+    """Load the corpus and prepare the generators (default index built eagerly).
 
     Pure pipeline code — no web dependency — so it is unit-testable on its own
     and reused by both the API and any embedded use.
@@ -108,24 +198,10 @@ def build_stack(config: Optional[AppConfig] = None) -> Stack:
             "first (python scripts/ingest.py) or point --knowledge-dir at a "
             "directory of .jsonl knowledge files."
         )
-
-    embedder = make_embedder(config.embedder)
-    retriever: Retriever = build_index(docs, embedder=embedder)
-
-    synthesizer = make_synthesizer(config.synthesize)
-    judge = make_judge(config.judge)
-    decomposer = make_decomposer(config.decompose)
     known = _load_known_ids(config.registry_path)
-
-    answers = AnswerGenerator(
-        retriever,
-        synthesizer=synthesizer,
-        known_source_ids=known,
-        judge=judge,
-        decomposer=decomposer,
-    )
-    lectures = LectureGenerator(retriever, synthesizer=synthesizer, judge=judge)
-    return Stack(answers=answers, lectures=lectures, n_documents=len(docs), config=config)
+    stack = Stack(docs, config, known)
+    stack.engine(config.default_embedder)  # eager: validate corpus + default index
+    return stack
 
 
 def _load_known_ids(registry_path: Path) -> Optional[set[str]]:
@@ -208,7 +284,12 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
         cfg = stack.config
         return {
             "documents": stack.n_documents,
-            "embedder": cfg.embedder,
+            "embedders": [
+                {"spec": spec, "state": stack.embedder_state(spec),
+                 "default": spec == stack.default_embedder}
+                for spec in stack.embedders
+            ],
+            "default_embedder": stack.default_embedder,
             "synthesizer": cfg.synthesize,
             "judge": cfg.judge,
             "decomposer": cfg.decompose,
@@ -220,21 +301,41 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
         question = (body.question or "").strip()
         if not question:
             return JSONResponse({"error": "question is required"}, status_code=400)
+        try:
+            engine = stack.engine(body.embedder)
+        except EmbedderUnavailable as exc:
+            return JSONResponse({"error": _embedder_error(body.embedder, exc)}, status_code=503)
         k = _clamp_int(body.k, default=stack.config.default_k, lo=1, hi=25)
-        answer = stack.answers.answer(question, k=k)
-        markdown = stack.answers.format_markdown(answer)
-        return answer_to_payload(answer, markdown)
+        answer = engine.answers.answer(question, k=k)
+        markdown = engine.answers.format_markdown(answer)
+        payload = answer_to_payload(answer, markdown)
+        payload["embedder"] = body.embedder or stack.default_embedder
+        return payload
 
     @app.post("/api/lecture")
     async def api_lecture(body: LectureBody):
         topic = (body.topic or "").strip()
         if not topic:
             return JSONResponse({"error": "topic is required"}, status_code=400)
+        try:
+            engine = stack.engine(body.embedder)
+        except EmbedderUnavailable as exc:
+            return JSONResponse({"error": _embedder_error(body.embedder, exc)}, status_code=503)
         depth = _clamp_int(body.depth, default=4, lo=1, hi=10)
-        lecture = stack.lectures.generate(topic, depth=depth)
-        return lecture_to_payload(lecture)
+        lecture = engine.lectures.generate(topic, depth=depth)
+        payload = lecture_to_payload(lecture)
+        payload["embedder"] = body.embedder or stack.default_embedder
+        return payload
 
     return app
+
+
+def _embedder_error(spec: Optional[str], exc: Exception) -> str:
+    return (
+        f"The '{spec}' embedder is not available in this environment: {exc}. "
+        "Semantic models (st:…) need the [embeddings] extra and a reachable "
+        "model; switch back to the tfidf index."
+    )
 
 
 def _clamp_int(value, *, default: int, lo: int, hi: int) -> int:
@@ -345,6 +446,20 @@ INDEX_HTML = r"""<!doctype html>
   .spinner { color: var(--muted); padding: 20px 0; }
   footer { color: var(--muted); font-size: 12px; text-align: center; padding: 30px 0 10px; }
   code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+  select {
+    padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink); font-size: 14px;
+  }
+  select:disabled { opacity: .6; }
+  .toolbar { display: flex; gap: 8px; margin: 4px 0 14px; }
+  .toolbar.hidden { display: none; }
+  button.mini {
+    padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer;
+    background: var(--panel); color: var(--ink); font-size: 12.5px;
+  }
+  button.mini:hover { border-color: var(--accent); color: var(--accent); }
+  .idxrow { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: var(--muted); font-size: 13px; }
+  .idxnote { font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -358,6 +473,12 @@ INDEX_HTML = r"""<!doctype html>
     <div class="tab" data-tab="lecture" onclick="switchTab('lecture')">Prepare a lecture</div>
   </div>
 
+  <div class="idxrow">
+    <label for="embedder">Retrieval index</label>
+    <select id="embedder" disabled onchange="onEmbedderChange()"><option>loading…</option></select>
+    <span class="idxnote" id="idxnote"></span>
+  </div>
+
   <section id="pane-ask">
     <div class="row">
       <input type="text" id="q" placeholder="e.g. What does the Qur'an say about justice?" onkeydown="if(event.key==='Enter')ask()">
@@ -365,6 +486,10 @@ INDEX_HTML = r"""<!doctype html>
       <button class="go" id="askBtn" onclick="ask()">Ask</button>
     </div>
     <div class="hint">Every answer is grounded in retrieved, cited passages. Weak or disputed evidence is flagged, never hidden.</div>
+    <div class="toolbar hidden" id="askTools">
+      <button class="mini" onclick="copyMd('ask')">⧉ Copy Markdown</button>
+      <button class="mini" onclick="downloadMd('ask')">⭳ Download .md</button>
+    </div>
     <div class="result" id="askResult"></div>
   </section>
 
@@ -375,6 +500,10 @@ INDEX_HTML = r"""<!doctype html>
       <button class="go" id="lecBtn" onclick="lecture()">Build outline</button>
     </div>
     <div class="hint">Builds the 11-section majlis/khutbah framework. Evidence sections are filled from cited passages; narrative sections are LLM-written only when a synthesizer is enabled and the prose verifies against the evidence.</div>
+    <div class="toolbar hidden" id="lecTools">
+      <button class="mini" onclick="copyMd('lec')">⧉ Copy Markdown</button>
+      <button class="mini" onclick="downloadMd('lec')">⭳ Download .md</button>
+    </div>
     <div class="result" id="lecResult"></div>
   </section>
 
@@ -427,18 +556,51 @@ function refString(cit){
   return p.filter(Boolean).join(', ');
 }
 
+// Last-rendered Markdown per tab, for the copy / download buttons.
+var lastMd = { ask: {text:'', name:'answer'}, lec: {text:'', name:'lecture'} };
+function slug(s){ return (s||'shia-aalim').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60) || 'shia-aalim'; }
+function selectedEmbedder(){ var el = document.getElementById('embedder'); return el && el.value ? el.value : null; }
+function showTools(tab){ document.getElementById(tab+'Tools').classList.remove('hidden'); }
+function hideTools(tab){ document.getElementById(tab+'Tools').classList.add('hidden'); }
+
+async function copyMd(tab){
+  var md = lastMd[tab].text; if(!md) return;
+  try { await navigator.clipboard.writeText(md); flash(tab, 'Copied ✓'); }
+  catch(e){
+    var ta = document.createElement('textarea'); ta.value = md; document.body.appendChild(ta);
+    ta.select(); try { document.execCommand('copy'); flash(tab,'Copied ✓'); } catch(_){}
+    document.body.removeChild(ta);
+  }
+}
+function downloadMd(tab){
+  var md = lastMd[tab].text; if(!md) return;
+  var blob = new Blob([md], {type:'text/markdown;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = slug(lastMd[tab].name) + '.md';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function flash(tab, msg){
+  var btn = document.querySelector('#'+tab+'Tools button'); if(!btn) return;
+  var old = btn.textContent; btn.textContent = msg;
+  setTimeout(function(){ btn.textContent = old; }, 1200);
+}
+
 async function ask(){
   var q = document.getElementById('q').value.trim();
   if(!q) return;
   var k = document.getElementById('k').value;
   var box = document.getElementById('askResult');
   var btn = document.getElementById('askBtn');
-  btn.disabled = true; box.innerHTML = '<div class="spinner">Searching the corpus…</div>';
+  btn.disabled = true; hideTools('ask'); box.innerHTML = '<div class="spinner">Searching the corpus…</div>';
   try {
-    var res = await fetch('/api/answer', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:q, k:Number(k)})});
+    var res = await fetch('/api/answer', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:q, k:Number(k), embedder:selectedEmbedder()})});
     var data = await res.json();
     if(data.error){ box.innerHTML = '<div class="empty">'+esc(data.error)+'</div>'; return; }
     renderAnswer(box, data.answer);
+    lastMd.ask = { text: data.markdown || '', name: data.answer.question };
+    showTools('ask');
   } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
   finally { btn.disabled = false; }
 }
@@ -466,12 +628,14 @@ async function lecture(){
   var depth = document.getElementById('depth').value;
   var box = document.getElementById('lecResult');
   var btn = document.getElementById('lecBtn');
-  btn.disabled = true; box.innerHTML = '<div class="spinner">Building the outline…</div>';
+  btn.disabled = true; hideTools('lec'); box.innerHTML = '<div class="spinner">Building the outline…</div>';
   try {
-    var res = await fetch('/api/lecture', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic:t, depth:Number(depth)})});
+    var res = await fetch('/api/lecture', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic:t, depth:Number(depth), embedder:selectedEmbedder()})});
     var data = await res.json();
     if(data.error){ box.innerHTML = '<div class="empty">'+esc(data.error)+'</div>'; return; }
     renderLecture(box, data);
+    lastMd.lec = { text: data.markdown || '', name: data.topic };
+    showTools('lec');
   } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
   finally { btn.disabled = false; }
 }
@@ -488,9 +652,26 @@ function renderLecture(box, L){
   box.innerHTML = h;
 }
 
+function stateTag(st){ return st==='ready' ? '' : st==='failed' ? ' (unavailable)' : ' — builds on first use'; }
+
+function onEmbedderChange(){
+  var el = document.getElementById('embedder');
+  var st = el.options[el.selectedIndex] ? el.options[el.selectedIndex].dataset.state : 'ready';
+  document.getElementById('idxnote').textContent =
+    st==='lazy' ? 'This index will be built the first time you query it.' :
+    st==='failed' ? 'This index failed to build in this environment; queries will report the reason.' : '';
+}
+
 fetch('/api/status').then(r=>r.json()).then(s=>{
+  var sel = document.getElementById('embedder');
+  sel.innerHTML = (s.embedders||[]).map(function(e){
+    return '<option value="'+esc(e.spec)+'" data-state="'+esc(e.state)+'"'+(e.default?' selected':'')+'>'+
+      esc(e.spec)+stateTag(e.state)+'</option>';
+  }).join('');
+  sel.disabled = (s.embedders||[]).length < 2;   // nothing to switch between
+  onEmbedderChange();
   document.getElementById('status').innerHTML =
-    'Corpus: <b>'+s.documents.toLocaleString()+'</b> documents · embedder <code>'+esc(s.embedder)+
+    'Corpus: <b>'+s.documents.toLocaleString()+'</b> documents · default index <code>'+esc(s.default_embedder)+
     '</code> · synthesizer <code>'+esc(s.synthesizer)+'</code> · judge <code>'+esc(s.judge)+'</code>';
 }).catch(()=>{ document.getElementById('status').textContent = ''; });
 </script>
@@ -513,7 +694,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--knowledge-dir", default=str(DEFAULT_KNOWLEDGE_DIR))
     parser.add_argument("--registry", default=str(DEFAULT_REGISTRY))
-    parser.add_argument("--embedder", default="tfidf", help="tfidf | hashing | st:<model>")
+    parser.add_argument(
+        "--embedder", default="tfidf",
+        help="one or a comma-separated list to offer as a UI toggle; the first is "
+        "the default (e.g. 'tfidf' or 'tfidf,st:BAAI/bge-m3'). tfidf | hashing | st:<model>",
+    )
     parser.add_argument("--synthesize", default="none", help="none | mock | claude:<model>")
     parser.add_argument("--judge", default="lexical", help="lexical | mock | claude:<model>")
     parser.add_argument("--decompose", default="none", help="none | rule | claude:<model>")
@@ -526,10 +711,11 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(_FASTAPI_HINT, file=sys.stderr)
         return 1
 
+    embedders = [s.strip() for s in args.embedder.split(",") if s.strip()] or ["tfidf"]
     config = AppConfig(
         knowledge_dir=Path(args.knowledge_dir),
         registry_path=Path(args.registry),
-        embedder=args.embedder,
+        embedders=embedders,
         synthesize=args.synthesize,
         judge=args.judge,
         decompose=args.decompose,
@@ -538,8 +724,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     print(f"Loading corpus from {config.knowledge_dir} …", file=sys.stderr)
     app = create_app(config)
     n = app.state.stack.n_documents
+    extra = [e for e in embedders[1:]]
+    switch = f" (+{', '.join(extra)} on first use)" if extra else ""
     print(
-        f"Indexed {n:,} documents. Serving Shia-Aalim on http://{args.host}:{args.port}",
+        f"Loaded {n:,} documents; default index '{config.default_embedder}' ready{switch}. "
+        f"Serving Shia-Aalim on http://{args.host}:{args.port}",
         file=sys.stderr,
     )
     uvicorn.run(app, host=args.host, port=args.port)

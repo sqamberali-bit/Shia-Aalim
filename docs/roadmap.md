@@ -107,7 +107,10 @@ the research loop updates.
       tab, cited/confidence-badged results) wrapping the **same**
       `AnswerGenerator`/`LectureGenerator`. Presentation only — the grounding
       guarantees are unchanged. `[web]` extra; degrades to a clear install hint
-      without it. See [`docs/web-app.md`](web-app.md).
+      without it. Copy-/download-Markdown export on every result, and a
+      **retrieval-index toggle** (`--embedder tfidf,st:BAAI/bge-m3`) that builds
+      each index lazily and marks an unreachable semantic model *unavailable*
+      rather than crashing. See [`docs/web-app.md`](web-app.md).
 
 ## Iteration 4 — Depth & rigour
 
