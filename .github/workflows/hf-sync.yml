@@ -24,8 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      - name: Push repository to the Space
+          fetch-depth: 1
+      - name: Push a clean snapshot to the Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE: ${{ vars.HF_SPACE }}
@@ -34,6 +34,16 @@ jobs:
             echo "HF_TOKEN secret and HF_SPACE variable must be set — see this file's header." >&2
             exit 1
           fi
+          # Flatten to a single commit before pushing. The Git HISTORY of this
+          # repo still contains large corpus .jsonl blobs (later moved out of
+          # git); Hugging Face rejects any file >10MB in the pushed refs. An
+          # orphan snapshot of the CURRENT tree has no such files — the corpus
+          # is rebuilt inside the image at build time regardless.
+          git config user.email "hf-sync@users.noreply.github.com"
+          git config user.name "hf-sync"
+          git checkout --orphan hf-deploy
+          git add -A
+          git commit -q -m "Deploy snapshot ${GITHUB_SHA::7}"
           git push --force \
             "https://hf-sync:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}.git" \
-            HEAD:main
+            hf-deploy:main
