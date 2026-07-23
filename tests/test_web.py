@@ -117,6 +117,85 @@ def test_unknown_embedder_is_rejected_gracefully(client):
     assert "not available" in r.json()["error"]
 
 
+def test_sources_facets_listed(client):
+    r = client.get("/api/sources")
+    assert r.status_code == 200
+    body = r.json()
+    src_ids = {s["id"] for s in body["sources"]}
+    assert {"quran", "al-kafi"} <= src_ids
+    # counts + evidence-type facets are present
+    assert all(s["count"] >= 1 for s in body["sources"])
+    types = {t["type"] for t in body["evidence_types"]}
+    assert {"quran", "hadith"} <= types
+
+
+def test_answer_filtered_by_evidence_type(client):
+    # restrict to hadith only -> the sole hadith doc, no Qur'an verses
+    r = client.post("/api/answer", json={
+        "question": "intellect worship paradise", "k": 5, "evidence_types": ["hadith"],
+    })
+    assert r.status_code == 200
+    claims = r.json()["answer"]["claims"]
+    assert claims and all(c["evidence_type"] == "hadith" for c in claims)
+
+
+def test_answer_filtered_by_source(client):
+    # restrict to al-kafi -> nothing from the quran source
+    r = client.post("/api/answer", json={
+        "question": "intellect", "k": 5, "source_ids": ["al-kafi"],
+    })
+    assert r.status_code == 200
+    for c in r.json()["answer"]["claims"]:
+        assert all(cit["source_id"] == "al-kafi" for cit in c["citations"])
+
+
+def test_min_confidence_floor_excludes_weaker_sources():
+    # a corpus with one HIGH and one LOW passage on the same topic
+    from shia_aalim.models import Citation, ConfidenceLevel, Document, EvidenceType
+
+    def doc(sid, conf):
+        return Document(
+            id=f"{sid}-x", text="the mercy and compassion of the Merciful Lord",
+            evidence_type=EvidenceType.HADITH,
+            citation=Citation(source_id=sid, evidence_type=EvidenceType.HADITH,
+                              volume="1", hadith_number="1"),
+            confidence=conf, language="en",
+        )
+    docs = [doc("al-kafi", ConfidenceLevel.HIGH), doc("weak-book", ConfidenceLevel.LOW)]
+    stack = web.Stack(docs, web.AppConfig(), known={"al-kafi", "weak-book"})
+    stack.engine("tfidf")
+    client = TestClient(web.create_app(stack=stack))
+
+    lo = client.post("/api/answer", json={"question": "mercy compassion", "min_confidence": "low"})
+    hi = client.post("/api/answer", json={"question": "mercy compassion", "min_confidence": "high"})
+    lo_sources = {c["citations"][0]["source_id"] for c in lo.json()["answer"]["claims"]}
+    hi_sources = {c["citations"][0]["source_id"] for c in hi.json()["answer"]["claims"]}
+    assert "weak-book" in lo_sources          # LOW floor keeps it
+    assert "weak-book" not in hi_sources      # HIGH floor drops it
+    assert "al-kafi" in hi_sources            # HIGH source survives
+
+
+def test_conflicting_filters_yield_filter_aware_caveat(client):
+    # al-kafi has no Qur'an docs -> empty result, and the caveat names the filters
+    r = client.post("/api/answer", json={
+        "question": "guardian", "source_ids": ["al-kafi"], "evidence_types": ["quran"],
+    })
+    assert r.status_code == 200
+    body = r.json()["answer"]
+    assert body["claims"] == []
+    assert any("filter" in c.lower() for c in body["caveats"])
+
+
+def test_lecture_filtered_by_source(client):
+    r = client.post("/api/lecture", json={
+        "topic": "intellect", "depth": 2, "source_ids": ["al-kafi"],
+    })
+    assert r.status_code == 200
+    for s in r.json()["sections"]:
+        for ev in s["evidence"]:
+            assert "al-kafi" in ev["reference"]
+
+
 def test_second_embedder_listed_and_builds_lazily():
     # offer tfidf + hashing; hashing is 'lazy' until first queried, then 'ready'
     app = web.create_app(stack=_sample_stack(embedders=("tfidf", "hashing")))

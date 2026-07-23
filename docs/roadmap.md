@@ -110,7 +110,10 @@ the research loop updates.
       without it. Copy-/download-Markdown export on every result, and a
       **retrieval-index toggle** (`--embedder tfidf,st:BAAI/bge-m3`) that builds
       each index lazily and marks an unreachable semantic model *unavailable*
-      rather than crashing. See [`docs/web-app.md`](web-app.md).
+      rather than crashing. A **filter panel** narrows retrieval by evidence
+      type, source book (with per-book counts + confidence, from `/api/sources`),
+      and minimum confidence; excluded-everything results name the active
+      filters. See [`docs/web-app.md`](web-app.md).
 
 ## Iteration 4 — Depth & rigour
 

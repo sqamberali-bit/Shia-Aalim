@@ -37,10 +37,10 @@ from .generation.lecture import Lecture, LectureGenerator
 from .generation.synthesizer import make_synthesizer
 from .grounding.entailment import make_judge
 from .ingestion.loaders import iter_knowledge_dir
-from .models import Answer, Document
+from .models import Answer, ConfidenceLevel, Document, EvidenceType, Source
 from .research_loop import build_index
 from .retrieval.embeddings import make_embedder
-from .sources import load_registry_ids
+from .sources import load_registry_ids, load_sources
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_KNOWLEDGE_DIR = ROOT / "data" / "knowledge"
@@ -64,11 +64,15 @@ try:
         question: str = ""
         k: Optional[int] = None
         embedder: Optional[str] = None  # which index to query; None = default
+        evidence_types: Optional[list[str]] = None  # restrict to these types; None = all
+        source_ids: Optional[list[str]] = None  # restrict to these books; None/[] = all
+        min_confidence: Optional[str] = None  # floor: unverified|low|medium|high
 
     class LectureBody(_BaseModel):
         topic: str = ""
         depth: Optional[int] = None
         embedder: Optional[str] = None
+        source_ids: Optional[list[str]] = None
 
 except ImportError:  # pragma: no cover - only without the web extra
     AskBody = None  # type: ignore
@@ -116,21 +120,62 @@ class Stack:
     """
 
     def __init__(
-        self, docs: list[Document], config: AppConfig, known: Optional[set[str]] = None
+        self,
+        docs: list[Document],
+        config: AppConfig,
+        known: Optional[set[str]] = None,
+        sources_meta: Optional[dict[str, Source]] = None,
     ) -> None:
         self.docs = docs
         self.config = config
         self.known = known
+        self.sources_meta = sources_meta or {}
         # Providers are index-independent, so build them once and share.
         self._synthesizer = make_synthesizer(config.synthesize)
         self._judge = make_judge(config.judge)
         self._decomposer = make_decomposer(config.decompose)
         self._engines: dict[str, Engine] = {}
         self._errors: dict[str, str] = {}
+        self._facets: Optional[dict] = None
 
     @property
     def n_documents(self) -> int:
         return len(self.docs)
+
+    def facets(self) -> dict:
+        """What's actually in this corpus: source books and evidence types.
+
+        Powers the UI filter panel. Computed once from the loaded documents
+        (joined with registry titles/confidence) and cached.
+        """
+        if self._facets is not None:
+            return self._facets
+        from collections import Counter
+
+        src_count: Counter = Counter()
+        type_count: Counter = Counter()
+        src_types: dict[str, set[str]] = {}
+        for d in self.docs:
+            sid = d.citation.source_id
+            src_count[sid] += 1
+            type_count[d.evidence_type.value] += 1
+            src_types.setdefault(sid, set()).add(d.evidence_type.value)
+
+        sources = []
+        for sid, n in src_count.most_common():
+            meta = self.sources_meta.get(sid)
+            sources.append({
+                "id": sid,
+                "title": meta.title if meta else sid,
+                "confidence": meta.confidence.value if meta else None,
+                "count": n,
+                "evidence_types": sorted(src_types.get(sid, ())),
+            })
+        self._facets = {
+            "sources": sources,
+            "evidence_types": [{"type": t, "count": n} for t, n in type_count.most_common()],
+        }
+        return self._facets
 
     @property
     def embedders(self) -> list[str]:
@@ -199,7 +244,8 @@ def build_stack(config: Optional[AppConfig] = None) -> Stack:
             "directory of .jsonl knowledge files."
         )
     known = _load_known_ids(config.registry_path)
-    stack = Stack(docs, config, known)
+    sources_meta = _load_sources_meta(config.registry_path)
+    stack = Stack(docs, config, known, sources_meta)
     stack.engine(config.default_embedder)  # eager: validate corpus + default index
     return stack
 
@@ -209,6 +255,13 @@ def _load_known_ids(registry_path: Path) -> Optional[set[str]]:
         return load_registry_ids(registry_path)
     except FileNotFoundError:
         return None
+
+
+def _load_sources_meta(registry_path: Path) -> dict[str, Source]:
+    try:
+        return {s.id: s for s in load_sources(registry_path)}
+    except FileNotFoundError:
+        return {}
 
 
 # ---------------------------------------------------------------------------
@@ -296,6 +349,10 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
             "default_k": cfg.default_k,
         }
 
+    @app.get("/api/sources")
+    async def sources() -> dict:
+        return stack.facets()
+
     @app.post("/api/answer")
     async def api_answer(body: AskBody):
         question = (body.question or "").strip()
@@ -306,7 +363,13 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
         except EmbedderUnavailable as exc:
             return JSONResponse({"error": _embedder_error(body.embedder, exc)}, status_code=503)
         k = _clamp_int(body.k, default=stack.config.default_k, lo=1, hi=25)
-        answer = engine.answers.answer(question, k=k)
+        answer = engine.answers.answer(
+            question,
+            k=k,
+            evidence_types=_parse_types(body.evidence_types),
+            source_ids=_parse_sources(body.source_ids),
+            min_confidence=_parse_confidence(body.min_confidence),
+        )
         markdown = engine.answers.format_markdown(answer)
         payload = answer_to_payload(answer, markdown)
         payload["embedder"] = body.embedder or stack.default_embedder
@@ -322,12 +385,44 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
         except EmbedderUnavailable as exc:
             return JSONResponse({"error": _embedder_error(body.embedder, exc)}, status_code=503)
         depth = _clamp_int(body.depth, default=4, lo=1, hi=10)
-        lecture = engine.lectures.generate(topic, depth=depth)
+        lecture = engine.lectures.generate(
+            topic, depth=depth, source_ids=_parse_sources(body.source_ids)
+        )
         payload = lecture_to_payload(lecture)
         payload["embedder"] = body.embedder or stack.default_embedder
         return payload
 
     return app
+
+
+def _parse_types(values: Optional[list[str]]) -> Optional[list[EvidenceType]]:
+    """Turn incoming strings into EvidenceType values; unknown ones are dropped."""
+    if not values:
+        return None
+    out: list[EvidenceType] = []
+    for v in values:
+        try:
+            out.append(EvidenceType(v))
+        except ValueError:
+            continue
+    return out or None
+
+
+def _parse_sources(values: Optional[list[str]]) -> Optional[set[str]]:
+    if not values:
+        return None
+    picked = {v for v in values if v}
+    return picked or None
+
+
+def _parse_confidence(value: Optional[str]) -> ConfidenceLevel:
+    """Map a floor string to a ConfidenceLevel; default LOW (the generator default)."""
+    if not value:
+        return ConfidenceLevel.LOW
+    try:
+        return ConfidenceLevel(value)
+    except ValueError:
+        return ConfidenceLevel.LOW
 
 
 def _embedder_error(spec: Optional[str], exc: Exception) -> str:
@@ -464,6 +559,30 @@ INDEX_HTML = r"""<!doctype html>
   button.mini:hover { border-color: var(--accent); color: var(--accent); }
   .idxrow { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: var(--muted); font-size: 13px; }
   .idxnote { font-size: 12px; color: var(--muted); }
+  details.filters {
+    border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
+    padding: 0 14px; margin: 10px 0 4px;
+  }
+  details.filters summary {
+    cursor: pointer; padding: 11px 0; font-size: 13.5px; color: var(--muted); user-select: none;
+  }
+  details.filters[open] summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+  .filters .active-count { color: var(--accent); font-weight: 600; }
+  .fgrid { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 12px; }
+  .fcol { min-width: 180px; }
+  .flabel { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin: 6px 0 8px; }
+  .checks { display: flex; flex-direction: column; gap: 6px; }
+  .srclist { max-height: 220px; overflow-y: auto; padding: 4px 6px 4px 2px; border: 1px solid var(--line); border-radius: 8px; }
+  label.chk { display: flex; align-items: center; gap: 8px; font-size: 13.5px; cursor: pointer; padding: 1px 0; }
+  label.chk input { accent-color: var(--accent); }
+  label.chk .cnt { color: var(--muted); font-size: 12px; margin-left: auto; font-variant-numeric: tabular-nums; }
+  label.chk .cdot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+  .srcsearch { width: 100%; padding: 8px 10px; margin-bottom: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); font-size: 13px; }
+  .frow { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+  .fmini { padding: 4px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--muted); cursor: pointer; font-size: 12px; }
+  .fmini:hover { border-color: var(--accent); color: var(--accent); }
+  .cdot-high { background: var(--high); } .cdot-medium { background: var(--medium); }
+  .cdot-low { background: var(--low); } .cdot-unverified { background: var(--unverified); }
 </style>
 </head>
 <body>
@@ -489,6 +608,33 @@ INDEX_HTML = r"""<!doctype html>
       <label class="fld">evidence<input type="number" id="k" value="6" min="1" max="25"></label>
       <button class="go" id="askBtn" onclick="ask()">Ask</button>
     </div>
+    <details class="filters" id="askFilters">
+      <summary>Filters <span class="active-count" id="askFilterCount"></span></summary>
+      <div class="fgrid">
+        <div class="fcol">
+          <div class="flabel">Evidence type</div>
+          <div class="checks" id="askTypes"><span class="idxnote">loading…</span></div>
+        </div>
+        <div class="fcol">
+          <div class="flabel">Minimum confidence</div>
+          <select id="askConf" onchange="updateFilterCount('ask')">
+            <option value="unverified">Any</option>
+            <option value="low" selected>Low and up</option>
+            <option value="medium">Medium and up</option>
+            <option value="high">High only</option>
+          </select>
+        </div>
+      </div>
+      <div class="fcol" style="min-width:100%">
+        <div class="flabel">Restrict to sources <span class="idxnote">(none checked = search all)</span></div>
+        <input type="text" class="srcsearch" placeholder="filter this list…" oninput="filterSrcList('ask', this.value)">
+        <div class="checks srclist" id="askSources"></div>
+        <div class="frow">
+          <button class="fmini" type="button" onclick="setAllSrc('ask', true)">Select all</button>
+          <button class="fmini" type="button" onclick="setAllSrc('ask', false)">Clear</button>
+        </div>
+      </div>
+    </details>
     <div class="hint">Every answer is grounded in retrieved, cited passages. Weak or disputed evidence is flagged, never hidden.</div>
     <div class="toolbar hidden" id="askTools">
       <button class="mini" onclick="copyMd('ask')">⧉ Copy Markdown</button>
@@ -503,6 +649,15 @@ INDEX_HTML = r"""<!doctype html>
       <label class="fld">depth<input type="number" id="depth" value="4" min="1" max="10"></label>
       <button class="go" id="lecBtn" onclick="lecture()">Build outline</button>
     </div>
+    <details class="filters" id="lecFilters">
+      <summary>Restrict to sources <span class="active-count" id="lecFilterCount"></span></summary>
+      <input type="text" class="srcsearch" placeholder="filter this list…" oninput="filterSrcList('lec', this.value)">
+      <div class="checks srclist" id="lecSources"></div>
+      <div class="frow">
+        <button class="fmini" type="button" onclick="setAllSrc('lec', true)">Select all</button>
+        <button class="fmini" type="button" onclick="setAllSrc('lec', false)">Clear</button>
+      </div>
+    </details>
     <div class="hint">Builds the 11-section majlis/khutbah framework. Evidence sections are filled from cited passages; narrative sections are LLM-written only when a synthesizer is enabled and the prose verifies against the evidence.</div>
     <div class="toolbar hidden" id="lecTools">
       <button class="mini" onclick="copyMd('lec')">⧉ Copy Markdown</button>
@@ -580,6 +735,63 @@ function spinner(base){
   return '<div class="spinner">'+base+'</div>';
 }
 
+// ---- Filters (evidence type, source book, minimum confidence) -------------
+function checked(containerId){
+  return Array.prototype.slice.call(document.querySelectorAll('#'+containerId+' input:checked'))
+    .map(function(i){ return i.value; });
+}
+function selectedTypes(prefix){ var v = checked(prefix+'Types'); return v.length ? v : null; }
+function selectedSources(prefix){ var v = checked(prefix+'Sources'); return v.length ? v : null; }
+
+function filterSrcList(prefix, q){
+  q = (q||'').toLowerCase();
+  document.querySelectorAll('#'+prefix+'Sources label.chk').forEach(function(l){
+    l.style.display = l.dataset.search.indexOf(q) >= 0 ? '' : 'none';
+  });
+}
+function setAllSrc(prefix, val){
+  document.querySelectorAll('#'+prefix+'Sources label.chk').forEach(function(l){
+    if(l.style.display !== 'none') l.querySelector('input').checked = val;  // only visible rows
+  });
+  updateFilterCount(prefix);
+}
+function updateFilterCount(prefix){
+  var n = 0;
+  if(prefix === 'ask'){
+    n += checked('askTypes').length + checked('askSources').length;
+    var conf = document.getElementById('askConf');
+    if(conf && conf.value !== 'low') n += 1;   // 'low' is the default floor
+    document.getElementById('askFilterCount').textContent = n ? '· '+n+' active' : '';
+  } else {
+    n = checked('lecSources').length;
+    document.getElementById('lecFilterCount').textContent = n ? '· '+n+' book'+(n>1?'s':'') : '';
+  }
+}
+
+function srcRow(prefix, s){
+  var dot = s.confidence ? '<span class="cdot cdot-'+esc(s.confidence)+'" title="'+esc(s.confidence)+' confidence"></span>' : '';
+  var search = (s.title+' '+s.id).toLowerCase();
+  return '<label class="chk" data-search="'+esc(search)+'">'+
+    '<input type="checkbox" value="'+esc(s.id)+'" onchange="updateFilterCount(\''+prefix+'\')">'+
+    dot+esc(s.title)+'<span class="cnt">'+s.count.toLocaleString()+'</span></label>';
+}
+function typeRow(t){
+  var label = t.type.replace(/_/g,' ');
+  return '<label class="chk"><input type="checkbox" value="'+esc(t.type)+'" onchange="updateFilterCount(\'ask\')"> '+
+    esc(label)+'<span class="cnt">'+t.count.toLocaleString()+'</span></label>';
+}
+
+function loadFacets(){
+  return fetch('/api/sources').then(r=>r.json()).then(function(f){
+    document.getElementById('askTypes').innerHTML = (f.evidence_types||[]).map(typeRow).join('') || '<span class="idxnote">none</span>';
+    var srcHtml = function(prefix){ return (f.sources||[]).map(function(s){ return srcRow(prefix, s); }).join(''); };
+    document.getElementById('askSources').innerHTML = srcHtml('ask');
+    document.getElementById('lecSources').innerHTML = srcHtml('lec');
+  }).catch(function(){
+    document.getElementById('askTypes').innerHTML = '<span class="idxnote">unavailable</span>';
+  });
+}
+
 async function copyMd(tab){
   var md = lastMd[tab].text; if(!md) return;
   try { await navigator.clipboard.writeText(md); flash(tab, 'Copied ✓'); }
@@ -612,7 +824,11 @@ async function ask(){
   var btn = document.getElementById('askBtn');
   btn.disabled = true; hideTools('ask'); box.innerHTML = spinner('Searching the corpus…');
   try {
-    var res = await fetch('/api/answer', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:q, k:Number(k), embedder:selectedEmbedder()})});
+    var res = await fetch('/api/answer', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      question:q, k:Number(k), embedder:selectedEmbedder(),
+      evidence_types: selectedTypes('ask'), source_ids: selectedSources('ask'),
+      min_confidence: document.getElementById('askConf').value
+    })});
     var data = await res.json();
     if(data.error){ box.innerHTML = '<div class="empty">'+esc(data.error)+'</div>'; return; }
     renderAnswer(box, data.answer);
@@ -647,7 +863,9 @@ async function lecture(){
   var btn = document.getElementById('lecBtn');
   btn.disabled = true; hideTools('lec'); box.innerHTML = spinner('Building the outline…');
   try {
-    var res = await fetch('/api/lecture', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic:t, depth:Number(depth), embedder:selectedEmbedder()})});
+    var res = await fetch('/api/lecture', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      topic:t, depth:Number(depth), embedder:selectedEmbedder(), source_ids: selectedSources('lec')
+    })});
     var data = await res.json();
     if(data.error){ box.innerHTML = '<div class="empty">'+esc(data.error)+'</div>'; return; }
     renderLecture(box, data);
@@ -702,6 +920,7 @@ function refreshStatus(){
 }
 
 refreshStatus();
+loadFacets();
 </script>
 </body>
 </html>

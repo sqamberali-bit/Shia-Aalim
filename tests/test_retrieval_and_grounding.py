@@ -32,6 +32,15 @@ def test_retriever_type_filter():
     assert all(r.document.evidence_type is EvidenceType.HADITH for r in results)
 
 
+def test_retriever_source_filter():
+    retriever = build_index(sample_corpus())
+    results = retriever.retrieve("intellect", k=5, source_ids={"al-kafi"})
+    assert results
+    assert all(r.document.citation.source_id == "al-kafi" for r in results)
+    # a source absent from the corpus yields nothing (never a wrong-source result)
+    assert retriever.retrieve("intellect", k=5, source_ids={"no-such-book"}) == []
+
+
 def test_answer_generator_is_extractive_and_grounded():
     retriever = build_index(sample_corpus())
     known = load_registry_ids(DATA / "sources" / "registry.yaml")

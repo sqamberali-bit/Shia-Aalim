@@ -110,22 +110,29 @@ class LectureGenerator:
         self.judge = judge
 
     def _evidence(
-        self, topic: str, types: list[EvidenceType], k: int
+        self,
+        topic: str,
+        types: list[EvidenceType],
+        k: int,
+        source_ids: Optional[set[str]] = None,
     ) -> list[RetrievalResult]:
-        return self.retriever.retrieve(topic, k=k, evidence_types=types)
+        return self.retriever.retrieve(topic, k=k, evidence_types=types, source_ids=source_ids)
 
-    def generate(self, topic: str, *, depth: int = 4) -> Lecture:
+    def generate(
+        self, topic: str, *, depth: int = 4, source_ids: Optional[set[str]] = None
+    ) -> Lecture:
         """Build a fully-structured lecture outline for ``topic``.
 
         ``depth`` controls how many evidence items to pull into each
-        evidence-driven section. If a synthesizer was supplied, the narrative
-        sections are auto-written from the pooled evidence and verified.
+        evidence-driven section. ``source_ids`` restricts every section to the
+        given books. If a synthesizer was supplied, the narrative sections are
+        auto-written from the pooled evidence and verified.
         """
-        quran = self._evidence(topic, [EvidenceType.QURAN], depth)
-        tafsir = self._evidence(topic, [EvidenceType.TAFSIR], depth)
-        hadith = self._evidence(topic, [EvidenceType.HADITH], depth)
-        history = self._evidence(topic, [EvidenceType.HISTORICAL], depth)
-        scholarly = self._evidence(topic, [EvidenceType.SCHOLARLY_OPINION], depth)
+        quran = self._evidence(topic, [EvidenceType.QURAN], depth, source_ids)
+        tafsir = self._evidence(topic, [EvidenceType.TAFSIR], depth, source_ids)
+        hadith = self._evidence(topic, [EvidenceType.HADITH], depth, source_ids)
+        history = self._evidence(topic, [EvidenceType.HISTORICAL], depth, source_ids)
+        scholarly = self._evidence(topic, [EvidenceType.SCHOLARLY_OPINION], depth, source_ids)
 
         # A pooled, de-duplicated evidence list for the narrative sections.
         pool = self._pool([quran, tafsir, hadith, history, scholarly], limit=depth * 2)

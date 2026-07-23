@@ -51,17 +51,26 @@ class Retriever:
         k: int = 5,
         evidence_types: Optional[list[EvidenceType]] = None,
         min_confidence: ConfidenceLevel = ConfidenceLevel.UNVERIFIED,
+        source_ids: Optional[set[str]] = None,
         oversample: int = 4,
     ) -> list[RetrievalResult]:
         """Return the top-``k`` results after filtering and confidence re-ranking.
 
         ``oversample`` widens the initial vector search before filtering so that
-        type/confidence filters do not starve the final list.
+        type/confidence/source filters do not starve the final list. When a
+        filter is active the candidate pool is widened further, because a
+        restricted subset (e.g. a single book) may be sparse near the query.
         """
-        raw = self.store.search(query, k=max(k * oversample, k))
+        breadth = max(k * oversample, k)
+        if evidence_types or source_ids or min_confidence.rank > 0:
+            # A filter can reject most near neighbours; scan a much larger pool.
+            breadth = max(breadth, k * 25, 200)
+        raw = self.store.search(query, k=breadth)
         results: list[RetrievalResult] = []
         for doc, sim in raw:
             if evidence_types and doc.evidence_type not in evidence_types:
+                continue
+            if source_ids and doc.citation.source_id not in source_ids:
                 continue
             if doc.confidence.rank < min_confidence.rank:
                 continue

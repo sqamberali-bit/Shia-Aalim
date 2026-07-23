@@ -49,6 +49,25 @@ The first query against a not-yet-built index shows a distinct **"Building the
 minute to embed); once cached, the state flips to `ready` and later queries show
 the normal fast-path spinner. The UI refreshes index state after every query.
 
+## Filtering the evidence
+
+Both tabs have a **Filters** panel that narrows what the retriever may draw on —
+useful for "what do *the Four Books* say", or "Qur'an only", or "established
+material only":
+
+* **Evidence type** (Ask tab) — restrict to Qurʾān, Hadith, Tafsir, Historical,
+  Scholarly, etc. Nothing checked = all types.
+* **Sources** (both tabs) — restrict to specific books. The list is the corpus's
+  actual sources with per-book document counts and a confidence dot, searchable
+  by name, with *Select all* / *Clear*. Nothing checked = every book.
+* **Minimum confidence** (Ask tab) — a floor (Any / Low+ / Medium+ / High only)
+  so weak or unverified passages can be excluded outright.
+
+Filters compose. If they exclude everything, the answer's caveat names the active
+filters so an empty result is never mysterious. The filter options come from
+`GET /api/sources`, which reports each source `{id, title, confidence, count,
+evidence_types}` and the evidence-type counts present in the loaded corpus.
+
 ## Exporting a result
 
 Every answer and lecture result has **⧉ Copy Markdown** and **⭳ Download .md**
@@ -87,12 +106,15 @@ The page is backed by three JSON endpoints (usable directly, e.g. from scripts):
 | Method & path      | Body                                              | Returns |
 |--------------------|---------------------------------------------------|---------|
 | `GET  /api/status` | —                                                 | corpus size, each embedder's state, providers |
-| `POST /api/answer` | `{"question": "...", "k": 6, "embedder": "..."}`  | `{answer, markdown, embedder}` — `answer` is `Answer.to_dict()` |
-| `POST /api/lecture`| `{"topic": "...", "depth": 4, "embedder": "..."}` | topic + the 11-section framework, evidence per section, `markdown` |
+| `GET  /api/sources`| —                                                 | source books + evidence-type facets in the corpus |
+| `POST /api/answer` | `{"question", "k", "embedder", "evidence_types", "source_ids", "min_confidence"}` | `{answer, markdown, embedder}` — `answer` is `Answer.to_dict()` |
+| `POST /api/lecture`| `{"topic", "depth", "embedder", "source_ids"}`    | topic + the 11-section framework, evidence per section, `markdown` |
 
-`embedder` is optional (defaults to the startup default). Naming one that isn't
-enabled, or a semantic model that can't be built here, returns HTTP 503 with an
-explanatory `error`.
+`embedder`, `evidence_types`, `source_ids` and `min_confidence` are all optional.
+`evidence_types`/`source_ids` are lists (empty/omitted = no restriction);
+`min_confidence` is one of `unverified|low|medium|high` (default `low`). Naming an
+embedder that isn't enabled, or a semantic model that can't be built here,
+returns HTTP 503 with an explanatory `error`.
 
 `GET /` serves the single, self-contained HTML page (no external assets, works
 offline). FastAPI also exposes interactive API docs at `/docs`.

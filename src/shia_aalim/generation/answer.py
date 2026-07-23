@@ -77,6 +77,7 @@ class AnswerGenerator:
         evidence_types: Optional[list[EvidenceType]],
         min_confidence: ConfidenceLevel,
         min_similarity: float,
+        source_ids: Optional[set[str]] = None,
     ) -> tuple[list[RetrievalResult], list[str]]:
         """Retrieve evidence, decomposing multi-part questions first.
 
@@ -90,7 +91,8 @@ class AnswerGenerator:
         merged: dict[str, RetrievalResult] = {}
         for sq in subs:
             for res in self.retriever.retrieve(
-                sq, k=k, evidence_types=evidence_types, min_confidence=min_confidence
+                sq, k=k, evidence_types=evidence_types,
+                min_confidence=min_confidence, source_ids=source_ids,
             ):
                 if res.similarity < min_similarity:
                     continue
@@ -110,6 +112,7 @@ class AnswerGenerator:
         evidence_types: Optional[list[EvidenceType]] = None,
         min_confidence: ConfidenceLevel = ConfidenceLevel.LOW,
         min_similarity: float = 0.15,
+        source_ids: Optional[set[str]] = None,
     ) -> Answer:
         # Retrieve evidence (decomposing multi-part questions first). The
         # similarity floor is applied per sub-question inside the helper: a
@@ -118,9 +121,22 @@ class AnswerGenerator:
         evidence, sub_questions = self._gather_evidence(
             question, k=k, evidence_types=evidence_types,
             min_confidence=min_confidence, min_similarity=min_similarity,
+            source_ids=source_ids,
         )
 
         if not evidence:
+            filters: list[str] = []
+            if evidence_types:
+                filters.append("type ∈ {" + ", ".join(t.value for t in evidence_types) + "}")
+            if source_ids:
+                filters.append("source ∈ {" + ", ".join(sorted(source_ids)) + "}")
+            if min_confidence.rank > ConfidenceLevel.LOW.rank:
+                filters.append(f"confidence ≥ {min_confidence.value}")
+            filter_note = (
+                " Active filters (" + "; ".join(filters) + ") may be excluding relevant "
+                "passages — try relaxing them." if filters else
+                " Consider ingesting relevant sources and retrying."
+            )
             return Answer(
                 question=question,
                 summary=None,
@@ -129,7 +145,7 @@ class AnswerGenerator:
                     "No sufficiently-relevant evidence was found in the knowledge base "
                     f"for this question (no passage cleared the similarity floor of "
                     f"{min_similarity}). Per the charter, no answer is given beyond the "
-                    "available evidence. Consider ingesting relevant sources and retrying."
+                    "available evidence." + filter_note
                 ],
                 generated_on=date.today().isoformat(),
             )
