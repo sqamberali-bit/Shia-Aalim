@@ -26,6 +26,7 @@ rather than crashing the server.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -1572,12 +1573,15 @@ def main(argv: Optional[list[str]] = None) -> int:
         description="Serve the Shia-Aalim web front-end (FastAPI + uvicorn).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
-    parser.add_argument("--knowledge-dir", default=str(DEFAULT_KNOWLEDGE_DIR))
+    # Defaults come from the environment first so a container/PaaS can configure
+    # the server without changing the command (HOST/PORT/KNOWLEDGE_DIR/EMBEDDER).
+    parser.add_argument("--host", default=os.environ.get("HOST", "127.0.0.1"))
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8000")))
+    parser.add_argument("--knowledge-dir",
+                        default=os.environ.get("KNOWLEDGE_DIR", str(DEFAULT_KNOWLEDGE_DIR)))
     parser.add_argument("--registry", default=str(DEFAULT_REGISTRY))
     parser.add_argument(
-        "--embedder", default="tfidf",
+        "--embedder", default=os.environ.get("EMBEDDER", "tfidf"),
         help="one or a comma-separated list to offer as a UI toggle; the first is "
         "the default (e.g. 'tfidf' or 'tfidf,st:BAAI/bge-m3'). tfidf | hashing | st:<model>",
     )

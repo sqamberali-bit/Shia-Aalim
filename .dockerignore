@@ -1,0 +1,14 @@
+# Keep the build context lean and reproducible. The corpus is rebuilt inside the
+# image by scripts/fetch_public_corpus.sh, so never ship a local one.
+.git
+__pycache__
+**/__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+data/knowledge/**/*.jsonl
+!data/knowledge/sample/*.jsonl
+data/index_cache*
+research/reviews/*.jsonl
+*.tgz
+*.part_*

@@ -1,0 +1,17 @@
+# Render Blueprint — deploy Shia-Aalim from GitHub in a few web-UI clicks.
+# In Render: New + → Blueprint → connect this repo. Render reads the Dockerfile.
+#
+# NOTE on memory: the ~60k-doc public corpus needs an in-memory index of a few
+# hundred MB–1GB. The free/starter tiers (512MB) are NOT enough; use "standard"
+# (2GB) or larger. For a free host with plenty of RAM, prefer Hugging Face
+# Spaces (see docs/deployment.md).
+services:
+  - type: web
+    name: shia-aalim
+    runtime: docker
+    plan: standard          # 2GB RAM. free/starter (512MB) will OOM on this corpus.
+    healthCheckPath: /api/status
+    autoDeploy: true
+    envVars:
+      - key: EMBEDDER
+        value: tfidf         # set to "st:BAAI/bge-m3" (with the embeddings extra) for semantic search

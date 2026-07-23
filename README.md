@@ -1,3 +1,17 @@
+---
+title: Shia-Aalim
+emoji: 📗
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
+<!-- The YAML block above configures a Hugging Face Space (ignored elsewhere).
+     See docs/deployment.md for one-click cloud hosting. -->
+
 # Shia-Aalim (شیعہ عالِم)
 
 **An evidence-first research & lecture assistant for Twelver (Ithnā ʿAsharī)

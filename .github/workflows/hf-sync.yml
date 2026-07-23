@@ -1,0 +1,39 @@
+# Auto-deploy to a Hugging Face Space by mirroring this repo to the Space's git.
+#
+# One-time setup (all in the browser — no local tooling needed):
+#   1. Create a Hugging Face account and a new **Space** → SDK: **Docker** (blank).
+#   2. Create an HF access token with **write** scope
+#      (huggingface.co/settings/tokens).
+#   3. In this GitHub repo → Settings → Secrets and variables → Actions:
+#        • add a **secret**   named  HF_TOKEN  = your HF write token
+#        • add a **variable** named  HF_SPACE  = your-username/your-space-name
+#   4. Push to this branch (or run this workflow manually). The Space rebuilds
+#      the Docker image and goes live.
+#
+# See docs/deployment.md for the full walkthrough.
+name: Sync to Hugging Face Space
+
+on:
+  push:
+    branches: [ "claude/twelver-shia-research-agent-36j49z" ]
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push repository to the Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ vars.HF_SPACE }}
+        run: |
+          if [ -z "$HF_TOKEN" ] || [ -z "$HF_SPACE" ]; then
+            echo "HF_TOKEN secret and HF_SPACE variable must be set — see this file's header." >&2
+            exit 1
+          fi
+          git push --force \
+            "https://hf-sync:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}.git" \
+            HEAD:main
