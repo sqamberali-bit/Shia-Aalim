@@ -18,8 +18,16 @@ COPY . /app
 # Install the app with the web extra (FastAPI + uvicorn).
 RUN pip install --no-cache-dir -e ".[web]"
 
-# Rebuild the public corpus into data/knowledge/ (no private uploads needed).
-RUN bash scripts/fetch_public_corpus.sh
+# Corpus scope: "public" (~60k docs, default, fits small hosts) or "full"
+# (~122k docs incl. Biḥār 101 vols + al-Mīzān 40 vols; needs ~2–4 GB RAM).
+#   • Hugging Face Spaces (no build args): change the default below to "full".
+#   • Render / Cloud Run: set the CORPUS build arg to "full" in the dashboard.
+ARG CORPUS=public
+RUN if [ "$CORPUS" = "full" ]; then \
+        bash scripts/fetch_full_corpus.sh; \
+    else \
+        bash scripts/fetch_public_corpus.sh; \
+    fi
 
 # HOST/PORT/EMBEDDER are read by the app from the environment. PaaS platforms
 # that inject their own $PORT (Render, Cloud Run) override this automatically.

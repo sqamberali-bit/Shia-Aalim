@@ -77,22 +77,27 @@ Railway, Fly.io and Google Cloud Run work the same way — point them at the
 
 ---
 
-## Adding Biḥār al-Anwār and Tafsīr al-Mīzān
+## Full corpus (Biḥār al-Anwār + Tafsīr al-Mīzān)
 
-These came from privately-uploaded source files, so they are not in the public
-rebuild. To include them, make their source repos reachable to the build and
-extend the corpus step:
+Biḥār (101 vols) and al-Mīzān (40 vols) live in public source repos
+(`sqamberali-bit/bihar-al-anwar-source`, `sqamberali-bit/al-mizan-source`), so
+the build can pull them too — it's a **one-line toggle**, no manual editing of
+ingest steps. The Dockerfile has a `CORPUS` build arg (`public` by default):
 
-```dockerfile
-# after the public corpus step in the Dockerfile
-RUN git clone --depth 1 https://github.com/<you>/bihar-source     /tmp/bihar    && \
-    git clone --depth 1 https://github.com/<you>/al-mizan-source  /tmp/almizan  && \
-    pip install --no-cache-dir -e ".[ingest]" && \
-    python scripts/ingest.py --bihar-dir /tmp/bihar --almizan-dir /tmp/almizan
-```
+- **Hugging Face Spaces** (no build args in the UI): in the Space's `Dockerfile`,
+  change `ARG CORPUS=public` → `ARG CORPUS=full`. It rebuilds with everything.
+- **Render / Cloud Run / Railway**: set a **build argument** `CORPUS=full` in the
+  service settings.
 
-(`.[ingest]` pulls in PyMuPDF for the Biḥār PDFs.) Note the full 122k corpus
-needs ~2–4 GB RAM to index — size the instance accordingly.
+`CORPUS=full` runs [`scripts/fetch_full_corpus.sh`](../scripts/fetch_full_corpus.sh):
+it does the public rebuild, then clones the two source repos, installs PyMuPDF,
+and ingests Biḥār + al-Mīzān → ~122k documents.
+
+Two things to size for:
+- **Build**: cloning 101 Biḥār PDFs is a large download and the PDF text
+  extraction adds a few minutes. Give the build ≥5 GB disk (HF Spaces: fine).
+- **RAM**: indexing 122k docs in memory needs **~2–4 GB**. The HF Spaces free
+  tier (16 GB) handles it comfortably; on Render use a plan with ≥4 GB.
 
 ## LLM-composed answers (optional)
 
