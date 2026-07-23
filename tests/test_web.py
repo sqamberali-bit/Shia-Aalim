@@ -147,6 +147,18 @@ def test_answer_payload_carries_markdown_and_embedder(client):
     assert body["embedder"] == "tfidf"
 
 
+def test_answer_language_recorded_via_api(client):
+    r = client.post("/api/answer", json={"question": "intellect", "k": 2, "answer_language": "ur"})
+    assert r.status_code == 200
+    assert r.json()["answer"]["answer_language"] == "ur"
+
+
+def test_status_reports_ai_features(client):
+    # the default test stack has no LLM providers -> all AI features off, no crash
+    ai = client.get("/api/status").json()["ai"]
+    assert ai == {"synthesis": False, "refine": False, "translate": False}
+
+
 def test_answer_reports_query_language_and_crosslingual_caveat(client):
     en = client.post("/api/answer", json={"question": "intellect", "k": 2}).json()
     assert en["answer"]["query_language"] == "en"

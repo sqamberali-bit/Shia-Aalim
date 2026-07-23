@@ -131,12 +131,25 @@ settings (no rebuild, no code edit):
    <https://console.anthropic.com>.
 2. **Turn synthesis on** — same screen → **New variable**: name `SYNTHESIZE`,
    value `claude:claude-sonnet-5` (or `claude:claude-haiku-4-5-20251001` for a
-   cheaper/faster model). Optionally add `DECOMPOSE=rule` to split multi-part
-   questions.
+   cheaper/faster model).
+3. **(Optional) AI spell/term correction** — **New variable**: `REFINE` =
+   `claude:claude-haiku-4-5-20251001`. Misspellings and loose transliterations
+   ("tawheed", "namaz") are corrected before searching, shown as *Interpreted as: …*.
 
 The Space restarts and answers now open with a **Synthesized answer** section
-(the cited evidence stays below it). Cost is per Anthropic API usage — one
-synthesis call per question. Remove the `SYNTHESIZE` variable to turn it off.
+(the cited evidence stays below it).
+
+### Answers in Urdu / Arabic
+Once `SYNTHESIZE=claude:…` is on, an **Answer in: English · اردو · العربية**
+picker appears on the Ask tab. Pick Urdu (or Arabic) and Claude writes the
+answer in that language, translated from the (English/Arabic) evidence — then a
+**cross-lingual verifier is run automatically** (built from your Claude model) to
+check the translation against the sources; anything unsupported is withheld. The
+cited passages stay in their original language below. No GPU needed.
+
+Cost is per Anthropic API usage (roughly: one synthesis call per question, plus
+one verify call for a non-English answer, plus one small correction call if
+`REFINE` is on). Remove a variable to turn that feature off.
 
 ## Configuration reference
 
@@ -149,3 +162,7 @@ command):
 | `HOST` | `0.0.0.0` (in image) | Bind address |
 | `KNOWLEDGE_DIR` | `data/knowledge` | Corpus directory |
 | `EMBEDDER` | `tfidf` | `tfidf` · `hashing` · `st:BAAI/bge-m3` · a comma list |
+| `SYNTHESIZE` | `none` | `none` · `claude:<model>` — AI-written, verified answers (also enables Urdu/Arabic) |
+| `REFINE` | `none` | `none` · `claude:<model>` — AI spelling/term correction of the query |
+| `JUDGE` | `lexical` | `lexical` · `claude:<model>` — entailment verifier |
+| `DECOMPOSE` | `none` | `none` · `rule` · `claude:<model>` — split multi-part questions |

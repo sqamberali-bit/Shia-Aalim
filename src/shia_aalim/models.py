@@ -315,6 +315,8 @@ class Answer:
     generated_on: Optional[str] = None
     sub_questions: list[str] = field(default_factory=list)  # set when decomposed
     query_language: Optional[str] = None  # detected language of the question
+    answer_language: Optional[str] = None  # requested output language (en/ur/ar)
+    refined_query: Optional[str] = None  # AI-corrected query actually searched (if changed)
 
     def all_citations(self) -> list[Citation]:
         return [c for claim in self.claims for c in claim.citations]
@@ -331,6 +333,8 @@ class Answer:
             "question": self.question,
             "sub_questions": self.sub_questions,
             "query_language": self.query_language,
+            "answer_language": self.answer_language,
+            "refined_query": self.refined_query,
             "summary": self.summary,
             "generated_on": self.generated_on or date.today().isoformat(),
             "claims": [

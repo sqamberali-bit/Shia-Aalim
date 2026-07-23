@@ -36,6 +36,7 @@ from .generation.answer import AnswerGenerator
 from .generation.crossref import CrossReferencer, CrossRefResult, build_verse_index
 from .generation.decompose import make_decomposer
 from .generation.lecture import Lecture, LectureGenerator
+from .generation.refine import make_refiner
 from .generation.synthesizer import make_synthesizer
 from .grounding.entailment import make_judge
 from .ingestion.loaders import iter_knowledge_dir
@@ -72,6 +73,7 @@ try:
         evidence_types: Optional[list[str]] = None  # restrict to these types; None = all
         source_ids: Optional[list[str]] = None  # restrict to these books; None/[] = all
         min_confidence: Optional[str] = None  # floor: unverified|low|medium|high
+        answer_language: Optional[str] = None  # output language: en | ur | ar
 
     class LectureBody(_BaseModel):
         topic: str = ""
@@ -123,6 +125,7 @@ class AppConfig:
     synthesize: str = "none"
     judge: str = "lexical"
     decompose: str = "none"
+    refine: str = "none"
     default_k: int = 6
     # When set, each embedder's vectors are cached here (embed once, reuse across
     # restarts). Essential for semantic embedders — the corpus is embedded at
@@ -164,15 +167,34 @@ class Stack:
         self.config = config
         self.known = known
         self.sources_meta = sources_meta or {}
-        # Providers are index-independent, so build them once and share.
-        self._synthesizer = make_synthesizer(config.synthesize)
-        self._judge = make_judge(config.judge)
-        self._decomposer = make_decomposer(config.decompose)
+        self.provider_notes: list[str] = []
+        # Providers are index-independent, so build them once and share. LLM-backed
+        # ones are guarded: a missing/invalid API key must NOT crash the server —
+        # it degrades to extractive answers with a note.
+        self._synthesizer = self._safe("synthesizer", make_synthesizer, config.synthesize)
+        self._judge = self._safe("judge", make_judge, config.judge) or make_judge("lexical")
+        self._decomposer = self._safe("decomposer", make_decomposer, config.decompose)
+        self._refiner = self._safe("refiner", make_refiner, config.refine)
+        # A cross-lingual (Claude) judge for verifying non-English answers. Built
+        # from the synthesizer's model when Claude synthesis is on.
+        self._cross_lingual_judge = None
+        if config.synthesize.startswith("claude"):
+            model = config.synthesize.split(":", 1)[1] if ":" in config.synthesize else "claude-sonnet-5"
+            self._cross_lingual_judge = self._safe("verifier", make_judge, f"claude:{model}")
         self._engines: dict[str, Engine] = {}
         self._errors: dict[str, str] = {}
         self._facets: Optional[dict] = None
         self._verse_index: Optional[dict] = None
         self._narrators: Optional[NarratorIndex] = None
+
+    def _safe(self, label: str, factory, spec):
+        """Build an optional (often LLM-backed) provider without crashing on error."""
+        try:
+            return factory(spec)
+        except Exception as exc:  # noqa: BLE001 - a bad key/spec must not down the server
+            if spec and spec != "none":
+                self.provider_notes.append(f"{label} '{spec}' unavailable: {exc}")
+            return None
 
     @property
     def n_documents(self) -> int:
@@ -276,6 +298,8 @@ class Stack:
                 judge=self._judge,
                 decomposer=self._decomposer,
                 multilingual=multilingual,
+                refiner=self._refiner,
+                cross_lingual_judge=self._cross_lingual_judge,
             ),
             lectures=LectureGenerator(
                 retriever, synthesizer=self._synthesizer, judge=self._judge
@@ -453,6 +477,14 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
             "synthesizer": cfg.synthesize,
             "judge": cfg.judge,
             "decomposer": cfg.decompose,
+            "refiner": cfg.refine,
+            # Which AI features are actually live (built OK with a working key).
+            "ai": {
+                "synthesis": stack._synthesizer is not None,
+                "refine": stack._refiner is not None,
+                "translate": stack._cross_lingual_judge is not None,
+            },
+            "provider_notes": stack.provider_notes,
             "default_k": cfg.default_k,
         }
 
@@ -470,12 +502,16 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
         except EmbedderUnavailable as exc:
             return JSONResponse({"error": _embedder_error(body.embedder, exc)}, status_code=503)
         k = _clamp_int(body.k, default=stack.config.default_k, lo=1, hi=25)
+        lang = (body.answer_language or "en").lower()
+        if lang not in ("en", "ur", "ar"):
+            lang = "en"
         answer = engine.answers.answer(
             question,
             k=k,
             evidence_types=_parse_types(body.evidence_types),
             source_ids=_parse_sources(body.source_ids),
             min_confidence=_parse_confidence(body.min_confidence),
+            answer_language=lang,
         )
         markdown = engine.answers.format_markdown(answer)
         payload = answer_to_payload(answer, markdown)
@@ -677,69 +713,109 @@ INDEX_HTML = r"""<!doctype html>
 <title>Shia-Aalim — evidence-first research assistant</title>
 <style>
   :root {
-    --bg: #0f1114; --panel: #171a1f; --panel2: #1e232a; --line: #2a3038;
-    --ink: #e7ecf2; --muted: #93a1b0; --accent: #3f8cff; --accent2: #2b6fd6;
+    --bg: #0c0f13; --panel: #141922; --panel2: #1b212c; --line: #29313d;
+    --ink: #e9eef4; --muted: #93a1b2; --accent: #17a67c; --accent2: #128a67;
+    --accent-soft: rgba(23,166,124,.14); --gold: #d8ad5f; --gold-soft: rgba(216,173,95,.14);
     --high: #2ea043; --medium: #d29922; --low: #db6d28; --unverified: #6e7681;
-    --quran: #7c5cff; --hadith: #2ea3a3; --tafsir: #c46fd6;
+    --quran: #7c5cff; --hadith: #17a67c; --tafsir: #c46fd6;
     --historical: #d2792a; --scholarly: #4b8ef0;
+    --shadow: 0 1px 2px rgba(0,0,0,.24), 0 6px 20px rgba(0,0,0,.22);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.2);
+    --r: 12px; --r-sm: 9px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --font-arabic: "Noto Naskh Arabic", "Amiri", "Scheherazade New", "Traditional Arabic", serif;
+    --font-urdu: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Noto Naskh Arabic", serif;
   }
   @media (prefers-color-scheme: light) {
     :root {
-      --bg: #f5f7fa; --panel: #ffffff; --panel2: #eef1f5; --line: #dde3ea;
-      --ink: #10151c; --muted: #5a6672; --accent: #1f6feb; --accent2: #1a5fd0;
+      --bg: #f6f7f5; --panel: #ffffff; --panel2: #eef1ee; --line: #e0e4e0;
+      --ink: #14181d; --muted: #5a6672; --accent: #0f8f6a; --accent2: #0b7455;
+      --accent-soft: rgba(15,143,106,.10); --gold: #b8863a; --gold-soft: rgba(184,134,58,.12);
+      --shadow: 0 1px 2px rgba(20,30,40,.06), 0 8px 24px rgba(20,30,40,.07);
+      --shadow-sm: 0 1px 2px rgba(20,30,40,.06);
     }
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font: 15px/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
   }
   header {
-    padding: 20px 22px; border-bottom: 1px solid var(--line);
-    background: var(--panel); position: sticky; top: 0; z-index: 5;
+    padding: 16px 22px; border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--panel) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(8px); position: sticky; top: 0; z-index: 15;
   }
-  header h1 { margin: 0; font-size: 20px; letter-spacing: .2px; }
-  header .tag { color: var(--muted); font-size: 13px; margin-top: 3px; }
-  header .tag b { color: var(--accent); }
-  main { max-width: 900px; margin: 0 auto; padding: 22px 18px 80px; }
-  .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+  .brand { display: flex; align-items: center; gap: 13px; max-width: 1060px; margin: 0 auto; }
+  .brand .mark {
+    width: 40px; height: 40px; border-radius: 11px; flex: none; display: grid; place-items: center;
+    font-size: 21px; color: #fff; background: linear-gradient(150deg, var(--accent), var(--accent2));
+    box-shadow: 0 4px 14px var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 60%, #000);
+  }
+  header h1 { margin: 0; font-family: var(--font-serif); font-size: 21px; font-weight: 650; letter-spacing: .2px; }
+  header h1 .ar { font-family: var(--font-arabic); font-size: 18px; color: var(--gold); margin-left: 6px; font-weight: 500; }
+  header .tag { color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+  header .tag b { color: var(--accent); font-weight: 600; }
+  main { max-width: 1060px; margin: 0 auto; padding: 26px 20px 90px; }
+  .tabs {
+    display: inline-flex; gap: 2px; margin-bottom: 22px; padding: 4px;
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 999px; flex-wrap: wrap;
+  }
   .tab {
-    padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px;
-    background: var(--panel); color: var(--muted); cursor: pointer; font-size: 14px;
+    padding: 8px 17px; border: 0; border-radius: 999px; background: transparent;
+    color: var(--muted); cursor: pointer; font-size: 13.5px; font-weight: 550; transition: all .15s;
   }
-  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { background: var(--panel); color: var(--accent); box-shadow: var(--shadow-sm); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch; }
   input[type=text] {
-    flex: 1 1 320px; padding: 12px 14px; border-radius: 10px;
-    border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 15px;
+    flex: 1 1 320px; padding: 13px 15px; border-radius: var(--r); font-size: 15px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink); transition: border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus, input[type=number]:focus, select:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
   }
   input[type=number] {
-    width: 88px; padding: 12px 10px; border-radius: 10px;
-    border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 15px;
+    width: 84px; padding: 13px 10px; border-radius: var(--r); font-size: 15px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink);
   }
   button.go {
-    padding: 12px 20px; border: 0; border-radius: 10px; cursor: pointer;
-    background: var(--accent); color: #fff; font-size: 15px; font-weight: 600;
+    padding: 13px 22px; border: 0; border-radius: var(--r); cursor: pointer;
+    background: linear-gradient(150deg, var(--accent), var(--accent2)); color: #fff;
+    font-size: 15px; font-weight: 600; box-shadow: 0 2px 10px var(--accent-soft); transition: filter .15s, transform .05s;
   }
-  button.go:disabled { opacity: .5; cursor: default; }
-  label.fld { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+  button.go:hover { filter: brightness(1.06); }
+  button.go:active { transform: translateY(1px); }
+  button.go:disabled { opacity: .5; cursor: default; filter: none; }
+  label.fld { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .langsel { display: flex; align-items: center; gap: 8px; margin: 12px 2px 0; flex-wrap: wrap; }
+  .langsel .lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .lang-pills { display: inline-flex; gap: 3px; padding: 3px; background: var(--panel2); border: 1px solid var(--line); border-radius: 999px; }
+  .lang-pill { padding: 6px 14px; border: 0; background: transparent; color: var(--muted); border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 550; }
+  .lang-pill.active { background: var(--panel); color: var(--accent); box-shadow: var(--shadow-sm); }
+  .lang-pill .native { font-family: var(--font-urdu); font-size: 15px; }
   .hint { color: var(--muted); font-size: 13px; margin: 10px 2px 0; }
   .status { color: var(--muted); font-size: 12.5px; margin-top: 14px; }
   .result { margin-top: 22px; }
-  .qtitle { font-size: 18px; font-weight: 650; margin: 0 0 6px; }
+  .qtitle { font-family: var(--font-serif); font-size: 20px; font-weight: 650; margin: 0 0 6px; line-height: 1.35; }
   .subq { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
   .summary {
-    background: var(--panel2); border: 1px solid var(--line); border-left: 3px solid var(--accent);
-    padding: 12px 14px; border-radius: 8px; margin: 0 0 18px; white-space: pre-wrap;
+    background: linear-gradient(180deg, var(--accent-soft), transparent), var(--panel);
+    border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    padding: 16px 18px; border-radius: var(--r); margin: 0 0 20px; white-space: pre-wrap;
+    box-shadow: var(--shadow-sm); font-size: 15.5px; line-height: 1.7;
   }
-  .summary .lbl { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+  .summary .lbl { color: var(--accent); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; white-space: normal; }
+  .summary.rtl { direction: rtl; text-align: right; font-family: var(--font-urdu); font-size: 19px; line-height: 2.15; border-left: 0; border-right: 3px solid var(--gold); }
+  .summary.rtl .lbl { color: var(--gold); direction: rtl; font-family: var(--font-sans); }
   .evhead { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 18px 0 8px; }
   .ev {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-    padding: 12px 14px; margin-bottom: 10px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+    padding: 13px 15px; margin-bottom: 11px; box-shadow: var(--shadow-sm);
   }
   .ev .txt { margin: 0 0 8px; }
-  .ev .ar { direction: rtl; text-align: right; font-size: 17px; line-height: 1.9; }
+  .ev .ar { direction: rtl; text-align: right; font-family: var(--font-arabic); font-size: 19px; line-height: 2.05; }
   .badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .badge {
     font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
@@ -870,8 +946,13 @@ INDEX_HTML = r"""<!doctype html>
 </head>
 <body>
 <header>
-  <h1>Shia-Aalim</h1>
-  <div class="tag">Evidence-first Twelver (Ithnā ʿAsharī) research &amp; lecture assistant · <b>No citation = not a fact.</b></div>
+  <div class="brand">
+    <div class="mark">☾</div>
+    <div>
+      <h1>Shia-Aalim <span class="ar">شیعہ عالِم</span></h1>
+      <div class="tag">Evidence-first Twelver (Ithnā ʿAsharī) research &amp; lecture assistant · <b>No citation = not a fact.</b></div>
+    </div>
+  </div>
 </header>
 <main>
   <div class="tabs">
@@ -921,6 +1002,15 @@ INDEX_HTML = r"""<!doctype html>
         </div>
       </div>
     </details>
+    <div class="langsel" id="langSel" style="display:none">
+      <span class="lbl">Answer in</span>
+      <div class="lang-pills">
+        <button class="lang-pill active" data-lang="en" onclick="setAnswerLang('en')">English</button>
+        <button class="lang-pill" data-lang="ur" onclick="setAnswerLang('ur')"><span class="native">اردو</span> Urdu</button>
+        <button class="lang-pill" data-lang="ar" onclick="setAnswerLang('ar')"><span class="native">العربية</span> Arabic</button>
+      </div>
+      <span class="idxnote" id="langNote"></span>
+    </div>
     <div class="hint">Every answer is grounded in retrieved, cited passages. Weak or disputed evidence is flagged, never hidden.</div>
     <div class="toolbar hidden" id="askTools">
       <button class="mini" onclick="copyMd('ask')">⧉ Copy Markdown</button>
@@ -1421,7 +1511,8 @@ async function ask(){
     var res = await fetch('/api/answer', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
       question:q, k:Number(k), embedder:selectedEmbedder(),
       evidence_types: selectedTypes('ask'), source_ids: selectedSources('ask'),
-      min_confidence: document.getElementById('askConf').value
+      min_confidence: document.getElementById('askConf').value,
+      answer_language: answerLang
     })});
     var data = await res.json();
     if(data.error){ box.innerHTML = '<div class="empty">'+esc(data.error)+'</div>'; return; }
@@ -1434,14 +1525,27 @@ async function ask(){
 }
 
 var LANG_NAME = { ar:'Arabic', fa:'Persian', ur:'Urdu', en:'English' };
+var answerLang = 'en';
+function setAnswerLang(l){
+  answerLang = l;
+  document.querySelectorAll('#langSel .lang-pill').forEach(function(p){ p.classList.toggle('active', p.dataset.lang===l); });
+  var note = document.getElementById('langNote');
+  note.textContent = (l==='en') ? '' : 'AI translates the answer from the cited English/Arabic evidence, then verifies it.';
+}
 function renderAnswer(box, a){
   var h = '<div class="qtitle">'+esc(a.question)+'</div>';
+  if(a.refined_query)
+    h += '<p class="subq">Interpreted as: <b>'+esc(a.refined_query)+'</b></p>';
   if(a.query_language && a.query_language !== 'en' && a.query_language !== 'unknown')
     h += '<p class="subq">Query language: <b>'+esc(LANG_NAME[a.query_language] || a.query_language)+'</b></p>';
   if(a.sub_questions && a.sub_questions.length)
     h += '<p class="subq">Decomposed into: '+a.sub_questions.map(esc).join(' · ')+'</p>';
-  if(a.summary)
-    h += '<div class="summary"><div class="lbl">Synthesized answer — LLM prose, verified against the evidence below</div>'+esc(a.summary)+'</div>';
+  if(a.summary){
+    var isRtl = (a.answer_language === 'ur' || a.answer_language === 'ar');
+    var lbl = isRtl ? ('AI answer in '+(LANG_NAME[a.answer_language]||'')+' — translated from the evidence &amp; verified')
+                    : 'Synthesized answer — AI prose, verified against the evidence below';
+    h += '<div class="summary'+(isRtl?' rtl':'')+'"><div class="lbl">'+lbl+'</div>'+esc(a.summary)+'</div>';
+  }
   if(!a.claims || !a.claims.length){
     h += '<div class="empty">No sufficiently-relevant evidence was found in the knowledge base for this question.</div>';
   } else {
@@ -1565,9 +1669,25 @@ function applyStatus(s){
   if(cur && embedderStates[cur] !== undefined) sel.value = cur;   // keep the user's choice
   sel.disabled = (s.embedders||[]).length < 2;   // nothing to switch between
   onEmbedderChange();
+
+  // Reveal the answer-language picker only when AI synthesis is actually live.
+  var ai = s.ai || {};
+  document.getElementById('langSel').style.display = ai.synthesis ? '' : 'none';
+  if(ai.synthesis && !ai.translate){
+    // synthesis on but no cross-lingual verifier -> Urdu/Arabic can't be verified
+    document.querySelectorAll('#langSel .lang-pill[data-lang="ur"],#langSel .lang-pill[data-lang="ar"]').forEach(function(p){
+      p.title = 'Needs an AI verifier (JUDGE=claude) to check translations';
+    });
+  }
+  var aiBits = [];
+  if(ai.synthesis) aiBits.push('AI answers');
+  if(ai.refine) aiBits.push('spell-check');
+  if(ai.translate) aiBits.push('translation');
+  var aiTxt = aiBits.length ? ' · <span style="color:var(--accent)">'+aiBits.join(' + ')+' on</span>' : '';
   document.getElementById('status').innerHTML =
-    'Corpus: <b>'+s.documents.toLocaleString()+'</b> documents · default index <code>'+esc(s.default_embedder)+
-    '</code> · synthesizer <code>'+esc(s.synthesizer)+'</code> · judge <code>'+esc(s.judge)+'</code>';
+    'Corpus: <b>'+s.documents.toLocaleString()+'</b> documents · index <code>'+esc(s.default_embedder)+'</code>'+aiTxt;
+  if((s.provider_notes||[]).length)
+    document.getElementById('status').innerHTML += '<br><span style="color:var(--low)">'+s.provider_notes.map(esc).join('; ')+'</span>';
 }
 
 function refreshStatus(){
@@ -1612,6 +1732,8 @@ def main(argv: Optional[list[str]] = None) -> int:
                         help="lexical | mock | claude:<model> (env: JUDGE)")
     parser.add_argument("--decompose", default=os.environ.get("DECOMPOSE", "none"),
                         help="none | rule | claude:<model> (env: DECOMPOSE)")
+    parser.add_argument("--refine", default=os.environ.get("REFINE", "none"),
+                        help="AI query correction: none | mock | claude:<model> (env: REFINE)")
     parser.add_argument("--k", type=int, default=6, help="default evidence count per answer")
     args = parser.parse_args(argv)
 
@@ -1630,6 +1752,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         synthesize=args.synthesize,
         judge=args.judge,
         decompose=args.decompose,
+        refine=args.refine,
         default_k=args.k,
         cache_dir=Path(cache_env) if cache_env else None,
     )

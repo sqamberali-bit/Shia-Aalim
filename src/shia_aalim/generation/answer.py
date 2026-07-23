@@ -38,7 +38,9 @@ class Synthesizer(Protocol):
     that cites it. The output is re-verified by the grounding layer regardless.
     """
 
-    def synthesize(self, question: str, evidence: list[RetrievalResult]) -> str:
+    def synthesize(
+        self, question: str, evidence: list[RetrievalResult], *, language: str = "English"
+    ) -> str:
         ...
 
 
@@ -64,6 +66,8 @@ class AnswerGenerator:
         judge: Optional["EntailmentJudge"] = None,
         decomposer: Optional["QueryDecomposer"] = None,
         multilingual: bool = False,
+        refiner: Optional[object] = None,
+        cross_lingual_judge: Optional["EntailmentJudge"] = None,
     ) -> None:
         self.retriever = retriever
         self.synthesizer = synthesizer
@@ -73,6 +77,11 @@ class AnswerGenerator:
         # True when the active embedder is a multilingual semantic model that can
         # bridge scripts; gates the honest cross-lingual caveat below.
         self.multilingual = multilingual
+        self.refiner = refiner  # AI spelling/term correction before retrieval
+        # Judge used to verify a NON-English answer against the (English/Arabic)
+        # evidence — must be cross-lingual (a Claude judge). Without it, a
+        # non-English answer cannot be verified and is withheld.
+        self.cross_lingual_judge = cross_lingual_judge
 
     def _gather_evidence(
         self,
@@ -118,10 +127,26 @@ class AnswerGenerator:
         min_confidence: ConfidenceLevel = ConfidenceLevel.LOW,
         min_similarity: float = 0.15,
         source_ids: Optional[set[str]] = None,
+        answer_language: str = "en",
     ) -> Answer:
+        # AI query refinement (spelling / term normalisation) before retrieval.
+        # The user's original text is kept; the corrected form is what we search.
+        original_question = question
+        refined_query: Optional[str] = None
+        refine_caveats: list[str] = []
+        if self.refiner is not None:
+            try:
+                r = self.refiner.refine(question)
+                if r.changed and r.corrected.strip():
+                    question = r.corrected
+                    refined_query = r.corrected
+                    refine_caveats.append(f"Interpreted your question as: “{r.corrected}”.")
+            except Exception:  # noqa: BLE001 - refinement is best-effort, never fatal
+                pass
+
         # Detect the query language up front so it is recorded on every path and
         # the cross-lingual caveat can be raised honestly.
-        language = detect_language(question)
+        language = detect_language(original_question)
         lang_caveats = self._language_caveats(language)
 
         # Retrieve evidence (decomposing multi-part questions first). The
@@ -148,11 +173,13 @@ class AnswerGenerator:
                 " Consider ingesting relevant sources and retrying."
             )
             return Answer(
-                question=question,
+                question=original_question,
                 summary=None,
                 sub_questions=sub_questions,
                 query_language=language.value,
-                caveats=[
+                answer_language=answer_language,
+                refined_query=refined_query,
+                caveats=refine_caveats + [
                     "No sufficiently-relevant evidence was found in the knowledge base "
                     f"for this question (no passage cleared the similarity floor of "
                     f"{min_similarity}). Per the charter, no answer is given beyond the "
@@ -172,27 +199,47 @@ class AnswerGenerator:
             for res in evidence
         ]
 
+        # Map the requested output-language code to a name for the synthesizer.
+        lang_name = {"en": "English", "ur": "Urdu", "ar": "Arabic"}.get(answer_language, "English")
+        non_english = answer_language not in ("en", "", None)
+
         summary = None
         caveats: list[str] = []
         if self.synthesizer is not None:
-            try:
-                candidate = self.synthesizer.synthesize(question, evidence)
-            except Exception as exc:  # noqa: BLE001
-                candidate = None
-                caveats.append(f"Synthesizer failed; returning extractive evidence only ({exc}).")
-            if candidate:
-                # Re-verify the LLM prose before trusting it (charter: post-
-                # generation fact verification). Reject rather than show
-                # unsupported/invented-citation prose — the cited evidence below
-                # is always available as the grounded fallback.
-                report = verify_synthesis(candidate, evidence, judge=self.judge)
-                if report.grounded:
-                    summary = candidate
-                else:
-                    caveats.append(
-                        "Synthesized answer REJECTED by verification and withheld "
-                        "(showing cited evidence instead): " + "; ".join(report.problems[:3])
-                    )
+            # A non-English answer can only be VERIFIED by a cross-lingual (Claude)
+            # judge — the lexical judge can't match Urdu prose to English evidence.
+            # Without one, we don't emit an unverifiable answer.
+            verify_judge = self.cross_lingual_judge if non_english else self.judge
+            if non_english and self.cross_lingual_judge is None:
+                caveats.append(
+                    f"Answer language '{lang_name}' needs an AI verifier (JUDGE=claude:…) to "
+                    "check the translation against the evidence; without it the "
+                    f"{lang_name} answer is withheld and the cited evidence is shown."
+                )
+            else:
+                try:
+                    # Pass the target language only when non-English, so synthesizers
+                    # with the older two-arg signature keep working for English.
+                    if non_english:
+                        candidate = self.synthesizer.synthesize(question, evidence, language=lang_name)
+                    else:
+                        candidate = self.synthesizer.synthesize(question, evidence)
+                except Exception as exc:  # noqa: BLE001
+                    candidate = None
+                    caveats.append(f"Synthesizer failed; returning extractive evidence only ({exc}).")
+                if candidate:
+                    # Re-verify the LLM prose before trusting it (charter: post-
+                    # generation fact verification). Reject rather than show
+                    # unsupported/invented-citation prose — the cited evidence below
+                    # is always available as the grounded fallback.
+                    report = verify_synthesis(candidate, evidence, judge=verify_judge)
+                    if report.grounded:
+                        summary = candidate
+                    else:
+                        caveats.append(
+                            "Synthesized answer REJECTED by verification and withheld "
+                            "(showing cited evidence instead): " + "; ".join(report.problems[:3])
+                        )
 
         if sub_questions:
             caveats.append(
@@ -200,15 +247,17 @@ class AnswerGenerator:
                 + " | ".join(sub_questions)
             )
 
-        caveats += lang_caveats
+        caveats = refine_caveats + caveats + lang_caveats
         answer = Answer(
-            question=question,
+            question=original_question,
             claims=claims,
             summary=summary,
             caveats=caveats,
             generated_on=date.today().isoformat(),
             sub_questions=sub_questions,
             query_language=language.value,
+            answer_language=answer_language,
+            refined_query=refined_query,
         )
 
         report = check_answer_grounding(

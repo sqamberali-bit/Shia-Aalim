@@ -74,7 +74,9 @@ class MockSynthesizer:
     def __init__(self, max_items: int = 3) -> None:
         self.max_items = max_items
 
-    def synthesize(self, question: str, evidence: list[RetrievalResult]) -> str:
+    def synthesize(
+        self, question: str, evidence: list[RetrievalResult], *, language: str = "English"
+    ) -> str:
         if not evidence:
             return "The available evidence does not address this question."
         parts = []
@@ -113,11 +115,21 @@ class ClaudeSynthesizer:
         self.temperature = temperature
         self._system = load_system_prompt()
 
-    def synthesize(self, question: str, evidence: list[RetrievalResult]) -> str:
+    def synthesize(
+        self, question: str, evidence: list[RetrievalResult], *, language: str = "English"
+    ) -> str:
         block = format_evidence_block(evidence)
+        lang_line = ""
+        if language and language.strip().lower() not in ("english", "en", ""):
+            lang_line = (
+                f"\n\nWrite your ENTIRE answer in {language}. Keep the [n] citation markers "
+                "exactly as bracketed digits. Translate the *meaning* of the evidence "
+                "faithfully into " + language + " — never add anything the evidence does not "
+                "state, and do not omit the citations. Keep proper names recognisable."
+            )
         user = (
             f"QUESTION:\n{question}\n\nEVIDENCE:\n{block}\n\n"
-            "Write a grounded, cited answer using only the evidence above."
+            "Write a grounded, cited answer using only the evidence above." + lang_line
         )
         resp = self._client.messages.create(
             model=self.model,
