@@ -63,8 +63,12 @@ the research loop updates.
         gold set) and runs everywhere
       - `PersistentVectorStore` — embed the 101k-doc corpus once, cache on disk
       - `scripts/benchmark_retrieval.py` — measure embedders on the gold set
-- [ ] Run BGE-M3 end-to-end on the full corpus (needs an HF-reachable env) and
-      record the semantic recall/MRR lift over TF-IDF
+- [x] Benchmark harnesses that record results — `scripts/benchmark_retrieval.py`
+      and `scripts/eval_end_to_end.py` (both `--out`). Measured TF-IDF ~2x's
+      hashing recall (0.33 -> 0.67 recall@10); citation-accuracy 1.0 /
+      hallucination 0.0 hold across embedders. See [`docs/benchmarks.md`](benchmarks.md).
+- [ ] Run BGE-M3 + Claude end-to-end in an HF/key-enabled env and fill in the
+      pending rows (this sandbox blocks HuggingFace + has no key — numbers NOT fabricated)
 - [ ] Stand up Qdrant behind `VectorStore`; persistence + filtering at scale
 - [ ] Add a reranker stage (bge-reranker) and re-measure precision/recall
 - [ ] Grow the evaluation gold set to 100+ labelled queries

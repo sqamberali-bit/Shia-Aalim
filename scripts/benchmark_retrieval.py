@@ -18,6 +18,7 @@ charter's evaluation discipline.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -72,6 +73,8 @@ def main() -> int:
                         help="comma-separated specs (e.g. hashing,tfidf,st:BAAI/bge-m3)")
     parser.add_argument("--corpus", default=str(ROOT / "data/knowledge/quran/quran.jsonl"))
     parser.add_argument("--k", type=int, default=10)
+    parser.add_argument("--out", metavar="PATH",
+                        help="append the results as a JSON line (e.g. research/benchmarks/retrieval.jsonl)")
     args = parser.parse_args()
 
     corpus = Path(args.corpus)
@@ -96,6 +99,22 @@ def main() -> int:
         print("  ".join("-" * widths[c] for c in cols))
         for r in rows:
             print("  ".join(str(r[c]).ljust(widths[c]) for c in cols))
+
+    if args.out and rows:
+        import datetime as _dt
+        record = {
+            "run_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            "corpus": corpus.name,
+            "n_docs": len(docs),
+            "k": args.k,
+            "n_gold": len(DEFAULT_GOLD),
+            "results": rows,
+        }
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with out.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+        print(f"\nrecorded -> {out}")
     return 0
 
 
