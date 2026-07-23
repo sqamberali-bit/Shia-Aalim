@@ -36,16 +36,15 @@ RUN if [ "$CORPUS" = "full" ]; then \
 #       SEMANTIC=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 #   • Best quality (BGE-M3) — wants a GPU Space:
 #       SEMANTIC=BAAI/bge-m3
-# The WHOLE corpus is embedded ONCE here at build time and cached to disk, so
-# the running server loads it instantly and stays responsive. (Embedding a large
-# corpus with a neural model on CPU is slow — expect a much longer build.)
+# Setting SEMANTIC only installs the model libraries here (fast, keeps the build
+# safe). The corpus is embedded at container STARTUP — where a GPU Space's GPU
+# is available; the HF Docker build runs on CPU. See scripts/serve.sh.
 ARG SEMANTIC=""
 ENV INDEX_CACHE_DIR=/app/data/index_cache \
     SEMANTIC_MODEL=${SEMANTIC}
 RUN if [ -n "$SEMANTIC" ]; then \
-        echo "Enabling semantic search with model: $SEMANTIC" && \
-        pip install --no-cache-dir -e ".[embeddings]" && \
-        python scripts/warm_index.py --embedder "st:${SEMANTIC}" ; \
+        echo "Enabling semantic search with model: $SEMANTIC (embeddings extra)" && \
+        pip install --no-cache-dir -e ".[embeddings]" ; \
     fi
 
 # HOST/PORT/EMBEDDER are read by the app from the environment. PaaS platforms

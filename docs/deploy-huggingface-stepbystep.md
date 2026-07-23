@@ -68,17 +68,18 @@ cross-references — on a public URL you can share.
   **CPU basic (16 GB)** — Space → *Settings → Hardware*.
 - **Re-deploy after any change:** commit to the branch again; sync re-runs.
 
-## Optional — semantic search + Persian/Urdu
-Semantic search ranks by meaning and makes Persian/Urdu work. It embeds the
-whole corpus once at build time (cached for fast runtime). Enable it by editing
-one line in the `Dockerfile` on your branch — change `ARG SEMANTIC=""` to a
-model — then commit (which re-syncs and rebuilds):
+## Optional — semantic search + Persian/Urdu (GPU recommended)
+Semantic search ranks by meaning and makes Persian/Urdu work. The corpus is
+embedded once at **container startup** (on the GPU) and cached. Do it in order:
 
-- **Free CPU:** `ARG SEMANTIC=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
-  — ⚠️ the build gets **much longer** (embedding 122k docs on CPU); if it times
-  out, revert the line. Best for a smaller corpus.
-- **Best (BGE-M3):** switch the Space to a **GPU** (Space → *Settings → Hardware*
-  → e.g. T4 small, pausable), then `ARG SEMANTIC=BAAI/bge-m3`.
+1. **Add a GPU first:** Space → *Settings → Hardware* → pick a GPU (e.g.
+   **T4 small** — hourly, and **pausable** so it's cheap). Wait until it's active.
+2. **Turn it on:** edit `Dockerfile` on your branch, change `ARG SEMANTIC=""`
+   to `ARG SEMANTIC=BAAI/bge-m3`, commit (re-syncs + rebuilds).
+3. On first start it embeds the full 122k corpus on the GPU (~a few minutes),
+   then serves. Pick **st:BAAI/bge-m3** from the *Retrieval index* dropdown.
 
-After it rebuilds, pick **st:…** from the *Retrieval index* dropdown in the app.
-See [`deployment.md`](deployment.md) for details.
+> ⚠️ Add the GPU **before** setting `SEMANTIC`. On a CPU box, BGE-M3 over 122k
+> docs would take hours and stall startup.
+
+See [`deployment.md`](deployment.md) for the free-CPU alternative and details.

@@ -50,31 +50,31 @@ index builds, and is fast afterwards.
 ### Turn on semantic search + Persian/Urdu (optional)
 
 Semantic search ranks by *meaning* (not just keywords) and makes Persian/Urdu
-queries work. It uses a neural model, so the whole corpus is embedded **once at
-build time** and cached — the running server then loads it instantly. Enable it
-by setting the **`SEMANTIC`** build arg to a model:
+queries work. It uses a neural model, so the corpus is embedded once into an
+on-disk cache and reused on later starts. **The embedding happens at container
+startup, not at build** — because on Hugging Face the Docker *build* runs on CPU,
+while a GPU Space's GPU is only available at *runtime*. So the build stays fast
+and safe; the first start does the (one-time) embedding.
 
-- **Free CPU tier** — a fast multilingual model that CPUs can handle:
-  ```
-  SEMANTIC=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-  ```
-  ⚠️ Embedding a large corpus on CPU is slow — the **build takes much longer**
-  (tens of minutes for the full corpus), and if the platform's build timeout is
-  hit the build fails. Best for the public/subset corpus, or accept a long build.
-- **Best quality (BGE-M3)** — needs a **GPU** Space (see below):
-  ```
-  SEMANTIC=BAAI/bge-m3
-  ```
+Enable it with the **`SEMANTIC`** build arg = a model. On HF Spaces (no build-arg
+UI) change `ARG SEMANTIC=""` in the `Dockerfile`; on Render/Cloud Run set the
+`SEMANTIC` build arg.
 
-On Hugging Face Spaces (no build-arg UI): change `ARG SEMANTIC=""` in the
-`Dockerfile` to the model, e.g. `ARG SEMANTIC=BAAI/bge-m3`. On Render/Cloud Run:
-set the `SEMANTIC` build arg. Then pick **st:…** from the *Retrieval index*
-dropdown in the app.
+**Recommended: a small GPU with BGE-M3 (best quality, full corpus).**
+Do this in order:
+1. Space → *Settings → Hardware* → pick a GPU (e.g. **T4 small** — hourly, and
+   **pausable** so it's cheap). Wait until it's active.
+2. Set `ARG SEMANTIC=BAAI/bge-m3` and rebuild. On first start it embeds the full
+   122k corpus on the GPU (~a few minutes), caches it, and serves. Pick
+   **st:BAAI/bge-m3** from the *Retrieval index* dropdown.
 
-**Recommended for real full-corpus semantic: a small GPU.** On Hugging Face,
-Space → *Settings → Hardware* → pick a GPU (e.g. **T4 small**, hourly, pausable).
-With a GPU, `SEMANTIC=BAAI/bge-m3` embeds the full 122k corpus quickly at build
-and answers fast. On free CPU, prefer the MiniLM model and/or a smaller corpus.
+> ⚠️ Set `SEMANTIC` **after** the GPU is active. On a CPU box, embedding 122k
+> docs with BGE-M3 would take hours and stall startup.
+
+**Free CPU alternative (lower quality, smaller corpus).** Use a fast multilingual
+model — `SEMANTIC=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` —
+and prefer the public/subset corpus; on CPU the first-start warm still takes many
+minutes.
 
 ---
 
