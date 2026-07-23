@@ -258,6 +258,9 @@ class Stack:
         except Exception as exc:  # noqa: BLE001 - report, don't crash the server
             self._errors[spec] = str(exc)
             raise EmbedderUnavailable(str(exc)) from exc
+        # A semantic (sentence-transformers) index can bridge scripts; a lexical
+        # one cannot. This gates the honest cross-lingual caveat on answers.
+        multilingual = spec.startswith(("st:", "sentence-transformers:"))
         engine = Engine(
             answers=AnswerGenerator(
                 retriever,
@@ -265,6 +268,7 @@ class Stack:
                 known_source_ids=self.known,
                 judge=self._judge,
                 decomposer=self._decomposer,
+                multilingual=multilingual,
             ),
             lectures=LectureGenerator(
                 retriever, synthesizer=self._synthesizer, judge=self._judge
@@ -1407,8 +1411,11 @@ async function ask(){
   finally { btn.disabled = false; refreshStatus(); }
 }
 
+var LANG_NAME = { ar:'Arabic', fa:'Persian', ur:'Urdu', en:'English' };
 function renderAnswer(box, a){
   var h = '<div class="qtitle">'+esc(a.question)+'</div>';
+  if(a.query_language && a.query_language !== 'en' && a.query_language !== 'unknown')
+    h += '<p class="subq">Query language: <b>'+esc(LANG_NAME[a.query_language] || a.query_language)+'</b></p>';
   if(a.sub_questions && a.sub_questions.length)
     h += '<p class="subq">Decomposed into: '+a.sub_questions.map(esc).join(' · ')+'</p>';
   if(a.summary)

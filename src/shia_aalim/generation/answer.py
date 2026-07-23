@@ -26,6 +26,7 @@ from ..grounding.entailment import EntailmentJudge
 from .decompose import QueryDecomposer
 from ..grounding.synthesis import verify_synthesis
 from ..grounding.verify import check_answer_grounding
+from ..language import Language, detect_language, display_name, is_cross_lingual
 from ..models import Answer, Claim, ConfidenceLevel, EvidenceType
 from ..retrieval.retriever import Retriever, RetrievalResult
 
@@ -62,12 +63,16 @@ class AnswerGenerator:
         known_source_ids: Optional[set[str]] = None,
         judge: Optional["EntailmentJudge"] = None,
         decomposer: Optional["QueryDecomposer"] = None,
+        multilingual: bool = False,
     ) -> None:
         self.retriever = retriever
         self.synthesizer = synthesizer
         self.known_source_ids = known_source_ids
         self.judge = judge  # entailment judge for verifying synthesized prose
         self.decomposer = decomposer  # splits multi-part questions before retrieval
+        # True when the active embedder is a multilingual semantic model that can
+        # bridge scripts; gates the honest cross-lingual caveat below.
+        self.multilingual = multilingual
 
     def _gather_evidence(
         self,
@@ -114,6 +119,11 @@ class AnswerGenerator:
         min_similarity: float = 0.15,
         source_ids: Optional[set[str]] = None,
     ) -> Answer:
+        # Detect the query language up front so it is recorded on every path and
+        # the cross-lingual caveat can be raised honestly.
+        language = detect_language(question)
+        lang_caveats = self._language_caveats(language)
+
         # Retrieve evidence (decomposing multi-part questions first). The
         # similarity floor is applied per sub-question inside the helper: a
         # passage only weakly similar to the query is not evidence *for* it — a
@@ -141,12 +151,13 @@ class AnswerGenerator:
                 question=question,
                 summary=None,
                 sub_questions=sub_questions,
+                query_language=language.value,
                 caveats=[
                     "No sufficiently-relevant evidence was found in the knowledge base "
                     f"for this question (no passage cleared the similarity floor of "
                     f"{min_similarity}). Per the charter, no answer is given beyond the "
                     "available evidence." + filter_note
-                ],
+                ] + lang_caveats,
                 generated_on=date.today().isoformat(),
             )
 
@@ -189,6 +200,7 @@ class AnswerGenerator:
                 + " | ".join(sub_questions)
             )
 
+        caveats += lang_caveats
         answer = Answer(
             question=question,
             claims=claims,
@@ -196,6 +208,7 @@ class AnswerGenerator:
             caveats=caveats,
             generated_on=date.today().isoformat(),
             sub_questions=sub_questions,
+            query_language=language.value,
         )
 
         report = check_answer_grounding(
@@ -213,9 +226,32 @@ class AnswerGenerator:
             )
         return answer
 
+    def _language_caveats(self, language: Language) -> list[str]:
+        """Honest note when a non-English query needs cross-lingual retrieval.
+
+        Persian/Urdu do not appear in the corpus (English translations + Arabic
+        originals), so they can only be matched by a multilingual *semantic*
+        embedder. With a lexical index we say so plainly rather than pretend.
+        """
+        if not is_cross_lingual(language):
+            return []
+        note = (
+            f"Query detected as {display_name(language)}. The knowledge base is "
+            "English translations with Arabic originals, so cross-lingual matching "
+        )
+        if self.multilingual:
+            return [note + "is handled by the active multilingual semantic embedder."]
+        return [
+            note + "needs the multilingual semantic embedder (st:BAAI/bge-m3); with the "
+            "current lexical index, results for this query may be poor. Re-run with the "
+            "semantic index, or ask in English/Arabic, for reliable results."
+        ]
+
     def format_markdown(self, answer: Answer) -> str:
         """Render an answer as reviewer-friendly Markdown with grouped evidence."""
         lines: list[str] = [f"## {answer.question}", ""]
+        if answer.query_language and answer.query_language not in ("en", "unknown"):
+            lines += [f"_Query language: {display_name(answer.query_language)}._", ""]
         if answer.sub_questions:
             lines += ["_Decomposed into: "
                       + "; ".join(answer.sub_questions) + "_", ""]

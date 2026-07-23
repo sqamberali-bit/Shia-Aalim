@@ -135,7 +135,15 @@ the research loop updates.
       the reference or quotes the verse) vs *thematic*. Nothing invented — every
       link is a real cited passage that keeps its own confidence.
 - [ ] Tafsīr coverage (al-Mīzān, Majmaʿ al-Bayān, Nemuneh)
-- [ ] Persian/Urdu query + answer support
+- [~] Persian/Urdu query + answer support — **language layer done**
+      (`language.py`): detects the query language (English/Arabic/Persian/Urdu by
+      script heuristic), records it on `Answer.query_language`, and — honestly —
+      warns when a Persian/Urdu query hits a *lexical* index that cannot bridge
+      scripts, pointing to the multilingual semantic embedder (`st:BAAI/bge-m3`,
+      already integrated) that makes cross-lingual retrieval work. Arabic is not
+      flagged (the corpus carries Arabic originals). Full cross-lingual *answer
+      generation* still depends on running that semantic model on a reachable
+      host. Query-language shown in the UI + answer Markdown.
 - [ ] Comparative (Twelver vs other) mode with explicit sect labelling
 
 ## Continuous (every iteration)

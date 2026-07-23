@@ -314,6 +314,7 @@ class Answer:
     caveats: list[str] = field(default_factory=list)
     generated_on: Optional[str] = None
     sub_questions: list[str] = field(default_factory=list)  # set when decomposed
+    query_language: Optional[str] = None  # detected language of the question
 
     def all_citations(self) -> list[Citation]:
         return [c for claim in self.claims for c in claim.citations]
@@ -329,6 +330,7 @@ class Answer:
         return {
             "question": self.question,
             "sub_questions": self.sub_questions,
+            "query_language": self.query_language,
             "summary": self.summary,
             "generated_on": self.generated_on or date.today().isoformat(),
             "claims": [

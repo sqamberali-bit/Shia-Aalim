@@ -147,6 +147,15 @@ def test_answer_payload_carries_markdown_and_embedder(client):
     assert body["embedder"] == "tfidf"
 
 
+def test_answer_reports_query_language_and_crosslingual_caveat(client):
+    en = client.post("/api/answer", json={"question": "intellect", "k": 2}).json()
+    assert en["answer"]["query_language"] == "en"
+    # a Persian query on the lexical index is labelled and honestly caveated
+    fa = client.post("/api/answer", json={"question": "توحید چیست", "k": 2}).json()
+    assert fa["answer"]["query_language"] == "fa"
+    assert any("multilingual semantic embedder" in c for c in fa["answer"]["caveats"])
+
+
 def test_unknown_embedder_is_rejected_gracefully(client):
     # an embedder that isn't enabled must 503 with a helpful message, not crash
     r = client.post("/api/answer", json={"question": "intellect", "embedder": "st:BAAI/bge-m3"})

@@ -59,6 +59,18 @@ chapter), the source book, confidence and view-status, and an honest note on
 whether it may be asserted as fact or only weighed as evidence. Close with ×,
 the backdrop, or Escape.
 
+## Asking in Arabic, Persian or Urdu
+
+You can ask in Arabic script. The app detects the query language
+(English/Arabic/Persian/Urdu, by a script heuristic) and shows it on the answer.
+Because the corpus is English translations with the Arabic originals attached, an
+**Arabic** query has material to match; a **Persian** or **Urdu** query needs the
+multilingual semantic embedder (`st:BAAI/bge-m3`) to bridge scripts — so with the
+default lexical index the answer says so plainly and points you to the semantic
+index rather than returning quietly poor results. Run with
+`--embedder st:BAAI/bge-m3` on a host where the model is reachable for real
+cross-lingual retrieval. The detected language is on `answer.query_language`.
+
 ## Narrators (rijāl)
 
 The **Narrators** tab reads each narration's chain (isnad) *as it appears in the
