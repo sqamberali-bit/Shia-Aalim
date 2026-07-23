@@ -49,15 +49,32 @@ index builds, and is fast afterwards.
 
 ### Turn on semantic search + Persian/Urdu (optional)
 
-In the Space, edit the Dockerfile line to install the embeddings extra and set
-the embedder, then it rebuilds:
+Semantic search ranks by *meaning* (not just keywords) and makes Persian/Urdu
+queries work. It uses a neural model, so the whole corpus is embedded **once at
+build time** and cached — the running server then loads it instantly. Enable it
+by setting the **`SEMANTIC`** build arg to a model:
 
-```dockerfile
-RUN pip install --no-cache-dir -e ".[web,embeddings]"
-ENV EMBEDDER="tfidf,st:BAAI/bge-m3"
-```
+- **Free CPU tier** — a fast multilingual model that CPUs can handle:
+  ```
+  SEMANTIC=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+  ```
+  ⚠️ Embedding a large corpus on CPU is slow — the **build takes much longer**
+  (tens of minutes for the full corpus), and if the platform's build timeout is
+  hit the build fails. Best for the public/subset corpus, or accept a long build.
+- **Best quality (BGE-M3)** — needs a **GPU** Space (see below):
+  ```
+  SEMANTIC=BAAI/bge-m3
+  ```
 
-Then pick **st:BAAI/bge-m3** from the *Retrieval index* dropdown in the app.
+On Hugging Face Spaces (no build-arg UI): change `ARG SEMANTIC=""` in the
+`Dockerfile` to the model, e.g. `ARG SEMANTIC=BAAI/bge-m3`. On Render/Cloud Run:
+set the `SEMANTIC` build arg. Then pick **st:…** from the *Retrieval index*
+dropdown in the app.
+
+**Recommended for real full-corpus semantic: a small GPU.** On Hugging Face,
+Space → *Settings → Hardware* → pick a GPU (e.g. **T4 small**, hourly, pausable).
+With a GPU, `SEMANTIC=BAAI/bge-m3` embeds the full 122k corpus quickly at build
+and answers fast. On free CPU, prefer the MiniLM model and/or a smaller corpus.
 
 ---
 

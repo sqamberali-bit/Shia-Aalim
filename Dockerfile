@@ -29,6 +29,25 @@ RUN if [ "$CORPUS" = "full" ]; then \
         bash scripts/fetch_public_corpus.sh; \
     fi
 
+# --- Optional semantic search (meaning-based ranking + Persian/Urdu) ----------
+# OFF by default — the TF-IDF app is unaffected. To enable, set the SEMANTIC
+# build arg to a sentence-transformers model:
+#   • CPU-friendly (works on the free tier, longer build):
+#       SEMANTIC=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+#   • Best quality (BGE-M3) — wants a GPU Space:
+#       SEMANTIC=BAAI/bge-m3
+# The WHOLE corpus is embedded ONCE here at build time and cached to disk, so
+# the running server loads it instantly and stays responsive. (Embedding a large
+# corpus with a neural model on CPU is slow — expect a much longer build.)
+ARG SEMANTIC=""
+ENV INDEX_CACHE_DIR=/app/data/index_cache \
+    SEMANTIC_MODEL=${SEMANTIC}
+RUN if [ -n "$SEMANTIC" ]; then \
+        echo "Enabling semantic search with model: $SEMANTIC" && \
+        pip install --no-cache-dir -e ".[embeddings]" && \
+        python scripts/warm_index.py --embedder "st:${SEMANTIC}" ; \
+    fi
+
 # HOST/PORT/EMBEDDER are read by the app from the environment. PaaS platforms
 # that inject their own $PORT (Render, Cloud Run) override this automatically.
 ENV HOST=0.0.0.0 \
@@ -37,6 +56,5 @@ ENV HOST=0.0.0.0 \
     PYTHONUNBUFFERED=1
 EXPOSE 7860
 
-# Serve. First request waits while the in-memory index builds (~1–2 min for the
-# public corpus); after that it is fast.
-CMD ["python", "-m", "shia_aalim.web"]
+# Serve. First request waits while the index builds/loads; after that it's fast.
+CMD ["bash", "scripts/serve.sh"]

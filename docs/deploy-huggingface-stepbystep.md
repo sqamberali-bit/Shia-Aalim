@@ -69,8 +69,16 @@ cross-references — on a public URL you can share.
 - **Re-deploy after any change:** commit to the branch again; sync re-runs.
 
 ## Optional — semantic search + Persian/Urdu
-Once running on TF-IDF, enable the multilingual semantic model: in the
-`Dockerfile`, change the install line to
-`pip install --no-cache-dir -e ".[web,embeddings]"` and add
-`ENV EMBEDDER="tfidf,st:BAAI/bge-m3"`, commit, then pick **st:BAAI/bge-m3** from
-the *Retrieval index* dropdown in the app. (First use downloads the model.)
+Semantic search ranks by meaning and makes Persian/Urdu work. It embeds the
+whole corpus once at build time (cached for fast runtime). Enable it by editing
+one line in the `Dockerfile` on your branch — change `ARG SEMANTIC=""` to a
+model — then commit (which re-syncs and rebuilds):
+
+- **Free CPU:** `ARG SEMANTIC=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
+  — ⚠️ the build gets **much longer** (embedding 122k docs on CPU); if it times
+  out, revert the line. Best for a smaller corpus.
+- **Best (BGE-M3):** switch the Space to a **GPU** (Space → *Settings → Hardware*
+  → e.g. T4 small, pausable), then `ARG SEMANTIC=BAAI/bge-m3`.
+
+After it rebuilds, pick **st:…** from the *Retrieval index* dropdown in the app.
+See [`deployment.md`](deployment.md) for details.

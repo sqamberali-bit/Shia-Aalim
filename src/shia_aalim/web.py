@@ -42,6 +42,8 @@ from .ingestion.loaders import iter_knowledge_dir
 from .models import Answer, ConfidenceLevel, Document, EvidenceType, Source
 from .research_loop import build_index
 from .retrieval.embeddings import make_embedder
+from .retrieval.index import build_persistent_index
+from .retrieval.retriever import Retriever
 from .rijal import NarratorIndex, extract_chain, parse_grade_source
 from .sources import load_registry_ids, load_sources
 
@@ -122,6 +124,10 @@ class AppConfig:
     judge: str = "lexical"
     decompose: str = "none"
     default_k: int = 6
+    # When set, each embedder's vectors are cached here (embed once, reuse across
+    # restarts). Essential for semantic embedders — the corpus is embedded at
+    # build time (scripts/warm_index.py) and loaded instantly at runtime.
+    cache_dir: Optional[Path] = None
 
     @property
     def default_embedder(self) -> str:
@@ -255,7 +261,7 @@ class Stack:
         if spec in self._errors:
             raise EmbedderUnavailable(self._errors[spec])
         try:
-            retriever = build_index(self.docs, embedder=make_embedder(spec))
+            retriever = self._build_retriever(spec)
         except Exception as exc:  # noqa: BLE001 - report, don't crash the server
             self._errors[spec] = str(exc)
             raise EmbedderUnavailable(str(exc)) from exc
@@ -277,6 +283,21 @@ class Stack:
         )
         self._engines[spec] = engine
         return engine
+
+    def _build_retriever(self, spec: str) -> Retriever:
+        """Build (or load from the on-disk cache) the retriever for one embedder.
+
+        With ``cache_dir`` set, vectors are cached per embedder — so a semantic
+        index embedded once at build time loads instantly at runtime instead of
+        re-embedding the whole corpus on every start.
+        """
+        embedder = make_embedder(spec)
+        if self.config.cache_dir is None:
+            return build_index(self.docs, embedder=embedder)
+        safe = spec.replace("/", "_").replace(":", "_")
+        cache_path = Path(self.config.cache_dir) / f"{safe}.pkl"
+        store = build_persistent_index(self.docs, embedder, cache_path)
+        return Retriever(store)
 
 
 def build_stack(config: Optional[AppConfig] = None) -> Stack:
@@ -1598,6 +1619,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 1
 
     embedders = [s.strip() for s in args.embedder.split(",") if s.strip()] or ["tfidf"]
+    cache_env = os.environ.get("INDEX_CACHE_DIR")
     config = AppConfig(
         knowledge_dir=Path(args.knowledge_dir),
         registry_path=Path(args.registry),
@@ -1606,6 +1628,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         judge=args.judge,
         decompose=args.decompose,
         default_k=args.k,
+        cache_dir=Path(cache_env) if cache_env else None,
     )
     print(f"Loading corpus from {config.knowledge_dir} …", file=sys.stderr)
     app = create_app(config)
