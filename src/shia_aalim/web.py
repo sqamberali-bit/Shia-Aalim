@@ -444,6 +444,10 @@ INDEX_HTML = r"""<!doctype html>
   .synth { color: var(--high); font-size: 12px; font-weight: 600; }
   .empty { color: var(--muted); padding: 20px 0; }
   .spinner { color: var(--muted); padding: 20px 0; }
+  .spinner.building { color: var(--medium); }
+  .spinner.building code { color: var(--ink); }
+  .spinner::after { content: ""; animation: dots 1.2s steps(4,end) infinite; }
+  @keyframes dots { 0%{content:""} 25%{content:"·"} 50%{content:"··"} 75%{content:"···"} }
   footer { color: var(--muted); font-size: 12px; text-align: center; padding: 30px 0 10px; }
   code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
   select {
@@ -563,6 +567,19 @@ function selectedEmbedder(){ var el = document.getElementById('embedder'); retur
 function showTools(tab){ document.getElementById(tab+'Tools').classList.remove('hidden'); }
 function hideTools(tab){ document.getElementById(tab+'Tools').classList.add('hidden'); }
 
+var embedderStates = {};   // spec -> 'ready' | 'lazy' | 'failed', from /api/status
+// Choose the waiting message: an index that hasn't been built yet ('lazy') can
+// take a while on a large corpus, so say so instead of a bare "Searching…".
+function spinner(base){
+  var spec = selectedEmbedder();
+  if(spec && embedderStates[spec] === 'lazy'){
+    return '<div class="spinner building">Building the <code>'+esc(spec)+
+      '</code> index for the first time — on a large corpus this can take a minute. '+
+      'It is cached, so later queries are fast</div>';
+  }
+  return '<div class="spinner">'+base+'</div>';
+}
+
 async function copyMd(tab){
   var md = lastMd[tab].text; if(!md) return;
   try { await navigator.clipboard.writeText(md); flash(tab, 'Copied ✓'); }
@@ -593,7 +610,7 @@ async function ask(){
   var k = document.getElementById('k').value;
   var box = document.getElementById('askResult');
   var btn = document.getElementById('askBtn');
-  btn.disabled = true; hideTools('ask'); box.innerHTML = '<div class="spinner">Searching the corpus…</div>';
+  btn.disabled = true; hideTools('ask'); box.innerHTML = spinner('Searching the corpus…');
   try {
     var res = await fetch('/api/answer', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:q, k:Number(k), embedder:selectedEmbedder()})});
     var data = await res.json();
@@ -602,7 +619,7 @@ async function ask(){
     lastMd.ask = { text: data.markdown || '', name: data.answer.question };
     showTools('ask');
   } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
-  finally { btn.disabled = false; }
+  finally { btn.disabled = false; refreshStatus(); }
 }
 
 function renderAnswer(box, a){
@@ -628,7 +645,7 @@ async function lecture(){
   var depth = document.getElementById('depth').value;
   var box = document.getElementById('lecResult');
   var btn = document.getElementById('lecBtn');
-  btn.disabled = true; hideTools('lec'); box.innerHTML = '<div class="spinner">Building the outline…</div>';
+  btn.disabled = true; hideTools('lec'); box.innerHTML = spinner('Building the outline…');
   try {
     var res = await fetch('/api/lecture', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic:t, depth:Number(depth), embedder:selectedEmbedder()})});
     var data = await res.json();
@@ -637,7 +654,7 @@ async function lecture(){
     lastMd.lec = { text: data.markdown || '', name: data.topic };
     showTools('lec');
   } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
-  finally { btn.disabled = false; }
+  finally { btn.disabled = false; refreshStatus(); }
 }
 
 function renderLecture(box, L){
@@ -662,18 +679,29 @@ function onEmbedderChange(){
     st==='failed' ? 'This index failed to build in this environment; queries will report the reason.' : '';
 }
 
-fetch('/api/status').then(r=>r.json()).then(s=>{
+function applyStatus(s){
   var sel = document.getElementById('embedder');
+  var cur = sel.value;
+  embedderStates = {};
+  (s.embedders||[]).forEach(function(e){ embedderStates[e.spec] = e.state; });
   sel.innerHTML = (s.embedders||[]).map(function(e){
     return '<option value="'+esc(e.spec)+'" data-state="'+esc(e.state)+'"'+(e.default?' selected':'')+'>'+
       esc(e.spec)+stateTag(e.state)+'</option>';
   }).join('');
+  if(cur && embedderStates[cur] !== undefined) sel.value = cur;   // keep the user's choice
   sel.disabled = (s.embedders||[]).length < 2;   // nothing to switch between
   onEmbedderChange();
   document.getElementById('status').innerHTML =
     'Corpus: <b>'+s.documents.toLocaleString()+'</b> documents · default index <code>'+esc(s.default_embedder)+
     '</code> · synthesizer <code>'+esc(s.synthesizer)+'</code> · judge <code>'+esc(s.judge)+'</code>';
-}).catch(()=>{ document.getElementById('status').textContent = ''; });
+}
+
+function refreshStatus(){
+  return fetch('/api/status').then(r=>r.json()).then(applyStatus)
+    .catch(()=>{ document.getElementById('status').textContent = ''; });
+}
+
+refreshStatus();
 </script>
 </body>
 </html>

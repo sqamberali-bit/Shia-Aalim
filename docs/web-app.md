@@ -44,6 +44,11 @@ crashing the server. `/api/status` reports each embedder's state
 (`ready` / `lazy` / `failed`). Requests may also name the index explicitly with
 an `"embedder"` field.
 
+The first query against a not-yet-built index shows a distinct **"Building the
+`<index>` for the first time…"** progress indicator (a large corpus can take a
+minute to embed); once cached, the state flips to `ready` and later queries show
+the normal fast-path spinner. The UI refreshes index state after every query.
+
 ## Exporting a result
 
 Every answer and lecture result has **⧉ Copy Markdown** and **⭳ Download .md**
