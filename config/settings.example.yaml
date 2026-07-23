@@ -7,11 +7,15 @@ knowledge:
 
 retrieval:
   embedding:
-    provider: hashing        # hashing | bge | e5 | jina | openai
-    model: null              # e.g. BAAI/bge-m3 when provider != hashing
-    dim: 512                 # used by the hashing baseline
+    # Embedder spec (see retrieval.embeddings.make_embedder):
+    #   hashing         - dependency-free baseline (unweighted feature hashing)
+    #   tfidf           - dependency-free IDF-weighted hashing (default; fit on corpus)
+    #   st:BAAI/bge-m3  - semantic (needs [embeddings] extra + reachable model)
+    spec: tfidf
+    dim: 2048                # used by the hashing / tfidf embedders
   vector_store:
-    backend: memory          # memory | qdrant | chroma | weaviate
+    backend: memory          # memory | persistent | qdrant | chroma | weaviate
+    cache_path: data/index/vectors.pkl   # for backend: persistent (embed once, reuse)
     url: null                # e.g. http://localhost:6333 for qdrant
   k: 6
   oversample: 4

@@ -25,8 +25,8 @@ implementations for production components.
 | Source validation | `source_validation.py` | weighted scoring | human review workflow |
 | Ingestion | `ingestion/` | Arabic normaliser, JSONL/text loaders | pypdf, ebooklib, bs4, OCR |
 | Source adapters | `ingestion/adapters/` | Qur'an (fawazahmed0), hadith (CC0 ThaqalaynData) w/ gradings | add adapters per upstream |
-| Embeddings | `retrieval/embeddings.py` | `HashingEmbedder` (feature hashing) | BGE-M3, E5, Jina, Nomic, OpenAI |
-| Vector store | `retrieval/vectorstore.py` | `InMemoryVectorStore` (brute force) | Qdrant, Weaviate, Milvus, Chroma |
+| Embeddings | `retrieval/embeddings.py` | `HashingEmbedder`, `TfidfHashingEmbedder` (IDF-weighted, fit on corpus — the default) | `SentenceTransformerEmbedder` (BGE-M3/E5/Jina) via `st:<model>` |
+| Vector store | `retrieval/vectorstore.py`, `retrieval/index.py` | `InMemoryVectorStore`, `PersistentVectorStore` (embed once, cache on disk) | Qdrant, Weaviate, Milvus, Chroma |
 | Retrieval | `retrieval/retriever.py` | confidence-aware re-rank + consensus | +reranker (bge-reranker) |
 | Grounding | `grounding/verify.py` | lexical overlap + citation checks | + LLM entailment |
 | Generation | `generation/` | extractive answer + lecture framework | LLM `Synthesizer` (Claude, …) |
@@ -35,20 +35,34 @@ implementations for production components.
 
 ## Pluggable interfaces
 
-**Embeddings** — implement `EmbeddingProvider` (`dim`, `embed`, `embed_batch`).
-Example with `sentence-transformers`:
+**Embeddings** — three implementations of `EmbeddingProvider` ship in-box; pick
+via `make_embedder(spec)`:
+
+| spec | class | deps | when |
+|---|---|---|---|
+| `hashing` | `HashingEmbedder` | none | baseline / lower bound |
+| `tfidf` | `TfidfHashingEmbedder` | none | **default** — IDF-weighted, fit on the corpus; runs anywhere |
+| `st:BAAI/bge-m3` | `SentenceTransformerEmbedder` | `[embeddings]` + model | semantic; best quality where the model is reachable |
 
 ```python
-class BGEEmbedder:
-    def __init__(self, model="BAAI/bge-m3"):
-        from sentence_transformers import SentenceTransformer
-        self.m = SentenceTransformer(model); self.dim = self.m.get_sentence_embedding_dimension()
-    def embed(self, text): return self.m.encode(text, normalize_embeddings=True).tolist()
-    def embed_batch(self, texts): return self.m.encode(list(texts), normalize_embeddings=True).tolist()
+from shia_aalim.retrieval import make_embedder, build_persistent_index
+emb = make_embedder("st:BAAI/bge-m3")          # or "tfidf" (default), "hashing"
+store = build_persistent_index(docs, emb, "data/index/vectors.pkl")  # embed once, reuse
+retriever = Retriever(store)
 ```
 
-Pass it to `InMemoryVectorStore(BGEEmbedder())` or a real store implementing the
-`VectorStore` protocol (`add`, `search`, `__len__`).
+`TfidfHashingEmbedder` roughly **doubles recall** over `hashing` on the Qur'an
+gold set (measure with `scripts/benchmark_retrieval.py`); `st:` closes the
+remaining *semantic* gaps (synonyms across translations). Because BGE-M3 weights
+download from the HuggingFace Hub, run the `st:` path where the Hub — or a
+pre-downloaded model — is reachable. `PersistentVectorStore` caches vectors on
+disk keyed by an embedder signature, so a 101k-doc corpus embeds once.
+
+**LLM synthesizer** — implement `Synthesizer.synthesize(question, evidence) ->
+str`, using [`prompts/answer_system.md`](../prompts/answer_system.md) as the
+system prompt and passing only the retrieved evidence. The result is still run
+through `check_answer_grounding`, so a synthesizer that drifts off-evidence is
+caught, not trusted.
 
 **LLM synthesizer** — implement `Synthesizer.synthesize(question, evidence) ->
 str`, using [`prompts/answer_system.md`](../prompts/answer_system.md) as the

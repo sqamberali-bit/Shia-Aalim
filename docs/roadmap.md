@@ -51,10 +51,18 @@ the research loop updates.
       confidence, ungraded). Corpus lives in external data.
 - [ ] Upload-needed (not on GitHub): Wasāʾil al-Shīʿa, Mustadrak al-Wasāʾil,
       Mafātīḥ al-Jinān; enrich Faqīh/Tahdhīb/Istibṣār with Kitāb titles
-- [ ] Swap in a semantic embedder (BGE-M3) behind `EmbeddingProvider`; benchmark
-      vs the hashing baseline (measured recall@5 ≈ 0.40 on the current gold set —
-      the loop already recommends this upgrade)
-- [ ] Stand up Qdrant behind `VectorStore`; persistence + filtering
+- [x] Semantic-embedder integration + retrieval upgrades:
+      - `SentenceTransformerEmbedder` (BGE-M3/E5/Jina) behind `EmbeddingProvider`,
+        selectable via `make_embedder("st:<model>")` — runs wherever the model is
+        reachable (the HuggingFace Hub is blocked in the hosted sandbox)
+      - `TfidfHashingEmbedder` — dependency-free IDF-weighted default that **~2×'s
+        recall** over the hashing baseline (0.33 → 0.67 recall@10 on the Qur'an
+        gold set) and runs everywhere
+      - `PersistentVectorStore` — embed the 101k-doc corpus once, cache on disk
+      - `scripts/benchmark_retrieval.py` — measure embedders on the gold set
+- [ ] Run BGE-M3 end-to-end on the full corpus (needs an HF-reachable env) and
+      record the semantic recall/MRR lift over TF-IDF
+- [ ] Stand up Qdrant behind `VectorStore`; persistence + filtering at scale
 - [ ] Add a reranker stage (bge-reranker) and re-measure precision/recall
 - [ ] Grow the evaluation gold set to 100+ labelled queries
 

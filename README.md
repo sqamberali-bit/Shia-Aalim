@@ -90,9 +90,11 @@ pip install -e ".[ingest,embeddings,llm]"
 - **Ingestion** (`ingestion/`) — Arabic normalisation (diacritic-insensitive
   matching, alef/yaa/taa/Persian folding) and pluggable loaders
   (text/HTML/PDF/EPUB/JSONL).
-- **Retrieval** (`retrieval/`) — pluggable embeddings + vector store with a
-  stdlib reference implementation; confidence-aware, type-filtered ranking and
-  multi-source consensus.
+- **Retrieval** (`retrieval/`) — pluggable embeddings (dependency-free `hashing`
+  and IDF-weighted `tfidf`; semantic `st:BAAI/bge-m3` where a model is reachable)
+  + in-memory or on-disk-cached vector store; confidence-aware, type-filtered
+  ranking and multi-source consensus. Compare embedders with
+  `scripts/benchmark_retrieval.py`.
 - **Grounding** (`grounding/`) — citation completeness, source-existence and
   passage-existence checks, plus lexical answer-grounding — the hallucination
   firewall.
@@ -118,7 +120,7 @@ data/knowledge/              Built corpus (external/git-ignored) + a small commi
 prompts/                     System prompts encoding the charter for any LLM synthesizer
 templates/                   Lecture template
 scripts/                     demo.py, run_research_loop.py, ingest.py, fetch_data.py
-tests/                       Test suite (56 tests, stdlib-only) + fixtures
+tests/                       Test suite (64 tests, stdlib-only) + fixtures
 ```
 
 ## Scholarly integrity & scope

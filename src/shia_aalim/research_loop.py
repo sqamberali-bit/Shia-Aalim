@@ -32,7 +32,7 @@ from typing import Optional
 from .evaluation.metrics import EvaluationSummary, GoldQuery, evaluate
 from .ingestion.loaders import iter_knowledge_dir
 from .models import ConfidenceLevel, Document
-from .retrieval.embeddings import HashingEmbedder
+from .retrieval.embeddings import TfidfHashingEmbedder, fit_if_needed
 from .retrieval.retriever import Retriever
 from .retrieval.vectorstore import InMemoryVectorStore
 
@@ -65,9 +65,22 @@ class IterationReport:
         }
 
 
-def build_index(docs: list[Document], *, dim: int = 512) -> Retriever:
-    """Embed and index documents into a fresh in-memory retriever."""
-    embedder = HashingEmbedder(dim=dim)
+def build_index(
+    docs: list[Document],
+    *,
+    embedder: Optional[object] = None,
+    dim: int = 2048,
+) -> Retriever:
+    """Embed and index documents into a fresh in-memory retriever.
+
+    Defaults to the dependency-free IDF-weighted embedder, fit on this corpus
+    (a solid, runnable retrieval upgrade over blind hashing). Pass ``embedder``
+    (e.g. a :class:`SentenceTransformerEmbedder`, or ``make_embedder("st:...")``)
+    to use a semantic model instead.
+    """
+    if embedder is None:
+        embedder = TfidfHashingEmbedder(dim=dim)
+    fit_if_needed(embedder, [d.text for d in docs])
     store = InMemoryVectorStore(embedder)
     store.add(docs)
     return Retriever(store)
