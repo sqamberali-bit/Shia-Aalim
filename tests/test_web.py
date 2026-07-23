@@ -48,6 +48,8 @@ def test_index_ships_all_client_features(client):
         'pushHistory(', 'restoreHistory(',            # session history
         'copyMd(', 'downloadMd(',                     # markdown export
         'loadCrossref(', 'crossrefSections(',         # cross-references
+        'lookupNarrator(', 'loadRijalSummary(',       # rijāl / narrators
+        'data-tab="rijal"',
     ):
         assert needle in html, f"missing UI wiring: {needle}"
     # the window.history-shadowing bug must not regress
@@ -310,6 +312,61 @@ def test_crossref_unknown_verse_404(client):
 def test_crossref_requires_surah_and_ayah(client):
     r = client.post("/api/crossref", json={"surah": 5})
     assert r.status_code == 400
+
+
+def _rijal_stack():
+    from shia_aalim.models import Citation, ConfidenceLevel, Document, EvidenceType, HadithGrade
+
+    hadith = Document(
+        id="k-1",
+        text=("Ali Bin Ibrahim narrated to me, from his father, from Yunus Bin Abdul Rahman, "
+              "from Ali Bin Mansour who said, 'Abu Abdullah said the intellect is a proof.'"),
+        evidence_type=EvidenceType.HADITH,
+        citation=Citation(
+            source_id="al-kafi", evidence_type=EvidenceType.HADITH, volume="1", hadith_number="1",
+            grade=HadithGrade.MAJHUL,
+            grade_source="Allamah Baqir al-Majlisi: مجهول - Mir‘at al ‘Uqul; Shaykh Baqir al-Behbudi: ضعيف - Sahih al-Kafi",
+        ),
+        confidence=ConfidenceLevel.MEDIUM, language="en",
+    )
+    stack = web.Stack([hadith], web.AppConfig(), known={"al-kafi"})
+    stack.engine("tfidf")
+    return stack
+
+
+def test_rijal_summary_reports_grades_and_narrators():
+    client = TestClient(web.create_app(stack=_rijal_stack()))
+    s = client.get("/api/rijal/summary").json()
+    assert s["hadith"] == 1
+    assert s["grades"].get("majhul") == 1
+    assert any("Majlisi" in a["attributor"] for a in s["attributors"])
+    names = {n["name"] for n in s["top_narrators"]}
+    assert any("Yunus" in n for n in names)
+
+
+def test_rijal_narrator_lookup_returns_chain_and_gradings():
+    client = TestClient(web.create_app(stack=_rijal_stack()))
+    body = client.post("/api/rijal/narrator", json={"name": "Yunus Bin Abdul Rahman"}).json()
+    assert body["narration_count"] == 1
+    n = body["narrations"][0]
+    assert n["evidence_type"] == "hadith"
+    assert "Yunus Bin Abdul Rahman" in n["chain"]
+    # attributed gradings surfaced (never derived) — two attributors parsed
+    assert [a["attributor"] for a in n["attributions"]] == \
+        ["Allamah Baqir al-Majlisi", "Shaykh Baqir al-Behbudi"]
+
+
+def test_rijal_narrator_requires_name():
+    client = TestClient(web.create_app(stack=_rijal_stack()))
+    r = client.post("/api/rijal/narrator", json={"name": "  "})
+    assert r.status_code == 400
+
+
+def test_rijal_unknown_narrator_is_empty_not_error():
+    client = TestClient(web.create_app(stack=_rijal_stack()))
+    r = client.post("/api/rijal/narrator", json={"name": "Zzz Nobody"})
+    assert r.status_code == 200
+    assert r.json()["narration_count"] == 0
 
 
 def test_second_embedder_listed_and_builds_lazily():

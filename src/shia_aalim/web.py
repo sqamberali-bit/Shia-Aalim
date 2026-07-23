@@ -41,6 +41,7 @@ from .ingestion.loaders import iter_knowledge_dir
 from .models import Answer, ConfidenceLevel, Document, EvidenceType, Source
 from .research_loop import build_index
 from .retrieval.embeddings import make_embedder
+from .rijal import NarratorIndex, extract_chain, parse_grade_source
 from .sources import load_registry_ids, load_sources
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -89,11 +90,16 @@ try:
         k: Optional[int] = None
         embedder: Optional[str] = None
 
+    class NarratorBody(_BaseModel):
+        name: str = ""
+        limit: Optional[int] = None
+
 except ImportError:  # pragma: no cover - only without the web extra
     AskBody = None  # type: ignore
     LectureBody = None  # type: ignore
     CompareBody = None  # type: ignore
     CrossrefBody = None  # type: ignore
+    NarratorBody = None  # type: ignore
 
 
 # The compare view runs one retrieval per selected book; cap the fan-out.
@@ -159,6 +165,7 @@ class Stack:
         self._errors: dict[str, str] = {}
         self._facets: Optional[dict] = None
         self._verse_index: Optional[dict] = None
+        self._narrators: Optional[NarratorIndex] = None
 
     @property
     def n_documents(self) -> int:
@@ -169,6 +176,12 @@ class Stack:
         if self._verse_index is None:
             self._verse_index = build_verse_index(self.docs)
         return self._verse_index
+
+    def narrators(self) -> NarratorIndex:
+        """The rijāl / narrator index (chain reading + grade attributions), built once."""
+        if self._narrators is None:
+            self._narrators = NarratorIndex(self.docs)
+        return self._narrators
 
     def crossref(self, engine: "Engine") -> CrossReferencer:
         """A CrossReferencer bound to a built engine's retriever."""
@@ -518,7 +531,66 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
         payload["embedder"] = body.embedder or stack.default_embedder
         return payload
 
+    @app.get("/api/rijal/summary")
+    async def rijal_summary() -> dict:
+        idx = stack.narrators()
+        s = idx.grade_summary()
+        s["top_narrators"] = idx.top_narrators(20)
+        s["narrator_count"] = idx.narrator_count
+        return s
+
+    @app.post("/api/rijal/narrator")
+    async def rijal_narrator(body: NarratorBody):
+        name = (body.name or "").strip()
+        if not name:
+            return JSONResponse({"error": "a narrator name is required"}, status_code=400)
+        idx = stack.narrators()
+        prof = idx.lookup(name)
+        limit = _clamp_int(body.limit, default=25, lo=1, hi=100)
+        # De-duplicate narrations (a narrator can appear once per hadith) and shape them.
+        seen: set[str] = set()
+        narrations = []
+        for men in prof.mentions:
+            if men.doc_id in seen:
+                continue
+            seen.add(men.doc_id)
+            doc = idx.document(men.doc_id)
+            if doc is not None:
+                narrations.append(_narration_payload(doc, position=men.position,
+                                                      chain_length=men.chain_length))
+            if len(narrations) >= limit:
+                break
+        return {
+            "query": prof.query,
+            "matched_names": prof.matched_names,
+            "narration_count": prof.narration_count,
+            "grade_distribution": prof.grade_distribution,
+            "narrations": narrations,
+        }
+
     return app
+
+
+def _narration_payload(doc: Document, *, position: int = -1, chain_length: int = 0) -> dict:
+    """A hadith shaped for the rijāl view + drawer: evidence fields + chain + gradings."""
+    reading = extract_chain(doc.text)
+    return {
+        "text": doc.text.strip(),
+        "reference": doc.citation.reference_string(),
+        "confidence": doc.confidence.value,
+        "evidence_type": doc.evidence_type.value,
+        "translation": doc.citation.translation,
+        "view_status": doc.view_status.value if doc.view_status else None,
+        "citation": doc.citation.to_dict(),
+        "grade": doc.citation.grade.value,
+        "chain": reading.narrators,
+        "position": position,
+        "chain_length": chain_length or len(reading.narrators),
+        "attributions": [
+            {"attributor": a.attributor, "grade": a.grade, "work": a.work}
+            for a in parse_grade_source(doc.citation.grade_source)
+        ],
+    }
 
 
 def _parse_types(values: Optional[list[str]]) -> Optional[list[EvidenceType]]:
@@ -753,6 +825,21 @@ INDEX_HTML = r"""<!doctype html>
   .linktag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; padding: 2px 7px; border-radius: 999px; }
   .lt-explicit { background: var(--high); color: #fff; }
   .lt-thematic { background: var(--panel2); color: var(--muted); border: 1px solid var(--line); }
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
+  .cn { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; font-size: 13px; }
+  .carrow { color: var(--muted); font-size: 13px; margin: 0 1px; }
+  .grade-attr { font-size: 13.5px; margin: 4px 0; }
+  .ga-grade { font-weight: 700; }
+  .ga-who { color: var(--ink); }
+  .grade-dist { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+  .gpill { border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; font-size: 12.5px; }
+  .gpill b { font-variant-numeric: tabular-nums; }
+  .nchip { border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; font-size: 13px; cursor: pointer; background: var(--panel); }
+  .nchip:hover { border-color: var(--accent); color: var(--accent); }
+  .nchip .cnt { color: var(--muted); font-size: 11.5px; margin-left: 5px; }
+  .nchips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+  .rcard { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; background: var(--panel); }
+  .rcard h4 { margin: 0 0 6px; font-size: 15px; }
 </style>
 </head>
 <body>
@@ -765,6 +852,7 @@ INDEX_HTML = r"""<!doctype html>
     <div class="tab active" data-tab="ask" onclick="switchTab('ask')">Ask a question</div>
     <div class="tab" data-tab="lecture" onclick="switchTab('lecture')">Prepare a lecture</div>
     <div class="tab" data-tab="compare" onclick="switchTab('compare')">Compare sources</div>
+    <div class="tab" data-tab="rijal" onclick="switchTab('rijal')">Narrators</div>
     <div class="tab" data-tab="history" onclick="switchTab('history')">History</div>
   </div>
 
@@ -861,6 +949,16 @@ INDEX_HTML = r"""<!doctype html>
     <div class="result" id="cmpResult"></div>
   </section>
 
+  <section id="pane-rijal" style="display:none">
+    <div class="row">
+      <input type="text" id="rq" placeholder="look up a narrator, e.g. Yunus Bin Abdul Rahman" onkeydown="if(event.key==='Enter')lookupNarrator()">
+      <button class="go" id="rqBtn" onclick="lookupNarrator()">Look up</button>
+    </div>
+    <div class="hint">Reads each narration's chain (isnad) <b>as it appears in the text</b> and surfaces the <b>attributed</b> gradings — a research aid, not a rijāl verdict. The system never grades a narrator or narration itself.</div>
+    <div id="rijalSummary" style="margin-top:14px"></div>
+    <div class="result" id="rijalResult"></div>
+  </section>
+
   <section id="pane-history" style="display:none">
     <div class="frow" style="justify-content:space-between; align-items:flex-start">
       <div class="hint" style="margin:0">Your recent answers, lectures and comparisons — kept in this browser only. Click <b>Open</b> to revisit one instantly (no re-query).</div>
@@ -888,10 +986,11 @@ function isArabic(s){ return /[؀-ۿ]/.test(s||''); }
 
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===name));
-  ['ask','lecture','compare','history'].forEach(function(p){
+  ['ask','lecture','compare','rijal','history'].forEach(function(p){
     var el = document.getElementById('pane-'+p);
     if(el) el.style.display = (p===name) ? '' : 'none';
   });
+  if(name==='rijal') loadRijalSummary();
 }
 
 function badge(kind, cls, label){ return '<span class="badge '+cls+'-'+kind+'">'+esc(label)+'</span>'; }
@@ -920,7 +1019,20 @@ function detailFromEv(ev){
     reference: ev.reference || refString(cit), confidence: ev.confidence, evidence_type: ev.evidence_type,
     view_status: ev.view_status || null, grade: cit.grade || 'ungraded',
     grade_source: cit.grade_source || '', source_id: cit.source_id, locators: cit,
+    chain: ev.chain || null,   // narrator chain (rijāl view), if provided
   };
+}
+
+// Mirror of rijal.parse_grade_source for the drawer's Gradings block.
+function parseGradeSource(gs){
+  if(!gs) return [];
+  return gs.split(';').map(function(p){
+    p = p.trim(); if(!p) return null;
+    var who = '', grade = p, work = '', ci = p.indexOf(':');
+    if(ci >= 0){ who = p.slice(0,ci).trim(); var rest = p.slice(ci+1).trim(); grade = rest;
+      var di = rest.indexOf(' - '); if(di >= 0){ grade = rest.slice(0,di).trim(); work = rest.slice(di+3).trim(); } }
+    return { attributor: who, grade: grade, work: work };
+  }).filter(Boolean);
 }
 
 function evidenceBlock(d){
@@ -962,9 +1074,28 @@ function openDrawer(d){
     h += '<div class="grp"><div class="k">Translation</div><div class="en">'+esc(d.translation)+'</div></div>';
   if(d.translation_source)
     h += '<div class="grp"><div class="k">Translation source</div><div class="v">'+esc(d.translation_source)+'</div></div>';
-  if(d.grade && d.grade !== 'ungraded')
-    h += '<div class="grp"><div class="k">Grade (ʿilm al-rijāl)</div><div class="v">'+esc(d.grade)+
-         (d.grade_source ? ' <span class="src">— '+esc(d.grade_source)+'</span>' : '')+'</div></div>';
+  // Transmission chain (rijāl) — a surface reading of the text, clearly caveated.
+  if(d.chain && d.chain.length){
+    h += '<div class="grp"><div class="k">Transmission chain — as it appears in the text</div>'+
+         '<div class="chain">'+d.chain.map(function(n,i){
+           return '<span class="cn">'+esc(n)+'</span>'+(i<d.chain.length-1?'<span class="carrow">→</span>':'');
+         }).join('')+'</div>'+
+         '<div class="src" style="margin-top:4px">Heuristically parsed from the narration text — a surface reading, not a verified isnad or a rijāl evaluation.</div></div>';
+  }
+  // Gradings — surfaced from the attributable grade_source; never derived here.
+  var attrs = parseGradeSource((d.locators||{}).grade_source);
+  if(attrs.length){
+    h += '<div class="grp"><div class="k">Gradings (ʿilm al-rijāl) — attributed</div>'+
+      attrs.map(function(a){
+        return '<div class="grade-attr"><span class="ga-grade">'+esc(a.grade)+'</span> '+
+          (a.attributor ? '<span class="ga-who">'+esc(a.attributor)+'</span>' : '')+
+          (a.work ? ' <span class="src">· '+esc(a.work)+'</span>' : '')+'</div>';
+      }).join('')+'</div>';
+  } else if(d.grade && d.grade !== 'ungraded'){
+    h += '<div class="grp"><div class="k">Grade (ʿilm al-rijāl)</div><div class="v">'+esc(d.grade)+'</div></div>';
+  } else if((d.evidence_type||'')==='hadith'){
+    h += '<div class="grp src">Ungraded here — no attributable grade is recorded for this narration.</div>';
+  }
   var loc = locatorRows(d.locators||{});
   if(loc) h += '<div class="grp"><div class="k">Locators</div><div class="kv" style="margin-top:6px">'+loc+'</div></div>';
   if(d.asserted_as_fact !== undefined)
@@ -1024,6 +1155,77 @@ function crossrefRow(d, linkType){
     '<span class="linktag lt-'+esc(linkType)+'">'+esc(linkType)+'</span>'+
     badge(type,'t',type.replace(/_/g,' '))+badge(conf,'b',conf)+
     '<span class="ref">'+esc(d.reference || '')+'</span></div></div>';
+}
+
+// ---- Rijāl / narrator lookup ----------------------------------------------
+var rijalLoaded = false;
+function gradeDist(dist){
+  var keys = Object.keys(dist||{});
+  if(!keys.length) return '';
+  return '<div class="grade-dist">'+keys.map(function(g){
+    return '<span class="gpill">'+esc(g)+' <b>'+dist[g]+'</b></span>';
+  }).join('')+'</div>';
+}
+function loadRijalSummary(){
+  if(rijalLoaded) return;
+  rijalLoaded = true;
+  var box = document.getElementById('rijalSummary');
+  box.innerHTML = '<div class="spinner">Reading chains &amp; gradings</div>';
+  fetch('/api/rijal/summary').then(r=>r.json()).then(function(s){
+    if(!s.hadith){ box.innerHTML = '<div class="empty">No hadith in the loaded corpus, so there are no chains to read.</div>'; return; }
+    var h = '<div class="evhead">Corpus gradings</div>'+
+      '<p class="subq">'+s.hadith.toLocaleString()+' narrations · '+s.with_readable_chain.toLocaleString()+
+      ' with a readable chain · '+s.narrator_count.toLocaleString()+' distinct narrators (surface reading)</p>'+
+      gradeDist(s.grades);
+    if((s.attributors||[]).length){
+      h += '<div class="evhead" style="margin-top:16px">Grade attributors</div>'+
+        '<div class="nchips">'+s.attributors.slice(0,12).map(function(a){
+          return '<span class="gpill">'+esc(a.attributor)+' <b>'+a.total+'</b></span>';
+        }).join('')+'</div>';
+    }
+    if((s.top_narrators||[]).length){
+      h += '<div class="evhead" style="margin-top:16px">Most frequent narrators <span class="idxnote">click to look up</span></div>'+
+        '<div class="nchips">'+s.top_narrators.map(function(n){
+          return '<span class="nchip" onclick="lookupNarratorName(\''+esc(n.name.replace(/\\/g,"").replace(/'/g,"\\'"))+'\')">'+
+            esc(n.name)+'<span class="cnt">'+n.count+'</span></span>';
+        }).join('')+'</div>';
+    }
+    box.innerHTML = h;
+  }).catch(function(){ box.innerHTML = '<div class="empty">Could not load the narrator index.</div>'; });
+}
+function lookupNarratorName(name){
+  document.getElementById('rq').value = name;
+  switchTab('rijal');
+  lookupNarrator();
+}
+async function lookupNarrator(){
+  var name = document.getElementById('rq').value.trim();
+  if(!name) return;
+  var box = document.getElementById('rijalResult');
+  var btn = document.getElementById('rqBtn');
+  btn.disabled = true; box.innerHTML = spinner('Searching chains for “'+esc(name)+'”…');
+  try {
+    var res = await fetch('/api/rijal/narrator', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:name})});
+    var data = await res.json();
+    if(data.error){ box.innerHTML = '<div class="empty">'+esc(data.error)+'</div>'; return; }
+    renderNarrator(box, data);
+  } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
+  finally { btn.disabled = false; }
+}
+function renderNarrator(box, data){
+  if(!data.narration_count){
+    box.innerHTML = '<div class="empty">No narration chain in the corpus mentions “'+esc(data.query)+'”. '+
+      'Note the chain reading is a surface heuristic; try a different spelling (e.g. Ibn vs Bin).</div>';
+    return;
+  }
+  var names = (data.matched_names||[]).slice(0,6).join(', ');
+  var h = '<div class="qtitle">'+esc(data.query)+'</div>'+
+    '<p class="subq">Appears in <b>'+data.narration_count+'</b> narration'+(data.narration_count>1?'s':'')+
+    '\'s chain'+(names ? ' · matched: '+esc(names) : '')+'. Click a narration for its full chain &amp; gradings.</p>'+
+    gradeDist(data.grade_distribution)+
+    '<div class="evhead" style="margin-top:14px">Narrations</div>'+
+    (data.narrations||[]).map(function(n){ return evidenceBlock(detailFromEv(n)); }).join('');
+  box.innerHTML = h;
 }
 
 function refString(cit){

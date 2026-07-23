@@ -59,6 +59,22 @@ chapter), the source book, confidence and view-status, and an honest note on
 whether it may be asserted as fact or only weighed as evidence. Close with ×,
 the backdrop, or Escape.
 
+## Narrators (rijāl)
+
+The **Narrators** tab reads each narration's chain (isnad) *as it appears in the
+text* and surfaces the **attributed** gradings — a research aid, never a rijāl
+verdict. It shows the corpus grade distribution, who the grade attributors are
+(e.g. Majlisī, Behbudī), and the most frequent narrators; look up a narrator by
+name to see every narration whose chain mentions them, with that set's grade
+spread. Opening a hadith in the drawer shows its **transmission chain**
+(`A → B → C`, clearly caveated as a surface reading) and its **gradings** parsed
+into *attributor → grade → work*.
+
+The system never grades a narrator or a narration itself — it only surfaces what
+the corpus already records. Deriving reliability from a rijāl database
+(Najāshī/Ṭūsī) is out of scope by design. Endpoints: `GET /api/rijal/summary`,
+`POST /api/rijal/narrator {name}`.
+
 ## Cross-references (verse → tafsir & narrations)
 
 Open the drawer on a **Qurʾān verse** and click *Find related tafsir &
@@ -150,6 +166,8 @@ The page is backed by three JSON endpoints (usable directly, e.g. from scripts):
 | `POST /api/lecture`| `{"topic", "depth", "embedder", "source_ids"}`    | topic + the 11-section framework, evidence per section, `markdown` |
 | `POST /api/compare`| `{"question", "sources": [...], "k", "embedder", "evidence_types", "min_confidence"}` | `{question, columns: [{source_id, title, answer, markdown}], truncated}` |
 | `POST /api/crossref`| `{"surah", "ayah", "k", "embedder"}`             | `{verse, tafsir: [...], hadith: [...], verses: [...]}` — each item labelled `explicit`/`thematic` |
+| `GET  /api/rijal/summary`| —                                           | corpus grade distribution, grade attributors, top narrators |
+| `POST /api/rijal/narrator`| `{"name", "limit"}`                        | narrations whose chain mentions the narrator, with chain + attributed gradings |
 
 `/api/compare` runs one retrieval per book (fan-out capped at 6; `truncated`
 flags when the list was longer). `/api/crossref` returns 404 when the verse is

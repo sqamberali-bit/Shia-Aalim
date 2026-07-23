@@ -120,7 +120,14 @@ the research loop updates.
 
 ## Iteration 4 — Depth & rigour
 
-- [ ] Rijāl integration: narrator lookup, chain evaluation surfacing grade sources
+- [x] Rijāl integration (`rijal.py`, `/api/rijal/*`, a **Narrators** tab):
+      heuristically reads each narration's chain (isnad) *as it appears in the
+      text*, indexes narrators, and surfaces the **attributed** gradings
+      (`grade_source` parsed into attributor → grade → work). Narrator lookup +
+      corpus grade distribution; the drawer shows the chain and gradings for any
+      hadith. Strictly *surfacing*, never *deriving* — the system still never
+      grades a narrator or narration itself. (Full rijāl-database evaluation —
+      Najāshī/Ṭūsī reliability judgements — remains future work.)
 - [x] Cross-referencing: link a Qurʾān verse to its tafsīr and related narrations
       (`generation/crossref.py`, `POST /api/crossref`, and a "related tafsir &
       narrations" action in the citation drawer). Content-based (tafsir/hadith
