@@ -15,8 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY . /app
 
-# Install the app with the web extra (FastAPI + uvicorn).
-RUN pip install --no-cache-dir -e ".[web]"
+# Install the app with the web + llm extras. anthropic is a small, pure-Python
+# dependency, so Claude synthesis is available whenever ANTHROPIC_API_KEY and
+# SYNTHESIZE=claude:<model> are set at runtime (no rebuild needed to switch on).
+RUN pip install --no-cache-dir -e ".[web,llm]"
 
 # Corpus scope: "public" (~60k docs, default, fits small hosts) or "full"
 # (~122k docs incl. Biḥār 101 vols + al-Mīzān 40 vols; needs ~2–4 GB RAM).

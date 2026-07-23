@@ -1606,9 +1606,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         help="one or a comma-separated list to offer as a UI toggle; the first is "
         "the default (e.g. 'tfidf' or 'tfidf,st:BAAI/bge-m3'). tfidf | hashing | st:<model>",
     )
-    parser.add_argument("--synthesize", default="none", help="none | mock | claude:<model>")
-    parser.add_argument("--judge", default="lexical", help="lexical | mock | claude:<model>")
-    parser.add_argument("--decompose", default="none", help="none | rule | claude:<model>")
+    parser.add_argument("--synthesize", default=os.environ.get("SYNTHESIZE", "none"),
+                        help="none | mock | claude:<model> (env: SYNTHESIZE; needs ANTHROPIC_API_KEY)")
+    parser.add_argument("--judge", default=os.environ.get("JUDGE", "lexical"),
+                        help="lexical | mock | claude:<model> (env: JUDGE)")
+    parser.add_argument("--decompose", default=os.environ.get("DECOMPOSE", "none"),
+                        help="none | rule | claude:<model> (env: DECOMPOSE)")
     parser.add_argument("--k", type=int, default=6, help="default evidence count per answer")
     args = parser.parse_args(argv)
 

@@ -83,3 +83,17 @@ embedded once at **container startup** (on the GPU) and cached. Do it in order:
 > docs would take hours and stall startup.
 
 See [`deployment.md`](deployment.md) for the free-CPU alternative and details.
+
+## Optional — AI-written answers with Claude (no GPU)
+Claude composes a fluent, cited answer from the retrieved evidence (still
+re-verified before display). It's an API call, so it works on the free tier.
+Two settings, no rebuild:
+
+1. Space → *Settings → Variables and secrets* → **New secret**:
+   `ANTHROPIC_API_KEY` = your key from <https://console.anthropic.com>.
+2. Same screen → **New variable**: `SYNTHESIZE` = `claude:claude-sonnet-5`
+   (or `claude:claude-haiku-4-5-20251001` for cheaper/faster).
+
+The Space restarts; answers now open with a **Synthesized answer** section
+above the cited evidence. Billed per Anthropic API usage (one call per
+question). Delete the `SYNTHESIZE` variable to turn it off.

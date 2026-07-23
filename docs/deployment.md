@@ -116,11 +116,27 @@ Two things to size for:
 - **RAM**: indexing 122k docs in memory needs **~2–4 GB**. The HF Spaces free
   tier (16 GB) handles it comfortably; on Render use a plan with ≥4 GB.
 
-## LLM-composed answers (optional)
+## AI-written answers with Claude (no GPU needed)
 
-Set an `ANTHROPIC_API_KEY` env var on the host and change the run to
-`--synthesize claude:claude-sonnet-5` (install the `llm` extra). Synthesized
-prose is still re-verified against the evidence before it is shown.
+Claude reads the retrieved passages and composes a fluent, cited answer. It's an
+**API call**, so it runs on any tier (no GPU) and keeps retrieval fast. The
+output is re-verified against the evidence before display — anything unsupported
+is withheld and the cited passages are shown instead, so it stays grounded.
+
+The image already includes the `llm` extra, so enabling it is just two runtime
+settings (no rebuild, no code edit):
+
+1. **Add your Anthropic key** — Space → *Settings → Variables and secrets* →
+   **New secret**: name `ANTHROPIC_API_KEY`, value = your key from
+   <https://console.anthropic.com>.
+2. **Turn synthesis on** — same screen → **New variable**: name `SYNTHESIZE`,
+   value `claude:claude-sonnet-5` (or `claude:claude-haiku-4-5-20251001` for a
+   cheaper/faster model). Optionally add `DECOMPOSE=rule` to split multi-part
+   questions.
+
+The Space restarts and answers now open with a **Synthesized answer** section
+(the cited evidence stays below it). Cost is per Anthropic API usage — one
+synthesis call per question. Remove the `SYNTHESIZE` variable to turn it off.
 
 ## Configuration reference
 
