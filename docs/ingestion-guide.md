@@ -15,6 +15,7 @@ environment. Two tested adapters exist:
 | `adapters/quran.py` | [fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api) | 6236 verses (Arabic Uthmani + Ali Quli Qarai) | one Document/verse, Arabic in citation |
 | `adapters/thaqalayn.py` | [narmafraz/ThaqalaynData](https://github.com/narmafraz/ThaqalaynData) (CC0) | Four Books + Nahj + al-Saduq/al-Mufid collections (46,610 hadith) | carries matn, attributed translation, **rijāl gradings**; variable-depth paths + Nahj Sermon/Letter/Saying scheme |
 | `adapters/shiavault.py` | [shiavault-library](https://github.com/shiavault/shiavault-library) (al-islam.org mirror) | prose: al-Mīzān, Sīra, Maqtal, Irshād, Sahifa (4862 passages) | Markdown → chapter-level citations; **medium confidence** (translations/secondary), no grade. `PROSE_TARGETS` in `ingest.py`, `--shiavault-dir` |
+| `adapters/bihar.py` | hubeali English Biḥār al-Anwār PDFs (V1–V101, uploaded) | Biḥār al-Anwār complete (~43k pages) | PyMuPDF text extraction, one doc/page cited by **volume + hubeali page**; medium confidence, ungraded (no rijāl grade in the PDFs). `--bihar-dir`; needs `pip install pymupdf` |
 
 The hadith adapter is configured per-book in `scripts/ingest.py` (`HADITH_TARGETS`):
 each entry sets the collection, title, translator candidate keys, output shard,

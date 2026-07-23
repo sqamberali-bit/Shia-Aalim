@@ -45,8 +45,12 @@ the research loop updates.
       small committed sample; integrity tests skip on bare checkouts). See
       [`docs/data-management.md`](data-management.md). Chosen over Git LFS
       because the corpus is derived and outgrows the LFS free tier.
-- [ ] Upload-needed (not on GitHub): Biḥār al-Anwār (101 vols), Wasāʾil al-Shīʿa,
-      Mustadrak al-Wasāʾil, Mafātīḥ al-Jinān; enrich Faqīh/Tahdhīb/Istibṣār with Kitāb titles
+- [x] **Biḥār al-Anwār — complete (all 101 volumes)** ingested from the uploaded
+      hubeali English text-layer PDFs via a new PyMuPDF adapter (`adapters/bihar.py`),
+      one document per page cited by volume + hubeali page (~43k pages, medium
+      confidence, ungraded). Corpus lives in external data.
+- [ ] Upload-needed (not on GitHub): Wasāʾil al-Shīʿa, Mustadrak al-Wasāʾil,
+      Mafātīḥ al-Jinān; enrich Faqīh/Tahdhīb/Istibṣār with Kitāb titles
 - [ ] Swap in a semantic embedder (BGE-M3) behind `EmbeddingProvider`; benchmark
       vs the hashing baseline (measured recall@5 ≈ 0.40 on the current gold set —
       the loop already recommends this upgrade)

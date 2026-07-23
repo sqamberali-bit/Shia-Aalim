@@ -30,6 +30,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
+from shia_aalim.ingestion.adapters.bihar import build_bihar_documents, volume_from_filename  # noqa: E402
 from shia_aalim.ingestion.adapters.quran import build_quran_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.shiavault import build_prose_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.thaqalayn import build_hadith_documents  # noqa: E402
@@ -192,14 +193,34 @@ def ingest_prose(shiavault_dir: Path) -> int:
     return total
 
 
+def ingest_bihar(bihar_dir: Path) -> int:
+    """Ingest the hubeali English Bihar al-Anwar PDFs (V1..V101), one shard/volume."""
+    pdfs = sorted(
+        bihar_dir.glob("**/BiharAlAnwaar_V*.pdf"),
+        key=lambda p: int(volume_from_filename(p) or 0),
+    )
+    if not pdfs:
+        print(f"  [skip] no BiharAlAnwaar_V*.pdf under {bihar_dir}")
+        return 0
+    total = 0
+    for pdf in pdfs:
+        vol = volume_from_filename(pdf) or "0"
+        docs = build_bihar_documents(pdf, volume=vol)
+        if docs:
+            write_jsonl(docs, KNOWLEDGE / "hadith" / f"bihar-al-anwar-v{int(vol):03d}.jsonl")
+            total += len(docs)
+    return total
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--quran-dir", default=os.environ.get("QURAN_DIR"))
     parser.add_argument("--thaqalayn-dir", default=os.environ.get("THAQALAYN_DATA_DIR"))
     parser.add_argument("--shiavault-dir", default=os.environ.get("SHIAVAULT_DIR"))
+    parser.add_argument("--bihar-dir", default=os.environ.get("BIHAR_DIR"))
     args = parser.parse_args()
 
-    n_quran = n_hadith = n_prose = 0
+    n_quran = n_hadith = n_prose = n_bihar = 0
     if args.quran_dir:
         print("Ingesting Qur'an...")
         n_quran = ingest_quran(Path(args.quran_dir))
@@ -218,7 +239,14 @@ def main() -> int:
     else:
         print("  [skip] no --shiavault-dir / SHIAVAULT_DIR")
 
-    print(f"\nDone. {n_quran} Qur'an verses, {n_hadith} hadith, {n_prose} prose passages ingested.")
+    if args.bihar_dir:
+        print("Ingesting Bihar al-Anwar (hubeali PDFs)...")
+        n_bihar = ingest_bihar(Path(args.bihar_dir))
+    else:
+        print("  [skip] no --bihar-dir / BIHAR_DIR")
+
+    print(f"\nDone. {n_quran} Qur'an verses, {n_hadith + n_bihar} hadith "
+          f"({n_bihar} Bihar), {n_prose} prose passages ingested.")
     return 0
 
 

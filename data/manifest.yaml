@@ -14,7 +14,7 @@
 # -----------------------------------------------------------------------------
 
 version: 1
-total_expected_docs: 57708
+total_expected_docs: 101000
 
 # A published snapshot of the full built corpus. Leave url/sha256 null until a
 # bundle is produced with `scripts/fetch_data.py --make-bundle` and hosted.
@@ -124,7 +124,7 @@ works:
   # bundle. These carry no `build.source` because they cannot be auto-fetched.
   - id: bihar-al-anwar
     tier: hadith
-    expected_docs: null
-    output: data/knowledge/hadith/bihar-al-anwar-*.jsonl
-    build: {source: upload, adapter: tbd}
-    note: "Bihar al-Anwar (101 vols). Not on GitHub; upload source files (hubeali PDF/EPUB) to ingest."
+    expected_docs: 43292
+    output: data/knowledge/hadith/bihar-al-anwar-v*.jsonl
+    build: {source: "github:sqamberali-bit/bihar-al-anwar-source", adapter: bihar}
+    note: "Complete 101-vol hubeali English PDFs. Source PDFs live in the GitHub repo sqamberali-bit/bihar-al-anwar-source (pdfs/BiharAlAnwaar_V*.pdf), so this IS reproducible: clone it and run `scripts/ingest.py --bihar-dir <clone>` (needs pymupdf). One doc per page; cite volume + hubeali page."

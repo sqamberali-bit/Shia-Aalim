@@ -33,7 +33,7 @@ an afterthought.
 
 ## The corpus is external
 
-The built knowledge base (~124 MB, 57k docs) is **derived data and lives outside
+The built knowledge base (~310 MB, 101k docs) is **derived data and lives outside
 git** — see [`docs/data-management.md`](docs/data-management.md). A fresh checkout
 ships a small **sample** so everything runs; get the full corpus by rebuilding
 from sources (`scripts/ingest.py`) or fetching a bundle:
@@ -118,7 +118,7 @@ data/knowledge/              Built corpus (external/git-ignored) + a small commi
 prompts/                     System prompts encoding the charter for any LLM synthesizer
 templates/                   Lecture template
 scripts/                     demo.py, run_research_loop.py, ingest.py, fetch_data.py
-tests/                       Test suite (53 tests, stdlib-only) + fixtures
+tests/                       Test suite (56 tests, stdlib-only) + fixtures
 ```
 
 ## Scholarly integrity & scope
@@ -154,8 +154,11 @@ Amālī, ʿUyūn Akhbār al-Riḍā, al-Tawḥīd) and a **prose tier** — Tafs
 (partial), Sīra, Maqtal al-Husayn, Kitāb al-Irshād, and al-Ṣaḥīfa
 al-Sajjādiyya — are ingested from the [Shiavault](https://github.com/shiavault/shiavault-library)
 al-islam.org mirror, with coarser chapter-level citations at *medium* confidence
-(clearly a lower evidence tier than the graded hadith corpora). **The corpus is
-now 57,708 cited documents across 16 works.**
+(clearly a lower evidence tier than the graded hadith corpora). Finally, the
+**complete 101-volume Biḥār al-Anwār** (~43k page-documents, cited by volume +
+page) is ingested from the hubeali English text-layer PDFs via a PyMuPDF adapter.
+**The corpus is now 101,000 cited documents across 17 works** — all external to
+git (see [`docs/data-management.md`](docs/data-management.md)).
 
 Integrity holds on the real corpus (citation accuracy 1.0, hallucination 0.0,
 verified by `tests/test_corpus_integrity.py`). The measured recall@5 ≈ 0.40 with

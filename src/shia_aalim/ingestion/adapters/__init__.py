@@ -14,6 +14,7 @@ Current adapters:
   ``narmafraz/ThaqalaynData`` dataset (the data behind thaqalayn.net).
 """
 
+from .bihar import build_bihar_documents
 from .quran import build_quran_documents, load_edition
 from .shiavault import build_prose_documents
 from .thaqalayn import build_hadith_documents, parse_grading
@@ -24,4 +25,5 @@ __all__ = [
     "build_hadith_documents",
     "parse_grading",
     "build_prose_documents",
+    "build_bihar_documents",
 ]

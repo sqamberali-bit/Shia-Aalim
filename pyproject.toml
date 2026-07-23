@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ingest = ["pypdf>=4.0", "ebooklib>=0.18", "beautifulsoup4>=4.12", "lxml>=5.0"]
+ingest = ["pypdf>=4.0", "pymupdf>=1.24", "ebooklib>=0.18", "beautifulsoup4>=4.12", "lxml>=5.0"]
 embeddings = ["sentence-transformers>=2.7"]
 vectorstores = ["qdrant-client>=1.9"]
 llm = ["anthropic>=0.40"]

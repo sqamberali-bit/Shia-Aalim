@@ -5,8 +5,9 @@ This directory holds the ingested, citable knowledge as newline-delimited JSON
 
 ## What is ingested (Iteration 2 — real corpora)
 
-**Totals: 57,708 cited documents across 16 works** — 6236 Qur'an verses, 46,652
-hadith, and 4,862 prose passages (tafsīr, biography, history, supplications).
+**Totals: 101,000 cited documents across 17 works** — 6236 Qur'an verses,
+89,944 hadith (incl. the complete 101-volume Biḥār al-Anwār), and 4,862 prose
+passages (tafsīr, biography, history, supplications).
 
 | File | Content | Count | Source | Confidence |
 |---|---|---|---|---|
@@ -20,6 +21,7 @@ hadith, and 4,862 prose passages (tafsīr, biography, history, supplications).
 | `hadith/al-amali-saduq.jsonl` · `al-amali-mufid.jsonl` | al-Amālī of al-Saduq (1082) + al-Mufid (387) | 1469 | ThaqalaynData (CC0) | per-grade |
 | `hadith/uyun-akhbar-al-rida.jsonl` | ʿUyūn Akhbār al-Riḍā (al-Saduq) | 954 | ThaqalaynData (CC0) | per-grade |
 | `hadith/al-tawhid-saduq.jsonl` | Kitāb al-Tawḥīd (al-Saduq — standalone, distinct from al-Kāfī's Book of Tawḥīd) | 575 | ThaqalaynData (CC0) | per-grade |
+| `hadith/bihar-al-anwar-v*.jsonl` | **Biḥār al-Anwār — complete, all 101 volumes** (al-Majlisī). One doc/page, cited by volume + hubeali page | 43,292 | hubeali English PDFs ([source repo](https://github.com/sqamberali-bit/bihar-al-anwar-source)) | medium (ungraded — no rijāl grade in the PDFs; contains strong & weak reports) |
 
 ### Prose works (`prose/*.jsonl`) — coarser, chapter-level citations
 
