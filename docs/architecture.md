@@ -58,17 +58,31 @@ download from the HuggingFace Hub, run the `st:` path where the Hub — or a
 pre-downloaded model — is reachable. `PersistentVectorStore` caches vectors on
 disk keyed by an embedder signature, so a 101k-doc corpus embeds once.
 
-**LLM synthesizer** — implement `Synthesizer.synthesize(question, evidence) ->
-str`, using [`prompts/answer_system.md`](../prompts/answer_system.md) as the
-system prompt and passing only the retrieved evidence. The result is still run
-through `check_answer_grounding`, so a synthesizer that drifts off-evidence is
-caught, not trusted.
+**LLM synthesizer** — composes fluent, *cited* prose from the retrieved
+evidence. Select via `make_synthesizer(spec)`:
 
-**LLM synthesizer** — implement `Synthesizer.synthesize(question, evidence) ->
-str`, using [`prompts/answer_system.md`](../prompts/answer_system.md) as the
-system prompt and passing only the retrieved evidence. The result is still run
-through `check_answer_grounding`, so a synthesizer that drifts off-evidence is
-caught, not trusted.
+| spec | class | needs | notes |
+|---|---|---|---|
+| `none` | — | — | default: extractive only (never writes original prose) |
+| `mock` | `MockSynthesizer` | — | deterministic offline; runs/tests the pipeline with no API key |
+| `claude:<model>` | `ClaudeSynthesizer` | `[llm]` + `ANTHROPIC_API_KEY` | Anthropic API; uses [`prompts/answer_system.md`](../prompts/answer_system.md) |
+
+The synthesizer is handed the evidence as a numbered `[n]` list and must cite it
+with `[n]` markers. **Its output is re-verified before release** by
+`grounding/synthesis.py::verify_synthesis`, which rejects prose that (1) cites a
+marker outside the evidence (**invented citation**), (2) puts a citation on a
+sentence its cited passage doesn't support (**wrong attribution**), or (3) makes
+a substantive claim grounded in **no** cited evidence (**hallucination**). On
+failure, `AnswerGenerator` **withholds** the prose and falls back to the
+extractive, always-cited evidence — the LLM can make an answer readable, never
+less grounded. (Lexical gate; add an LLM entailment judge for production.)
+
+```python
+from shia_aalim.generation import make_synthesizer, AnswerGenerator
+gen = AnswerGenerator(retriever, synthesizer=make_synthesizer("claude:claude-sonnet-5"),
+                      known_source_ids=known)
+answer = gen.answer("What does the Qur'an say about the Ahl al-Bayt?")  # summary verified or withheld
+```
 
 ## Component selection (benchmark before committing)
 

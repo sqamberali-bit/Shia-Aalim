@@ -99,8 +99,10 @@ pip install -e ".[ingest,embeddings,llm]"
   passage-existence checks, plus lexical answer-grounding — the hallucination
   firewall.
 - **Generation** (`generation/`) — extractive-by-default answering and the full
-  11-section lecture framework; an optional LLM `Synthesizer` composes prose but
-  its output is re-verified before release.
+  11-section lecture framework; an optional LLM synthesizer (Claude via
+  `make_synthesizer`) composes cited prose that is **re-verified** before
+  release — invented citations / wrong attribution / hallucinated sentences are
+  rejected and the prose withheld (`grounding/synthesis.py`).
 - **Evaluation** (`evaluation/`) — citation accuracy, hallucination rate,
   retrieval precision/recall, source coverage, over a gold set.
 - **Research loop** (`research_loop.py`) — bounded, logged iterations that
@@ -120,7 +122,7 @@ data/knowledge/              Built corpus (external/git-ignored) + a small commi
 prompts/                     System prompts encoding the charter for any LLM synthesizer
 templates/                   Lecture template
 scripts/                     demo.py, run_research_loop.py, ingest.py, fetch_data.py
-tests/                       Test suite (67 tests, stdlib-only) + fixtures
+tests/                       Test suite (78 tests, stdlib-only) + fixtures
 ```
 
 ## Scholarly integrity & scope

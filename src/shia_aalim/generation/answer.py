@@ -22,6 +22,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Optional, Protocol
 
+from ..grounding.synthesis import verify_synthesis
 from ..grounding.verify import check_answer_grounding
 from ..models import Answer, Claim, ConfidenceLevel, EvidenceType
 from ..retrieval.retriever import Retriever, RetrievalResult
@@ -108,9 +109,23 @@ class AnswerGenerator:
         caveats: list[str] = []
         if self.synthesizer is not None:
             try:
-                summary = self.synthesizer.synthesize(question, evidence)
+                candidate = self.synthesizer.synthesize(question, evidence)
             except Exception as exc:  # noqa: BLE001
+                candidate = None
                 caveats.append(f"Synthesizer failed; returning extractive evidence only ({exc}).")
+            if candidate:
+                # Re-verify the LLM prose before trusting it (charter: post-
+                # generation fact verification). Reject rather than show
+                # unsupported/invented-citation prose — the cited evidence below
+                # is always available as the grounded fallback.
+                report = verify_synthesis(candidate, evidence)
+                if report.grounded:
+                    summary = candidate
+                else:
+                    caveats.append(
+                        "Synthesized answer REJECTED by verification and withheld "
+                        "(showing cited evidence instead): " + "; ".join(report.problems[:3])
+                    )
 
         answer = Answer(
             question=question,
@@ -139,7 +154,8 @@ class AnswerGenerator:
         """Render an answer as reviewer-friendly Markdown with grouped evidence."""
         lines: list[str] = [f"## {answer.question}", ""]
         if answer.summary:
-            lines += [answer.summary, ""]
+            lines += ["### Synthesized answer _(LLM prose, verified against the evidence below)_",
+                      "", answer.summary, ""]
         if not answer.claims:
             lines += ["_No evidence found in the knowledge base._", ""]
         else:

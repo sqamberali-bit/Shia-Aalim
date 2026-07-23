@@ -71,8 +71,13 @@ the research loop updates.
 
 ## Iteration 3 — Grounded synthesis & lectures
 
-- [ ] Implement an LLM `Synthesizer` (Claude) using the charter prompts
-- [ ] Add LLM-based entailment to complement lexical grounding
+- [x] LLM `Synthesizer` (Claude) using the charter prompts — `ClaudeSynthesizer`
+      (+ offline `MockSynthesizer`), selectable via `make_synthesizer("claude:<model>")`.
+      Cites evidence with `[n]` markers; **output re-verified before release**
+      (`verify_synthesis`): invented citations, wrong attribution, and
+      uncited/hallucinated sentences are rejected and the prose withheld in
+      favour of the extractive cited evidence. `demo.py --synthesize`.
+- [ ] Add LLM-based entailment to complement the lexical grounding gate
 - [ ] Query decomposition for multi-part questions
 - [ ] Full lecture generation with sourced tafsīr/hadith/history sections
 - [ ] Human-in-the-loop review UI for confidence promotion

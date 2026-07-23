@@ -9,6 +9,7 @@ release.
 
 from .answer import AnswerGenerator, Synthesizer
 from .lecture import Lecture, LectureGenerator, LectureSection
+from .synthesizer import ClaudeSynthesizer, MockSynthesizer, make_synthesizer
 
 __all__ = [
     "AnswerGenerator",
@@ -16,4 +17,7 @@ __all__ = [
     "Lecture",
     "LectureSection",
     "LectureGenerator",
+    "ClaudeSynthesizer",
+    "MockSynthesizer",
+    "make_synthesizer",
 ]
