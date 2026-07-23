@@ -97,7 +97,11 @@ the research loop updates.
       conservative — won't split a noun phrase), retrieves each part, and merges
       the evidence so no clause starves. Recorded on `Answer.sub_questions`;
       `demo.py --decompose`.
-- [ ] Human-in-the-loop review UI for confidence promotion
+- [x] Human-in-the-loop confidence review (`review.py` + `src/shia_aalim/review.py`)
+      — queue sources needing review, score them on the source-validation
+      criteria (file-based or interactive terminal UI), compute the band, and
+      update the registry **with an audit trail**. Never raises confidence
+      without a validation record. See [`docs/review-workflow.md`](review-workflow.md).
 
 ## Iteration 4 — Depth & rigour
 

@@ -121,8 +121,8 @@ src/shia_aalim/ingestion/adapters/  Verified-source adapters (Qur'an, ThaqalaynD
 data/knowledge/              Built corpus (external/git-ignored) + a small committed sample/
 prompts/                     System prompts encoding the charter for any LLM synthesizer
 templates/                   Lecture template
-scripts/                     demo.py, run_research_loop.py, ingest.py, fetch_data.py
-tests/                       Test suite (99 tests, stdlib-only) + fixtures
+scripts/                     demo.py, ingest.py, fetch_data.py, benchmark_retrieval.py, eval_end_to_end.py, review.py
+tests/                       Test suite (106 tests, stdlib-only) + fixtures
 ```
 
 ## Scholarly integrity & scope
