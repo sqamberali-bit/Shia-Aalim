@@ -33,7 +33,7 @@ an afterthought.
 
 ## The corpus is external
 
-The built knowledge base (~340 MB, 117k docs) is **derived data and lives outside
+The built knowledge base (~350 MB, 122k docs) is **derived data and lives outside
 git** — see [`docs/data-management.md`](docs/data-management.md). A fresh checkout
 ships a small **sample** so everything runs; get the full corpus by rebuilding
 from sources (`scripts/ingest.py`) or fetching a bundle:
@@ -160,7 +160,7 @@ al-Anwār** (~43k page-documents) is ingested from hubeali English text-layer PD
 (PyMuPDF adapter), and the **complete 40-volume Tafsīr al-Mīzān** (18,125
 sections, Tawheed Institute English edition) from uploaded OCR'd text (plain-text
 adapter). These prose tiers are clearly a lower evidence tier than the graded
-hadith corpora. **The corpus is now 117,288 cited documents across 17 works** —
+hadith corpora. **The corpus is now 121,871 cited documents across 27 works** —
 all external to git (see [`docs/data-management.md`](docs/data-management.md)).
 
 Integrity holds on the real corpus (citation accuracy 1.0, hallucination 0.0,

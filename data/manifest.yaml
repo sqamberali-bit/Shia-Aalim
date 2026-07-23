@@ -14,7 +14,7 @@
 # -----------------------------------------------------------------------------
 
 version: 1
-total_expected_docs: 117288
+total_expected_docs: 121871
 
 # A published snapshot of the full built corpus. Leave url/sha256 null until a
 # bundle is produced with `scripts/fetch_data.py --make-bundle` and hosted.
@@ -89,6 +89,56 @@ works:
     tier: hadith
     expected_docs: 575
     output: data/knowledge/hadith/al-tawhid-saduq.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: thawab-al-amal
+    tier: hadith
+    expected_docs: 1106
+    output: data/knowledge/hadith/thawab-al-amal.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: maani-al-akhbar
+    tier: hadith
+    expected_docs: 829
+    output: data/knowledge/hadith/maani-al-akhbar.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: kitab-al-ghayba-tusi
+    tier: hadith
+    expected_docs: 774
+    output: data/knowledge/hadith/kitab-al-ghayba-tusi.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: kamil-al-ziyarat
+    tier: hadith
+    expected_docs: 750
+    output: data/knowledge/hadith/kamil-al-ziyarat.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: kitab-al-ghayba-numani
+    tier: hadith
+    expected_docs: 468
+    output: data/knowledge/hadith/kitab-al-ghayba-numani.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: kitab-al-zuhd
+    tier: hadith
+    expected_docs: 290
+    output: data/knowledge/hadith/kitab-al-zuhd.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: kitab-al-mumin
+    tier: hadith
+    expected_docs: 201
+    output: data/knowledge/hadith/kitab-al-mumin.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: sifat-al-shia
+    tier: hadith
+    expected_docs: 71
+    output: data/knowledge/hadith/sifat-al-shia.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: risalat-al-huquq
+    tier: hadith
+    expected_docs: 49
+    output: data/knowledge/hadith/risalat-al-huquq.jsonl
+    build: {source: thaqalayn-data, adapter: thaqalayn}
+  - id: fadail-al-shia
+    tier: hadith
+    expected_docs: 45
+    output: data/knowledge/hadith/fadail-al-shia.jsonl
     build: {source: thaqalayn-data, adapter: thaqalayn}
 
   # ---- Prose (translations / secondary works, medium confidence) ----

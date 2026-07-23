@@ -80,6 +80,19 @@ HADITH_TARGETS = [
     ("books/al-amali-mufid", "al-amali-mufid", "al-Amali (al-Mufid)", "al-amali-mufid.jsonl", ["en.mulla-asgharali-m-m-jaffer"], "hierarchical", "Mulla Asgharali M M Jaffer (via ThaqalaynData, CC0)"),
     ("books/al-khisal", "al-khisal", "al-Khisal (al-Saduq)", "al-khisal.jsonl", ["en.dr-ali-peiravi"], "hierarchical", "Dr Ali Peiravi (via ThaqalaynData, CC0)"),
     ("books/al-tawhid", "al-tawhid-saduq", "Kitab al-Tawhid (al-Saduq)", "al-tawhid-saduq.jsonl", ["en.sayed-ali-raza-rizvi"], "hierarchical", "Sayed Ali Raza Rizvi (via ThaqalaynData, CC0)"),
+    # Further ThaqalaynData (CC0) Twelver collections — mostly early al-Saduq /
+    # Ahwazi / Ghayba works. All ungraded in this dataset (medium confidence).
+    # (kamal-al-din is an empty stub in ThaqalaynData — no matn/translation — so it is not ingested.)
+    ("books/kamil-al-ziyarat", "kamil-al-ziyarat", "Kamil al-Ziyarat (Ibn Qulawayh)", "kamil-al-ziyarat.jsonl", ["en.sayyid-mohsen-al-husayni-al-milani"], "hierarchical", "Sayyid Mohsen al-Husayni al-Milani (via ThaqalaynData, CC0)"),
+    ("books/maani-al-akhbar", "maani-al-akhbar", "Ma'ani al-Akhbar (al-Saduq)", "maani-al-akhbar.jsonl", ["en.basel-kadem"], "hierarchical", "Basel Kadem (via ThaqalaynData, CC0)"),
+    ("books/thawab-al-amal", "thawab-al-amal", "Thawab al-A'mal wa Iqab al-A'mal (al-Saduq)", "thawab-al-amal.jsonl", ["en.sayed-athar-husain-rizvi-&-sayed-maqsood-athar"], "hierarchical", "Rizvi & Athar (via ThaqalaynData, CC0)"),
+    ("books/sifat-al-shia", "sifat-al-shia", "Sifat al-Shia (al-Saduq)", "sifat-al-shia.jsonl", ["en.badr-shahin"], "hierarchical", "Badr Shahin (via ThaqalaynData, CC0)"),
+    ("books/risalat-al-huquq", "risalat-al-huquq", "Risalat al-Huquq (Imam al-Sajjad)", "risalat-al-huquq.jsonl", ["en.william-c-chittick"], "hierarchical", "William C. Chittick (via ThaqalaynData, CC0)"),
+    ("books/kitab-al-ghayba-numani", "kitab-al-ghayba-numani", "Kitab al-Ghayba (al-Nu'mani)", "kitab-al-ghayba-numani.jsonl", ["en.abdullah-al-shahin"], "hierarchical", "Abdullah al-Shahin (via ThaqalaynData, CC0)"),
+    ("books/kitab-al-ghayba-tusi", "kitab-al-ghayba-tusi", "Kitab al-Ghayba (al-Tusi)", "kitab-al-ghayba-tusi.jsonl", ["en.sayyid-athar-husain-s-h-rizvi"], "hierarchical", "Sayyid Athar Husain S.H. Rizvi (via ThaqalaynData, CC0)"),
+    ("books/kitab-al-mumin", "kitab-al-mumin", "Kitab al-Mu'min (al-Ahwazi)", "kitab-al-mumin.jsonl", ["en.muhajir-b-ali"], "hierarchical", "Muhajir b. Ali (via ThaqalaynData, CC0)"),
+    ("books/kitab-al-zuhd", "kitab-al-zuhd", "Kitab al-Zuhd (al-Ahwazi)", "kitab-al-zuhd.jsonl", ["en.shaykh-tahir-ridha-jaffer"], "hierarchical", "Shaykh Tahir Ridha Jaffer (via ThaqalaynData, CC0)"),
+    ("books/fadail-al-shia", "fadail-al-shia", "Fada'il al-Shia (al-Saduq)", "fadail-al-shia.jsonl", ["en.badr-shahin"], "hierarchical", "Badr Shahin (via ThaqalaynData, CC0)"),
 ]
 
 # Prose works from the Shiavault Markdown mirror (al-islam.org). These are

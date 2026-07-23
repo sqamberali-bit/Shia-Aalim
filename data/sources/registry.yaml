@@ -204,6 +204,96 @@ sources:
     language: ar
     confidence: medium
 
+  # ---- Further ThaqalaynData (CC0) collections — ingested, ungraded (medium) ----
+  - id: kamal-al-din
+    title: "Kamāl al-Dīn wa Tamām al-Niʿma"
+    kind: hadith
+    author: "Shaykh al-Saduq"
+    language: ar
+    confidence: unverified
+    notes: "NOT ingested — the ThaqalaynData entry is an empty stub (no matn/translation). Upload a real edition to ingest."
+
+  - id: kamil-al-ziyarat
+    title: "Kāmil al-Ziyārāt"
+    kind: hadith
+    author: "Jaʿfar ibn Muḥammad ibn Qūlawayh al-Qummī"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: maani-al-akhbar
+    title: "Maʿānī al-Akhbār"
+    kind: hadith
+    author: "Shaykh al-Saduq"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: thawab-al-amal
+    title: "Thawāb al-Aʿmāl wa ʿIqāb al-Aʿmāl"
+    kind: hadith
+    author: "Shaykh al-Saduq"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: sifat-al-shia
+    title: "Ṣifāt al-Shīʿa"
+    kind: hadith
+    author: "Shaykh al-Saduq"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: risalat-al-huquq
+    title: "Risālat al-Ḥuqūq (The Treatise on Rights)"
+    kind: hadith
+    author: "Imam ʿAli ibn al-Husayn al-Sajjad"
+    translator: "William C. Chittick"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: kitab-al-ghayba-numani
+    title: "Kitāb al-Ghayba (al-Nuʿmānī)"
+    kind: hadith
+    author: "Muḥammad ibn Ibrāhīm al-Nuʿmānī"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: kitab-al-ghayba-tusi
+    title: "Kitāb al-Ghayba (al-Ṭūsī)"
+    kind: hadith
+    author: "Shaykh al-Tusi"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: kitab-al-mumin
+    title: "Kitāb al-Muʾmin"
+    kind: hadith
+    author: "al-Husayn ibn Saʿīd al-Ahwāzī"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: kitab-al-zuhd
+    title: "Kitāb al-Zuhd"
+    kind: hadith
+    author: "al-Husayn ibn Saʿīd al-Ahwāzī"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
+  - id: fadail-al-shia
+    title: "Faḍāʾil al-Shīʿa"
+    kind: hadith
+    author: "Shaykh al-Saduq"
+    language: ar
+    confidence: medium
+    notes: "Ingested from CC0 ThaqalaynData."
+
   # ---- Classical primary sources ----
   - id: nahj-al-balagha
     title: "Nahj al-Balāgha"

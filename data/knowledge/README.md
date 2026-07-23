@@ -5,8 +5,8 @@ This directory holds the ingested, citable knowledge as newline-delimited JSON
 
 ## What is ingested (Iteration 2 — real corpora)
 
-**Totals: 117,288 cited documents across 17 works** — 6236 Qur'an verses,
-89,944 hadith (incl. the complete 101-volume Biḥār al-Anwār), and 21,108 prose
+**Totals: 121,871 cited documents across 27 works** — 6236 Qur'an verses,
+94,527 hadith (incl. the complete 101-volume Biḥār al-Anwār), and 21,108 prose
 passages (incl. the complete 40-volume Tafsīr al-Mīzān).
 
 | File | Content | Count | Source | Confidence |
@@ -22,6 +22,7 @@ passages (incl. the complete 40-volume Tafsīr al-Mīzān).
 | `hadith/uyun-akhbar-al-rida.jsonl` | ʿUyūn Akhbār al-Riḍā (al-Saduq) | 954 | ThaqalaynData (CC0) | per-grade |
 | `hadith/al-tawhid-saduq.jsonl` | Kitāb al-Tawḥīd (al-Saduq — standalone, distinct from al-Kāfī's Book of Tawḥīd) | 575 | ThaqalaynData (CC0) | per-grade |
 | `hadith/bihar-al-anwar-v*.jsonl` | **Biḥār al-Anwār — complete, all 101 volumes** (al-Majlisī). One doc/page, cited by volume + hubeali page | 43,292 | hubeali English PDFs ([source repo](https://github.com/sqamberali-bit/bihar-al-anwar-source)) | medium (ungraded — no rijāl grade in the PDFs; contains strong & weak reports) |
+| `hadith/{thawab-al-amal, maani-al-akhbar, kitab-al-ghayba-numani/-tusi, kamil-al-ziyarat, kitab-al-zuhd, kitab-al-mumin, sifat-al-shia, risalat-al-huquq, fadail-al-shia}.jsonl` | Further al-Saduq / Ahwazi / Ghayba collections | 4583 | ThaqalaynData (CC0) | medium (ungraded) |
 
 ### Prose works (`prose/*.jsonl`) — coarser, chapter-level citations
 
