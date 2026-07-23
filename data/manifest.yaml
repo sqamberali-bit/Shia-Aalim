@@ -14,7 +14,7 @@
 # -----------------------------------------------------------------------------
 
 version: 1
-total_expected_docs: 101000
+total_expected_docs: 117288
 
 # A published snapshot of the full built corpus. Leave url/sha256 null until a
 # bundle is produced with `scripts/fetch_data.py --make-bundle` and hosted.
@@ -94,10 +94,10 @@ works:
   # ---- Prose (translations / secondary works, medium confidence) ----
   - id: al-mizan
     tier: prose
-    expected_docs: 1837
+    expected_docs: 18125
     output: data/knowledge/prose/al-mizan-v*.jsonl
-    build: {source: shiavault, adapter: shiavault}
-    note: "Partial English al-Mizan (vols 1,2,4,7,8 only on the mirror)."
+    build: {source: "github:sqamberali-bit/al-mizan-source", adapter: plaintext}
+    note: "COMPLETE 40-volume English al-Mizan (Tawheed Institute Australia), ingested from OCR'd plain text (1.txt..40.txt). One doc/section, cited by volume + section. Rebuild: clone the repo and `scripts/ingest.py --almizan-dir <clone>`. (Supersedes the earlier partial Shiavault vols 1,2,4,7,8.)"
   - id: the-message-subhani
     tier: prose
     expected_docs: 1197

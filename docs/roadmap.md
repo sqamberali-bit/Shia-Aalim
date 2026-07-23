@@ -35,10 +35,13 @@ the research loop updates.
       with real Book titles) + `scripts/ingest.py`
 - [x] Further al-Saduq/al-Mufid hadith collections (al-Khiṣāl, both Amālī, ʿUyūn
       Akhbār al-Riḍā, al-Tawḥīd = 4280) from CC0 ThaqalaynData
-- [x] Prose tier via a new Shiavault Markdown adapter — Tafsīr al-Mīzān
-      (partial: vols 1,2,4,7,8), Sīra (*The Message*), Maqtal al-Husayn, Kitāb
-      al-Irshād, al-Ṣaḥīfa al-Sajjādiyya = 4862 passages, chapter-level
-      citations, medium confidence. **Corpus now 57,708 docs across 16 works.**
+- [x] Prose tier via a new Shiavault Markdown adapter — Sīra (*The Message*),
+      Maqtal al-Husayn, Kitāb al-Irshād, al-Ṣaḥīfa al-Sajjādiyya, chapter-level
+      citations, medium confidence.
+- [x] Tafsīr al-Mīzān — **complete 40-volume English edition** (Tawheed Institute
+      Australia) via a new plain-text/OCR adapter (`adapters/plaintext.py`),
+      18,125 sections cited by volume + section (supersedes the earlier partial
+      Shiavault vols 1,2,4,7,8). **Corpus now 117,288 docs across 17 works.**
 - [x] Real-corpus integrity tests (every citation complete + registered; grades honest)
 - [x] External-data infrastructure — the built corpus now lives outside git
       (`data/manifest.yaml` + `scripts/fetch_data.py` for status/bundle/fetch;

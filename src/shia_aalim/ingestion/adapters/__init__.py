@@ -15,6 +15,7 @@ Current adapters:
 """
 
 from .bihar import build_bihar_documents
+from .plaintext import build_textbook_documents
 from .quran import build_quran_documents, load_edition
 from .shiavault import build_prose_documents
 from .thaqalayn import build_hadith_documents, parse_grading
@@ -26,4 +27,5 @@ __all__ = [
     "parse_grading",
     "build_prose_documents",
     "build_bihar_documents",
+    "build_textbook_documents",
 ]

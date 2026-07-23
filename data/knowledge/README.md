@@ -5,9 +5,9 @@ This directory holds the ingested, citable knowledge as newline-delimited JSON
 
 ## What is ingested (Iteration 2 — real corpora)
 
-**Totals: 101,000 cited documents across 17 works** — 6236 Qur'an verses,
-89,944 hadith (incl. the complete 101-volume Biḥār al-Anwār), and 4,862 prose
-passages (tafsīr, biography, history, supplications).
+**Totals: 117,288 cited documents across 17 works** — 6236 Qur'an verses,
+89,944 hadith (incl. the complete 101-volume Biḥār al-Anwār), and 21,108 prose
+passages (incl. the complete 40-volume Tafsīr al-Mīzān).
 
 | File | Content | Count | Source | Confidence |
 |---|---|---|---|---|
@@ -31,7 +31,7 @@ locators (no ḥadīth number or rijāl grade), confidence capped at **medium**.
 
 | File(s) | Content | Passages | Type |
 |---|---|---|---|
-| `prose/al-mizan-v{1,2,4,7,8}.jsonl` | Tafsīr al-Mīzān — English (ʿAllāma Ṭabāṭabāʾī). **Partial: only vols 1, 2, 4, 7, 8 exist on the mirror** (3, 5, 6 absent) | 1837 | tafsīr |
+| `prose/al-mizan-v{01..40}.jsonl` | **Tafsīr al-Mīzān — complete 40-volume English edition** (Tawheed Institute Australia; ʿAllāma Ṭabāṭabāʾī). OCR'd plain text, cited by volume + section | 18,125 | tafsīr |
 | `prose/seerah-the-message.jsonl` | *The Message* — Sīra of the Prophet (Ja'far Subhani) | 1197 | historical |
 | `prose/maqtal-al-husayn.jsonl` | *Maqtal al-Husayn* — the events of Karbala | 878 | historical |
 | `prose/sahifa-sajjadiyya.jsonl` | al-Ṣaḥīfa al-Sajjādiyya (supplications; Arabic + English) | 582 | (words of the Imam) |

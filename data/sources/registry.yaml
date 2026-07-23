@@ -64,10 +64,11 @@ sources:
     title: "Tafsir al-Mizan (al-Mīzān fī Tafsīr al-Qurʾān)"
     kind: tafsir
     author: "Sayyid Muhammad Husayn al-Tabatabai"
+    translator: "Tawheed Institute Australia English edition (Rizvi, Khaleeli, et al.)"
     language: ar
     url: "https://almizan.org/"
-    confidence: high
-    notes: "Major 20th-c. Twelver tafsir. English/Arabic editions on al-islam.org."
+    confidence: medium
+    notes: "Major 20th-c. Twelver tafsir. Complete 40-volume English edition (Tawheed Institute Australia) ingested from OCR'd plain text; cited by volume + section. It is a TRANSLATION with OCR noise removed (not filled in) — medium confidence; verify wording against the Arabic original. The work itself is highly authoritative; the confidence cap reflects the translation/OCR pipeline, not the tafsir."
 
   - id: majma-al-bayan
     title: "Majmaʿ al-Bayān fī Tafsīr al-Qurʾān"

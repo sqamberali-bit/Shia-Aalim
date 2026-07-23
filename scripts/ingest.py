@@ -31,6 +31,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from shia_aalim.ingestion.adapters.bihar import build_bihar_documents, volume_from_filename  # noqa: E402
+from shia_aalim.ingestion.adapters.plaintext import build_textbook_documents  # noqa: E402
+from shia_aalim.ingestion.adapters.plaintext import volume_from_filename as txt_volume  # noqa: E402
 from shia_aalim.ingestion.adapters.quran import build_quran_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.shiavault import build_prose_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.thaqalayn import build_hadith_documents  # noqa: E402
@@ -85,11 +87,8 @@ HADITH_TARGETS = [
 # chapter-level citations, medium confidence (translations / secondary works).
 # (rel path, source_id, EvidenceType, volume-or-None, out shard)
 PROSE_TARGETS = [
-    ("books/al-mizan-an-exegesis-of-the-qur-an-volume-one", "al-mizan", "tafsir", "1", "al-mizan-v1.jsonl"),
-    ("books/al-mizan-an-exegesis-of-the-qur-an-volume-two", "al-mizan", "tafsir", "2", "al-mizan-v2.jsonl"),
-    ("books/al-mizan-an-exegesis-of-the-qur-an-volume-four", "al-mizan", "tafsir", "4", "al-mizan-v4.jsonl"),
-    ("books/al-mizan-an-exegesis-of-the-quran-volume-seven", "al-mizan", "tafsir", "7", "al-mizan-v7.jsonl"),
-    ("books/al-mizan-an-exegesis-of-the-qur-an-volume-eight", "al-mizan", "tafsir", "8", "al-mizan-v8.jsonl"),
+    # al-Mizan now comes from the complete 40-volume upload (see ingest_almizan);
+    # the partial Shiavault al-Mizan (vols 1,2,4,7,8 only) is intentionally dropped.
     ("books/as-sahifa-al-kamilah-al-sajjadiyya", "sahifa-sajjadiyya", "hadith", None, "sahifa-sajjadiyya.jsonl"),
     ("books/the-message", "the-message-subhani", "historical", None, "seerah-the-message.jsonl"),
     ("books/maqtal-al-husayn", "maqtal-al-husayn", "historical", None, "maqtal-al-husayn.jsonl"),
@@ -193,6 +192,36 @@ def ingest_prose(shiavault_dir: Path) -> int:
     return total
 
 
+def ingest_almizan(almizan_dir: Path) -> int:
+    """Ingest the complete 40-volume English al-Mizan (Tawheed Institute) from
+    plain-text volume files (1.txt .. 40.txt), one shard per volume."""
+    files = sorted(
+        almizan_dir.glob("*.txt"),
+        key=lambda p: int(txt_volume(p) or 0),
+    )
+    if not files:
+        print(f"  [skip] no <N>.txt files under {almizan_dir}")
+        return 0
+    total = 0
+    for txt in files:
+        vol = txt_volume(txt) or "0"
+        docs = build_textbook_documents(
+            txt,
+            source_id="al-mizan",
+            evidence_type=EvidenceType.TAFSIR,
+            volume=vol,
+            confidence=ConfidenceLevel.MEDIUM,
+            # Translators vary by volume (Rizvi, Khaleeli, …); attribute the
+            # edition, not one name. Each volume's title page (in section 0)
+            # records its specific translator.
+            translation_source="Tawheed Institute Australia (English al-Mizan, OCR)",
+        )
+        if docs:
+            write_jsonl(docs, KNOWLEDGE / "prose" / f"al-mizan-v{int(vol):02d}.jsonl")
+            total += len(docs)
+    return total
+
+
 def ingest_bihar(bihar_dir: Path) -> int:
     """Ingest the hubeali English Bihar al-Anwar PDFs (V1..V101), one shard/volume."""
     pdfs = sorted(
@@ -218,9 +247,10 @@ def main() -> int:
     parser.add_argument("--thaqalayn-dir", default=os.environ.get("THAQALAYN_DATA_DIR"))
     parser.add_argument("--shiavault-dir", default=os.environ.get("SHIAVAULT_DIR"))
     parser.add_argument("--bihar-dir", default=os.environ.get("BIHAR_DIR"))
+    parser.add_argument("--almizan-dir", default=os.environ.get("ALMIZAN_DIR"))
     args = parser.parse_args()
 
-    n_quran = n_hadith = n_prose = n_bihar = 0
+    n_quran = n_hadith = n_prose = n_bihar = n_almizan = 0
     if args.quran_dir:
         print("Ingesting Qur'an...")
         n_quran = ingest_quran(Path(args.quran_dir))
@@ -245,8 +275,14 @@ def main() -> int:
     else:
         print("  [skip] no --bihar-dir / BIHAR_DIR")
 
+    if args.almizan_dir:
+        print("Ingesting al-Mizan (40-volume text)...")
+        n_almizan = ingest_almizan(Path(args.almizan_dir))
+    else:
+        print("  [skip] no --almizan-dir / ALMIZAN_DIR")
+
     print(f"\nDone. {n_quran} Qur'an verses, {n_hadith + n_bihar} hadith "
-          f"({n_bihar} Bihar), {n_prose} prose passages ingested.")
+          f"({n_bihar} Bihar), {n_prose + n_almizan} prose passages ({n_almizan} al-Mizan).")
     return 0
 
 
