@@ -313,6 +313,7 @@ class Answer:
     summary: Optional[str] = None
     caveats: list[str] = field(default_factory=list)
     generated_on: Optional[str] = None
+    sub_questions: list[str] = field(default_factory=list)  # set when decomposed
 
     def all_citations(self) -> list[Citation]:
         return [c for claim in self.claims for c in claim.citations]
@@ -327,6 +328,7 @@ class Answer:
     def to_dict(self) -> dict[str, Any]:
         return {
             "question": self.question,
+            "sub_questions": self.sub_questions,
             "summary": self.summary,
             "generated_on": self.generated_on or date.today().isoformat(),
             "claims": [

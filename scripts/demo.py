@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from shia_aalim.generation.answer import AnswerGenerator  # noqa: E402
 from shia_aalim.generation.lecture import LectureGenerator  # noqa: E402
 from shia_aalim.generation.synthesizer import make_synthesizer  # noqa: E402
+from shia_aalim.generation.decompose import make_decomposer  # noqa: E402
 from shia_aalim.grounding.entailment import make_judge  # noqa: E402
 from shia_aalim.ingestion.loaders import iter_knowledge_dir  # noqa: E402
 from shia_aalim.research_loop import build_index  # noqa: E402
@@ -37,6 +38,10 @@ def main() -> int:
         "--judge", default="lexical", metavar="SPEC",
         help="entailment judge for verifying synthesis: lexical | mock | claude:<model>",
     )
+    parser.add_argument(
+        "--decompose", default="none", metavar="SPEC",
+        help="query decomposition for multi-part questions: none | rule | claude:<model>",
+    )
     args = parser.parse_args()
 
     docs = list(iter_knowledge_dir(ROOT / "data" / "knowledge"))
@@ -45,6 +50,7 @@ def main() -> int:
 
     synthesizer = make_synthesizer(args.synthesize)
     judge = make_judge(args.judge)
+    decomposer = make_decomposer(args.decompose)
 
     if args.lecture:
         lecture = LectureGenerator(
@@ -55,7 +61,8 @@ def main() -> int:
 
     known = load_registry_ids(ROOT / "data" / "sources" / "registry.yaml")
     gen = AnswerGenerator(
-        retriever, synthesizer=synthesizer, known_source_ids=known, judge=judge
+        retriever, synthesizer=synthesizer, known_source_ids=known,
+        judge=judge, decomposer=decomposer,
     )
     answer = gen.answer(args.query, k=args.k)
     print(gen.format_markdown(answer))

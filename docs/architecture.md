@@ -119,6 +119,10 @@ validated with `evaluation/` on a domain gold set:
 
 ## Data flow (one query)
 
+0. (Optional) **Decompose** a multi-part question into sub-questions
+   (`generation/decompose.py`: `rule` heuristics or `claude:<model>`), retrieve
+   each part separately, and merge the evidence (dedupe by id, best score) so no
+   clause starves. The sub-questions are recorded on `Answer.sub_questions`.
 1. Normalise + embed the query.
 2. Vector search (over-sampled) → filter by evidence type + min confidence →
    re-rank with confidence bonus → apply similarity floor.

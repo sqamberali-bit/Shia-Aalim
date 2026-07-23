@@ -8,6 +8,12 @@ release.
 """
 
 from .answer import AnswerGenerator, Synthesizer
+from .decompose import (
+    ClaudeDecomposer,
+    QueryDecomposer,
+    RuleBasedDecomposer,
+    make_decomposer,
+)
 from .lecture import Lecture, LectureGenerator, LectureSection
 from .synthesizer import ClaudeSynthesizer, MockSynthesizer, make_synthesizer
 
@@ -20,4 +26,8 @@ __all__ = [
     "ClaudeSynthesizer",
     "MockSynthesizer",
     "make_synthesizer",
+    "QueryDecomposer",
+    "RuleBasedDecomposer",
+    "ClaudeDecomposer",
+    "make_decomposer",
 ]

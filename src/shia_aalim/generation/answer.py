@@ -23,6 +23,7 @@ from datetime import date
 from typing import Optional, Protocol
 
 from ..grounding.entailment import EntailmentJudge
+from .decompose import QueryDecomposer
 from ..grounding.synthesis import verify_synthesis
 from ..grounding.verify import check_answer_grounding
 from ..models import Answer, Claim, ConfidenceLevel, EvidenceType
@@ -60,11 +61,46 @@ class AnswerGenerator:
         synthesizer: Optional[Synthesizer] = None,
         known_source_ids: Optional[set[str]] = None,
         judge: Optional["EntailmentJudge"] = None,
+        decomposer: Optional["QueryDecomposer"] = None,
     ) -> None:
         self.retriever = retriever
         self.synthesizer = synthesizer
         self.known_source_ids = known_source_ids
         self.judge = judge  # entailment judge for verifying synthesized prose
+        self.decomposer = decomposer  # splits multi-part questions before retrieval
+
+    def _gather_evidence(
+        self,
+        question: str,
+        *,
+        k: int,
+        evidence_types: Optional[list[EvidenceType]],
+        min_confidence: ConfidenceLevel,
+        min_similarity: float,
+    ) -> tuple[list[RetrievalResult], list[str]]:
+        """Retrieve evidence, decomposing multi-part questions first.
+
+        Each sub-question is retrieved separately and the results merged
+        (deduped by document id, best score kept) so every part is represented —
+        a compound question no longer starves its weaker clause.
+        """
+        subs = self.decomposer.decompose(question) if self.decomposer else [question]
+        sub_questions = subs if len(subs) > 1 else []
+
+        merged: dict[str, RetrievalResult] = {}
+        for sq in subs:
+            for res in self.retriever.retrieve(
+                sq, k=k, evidence_types=evidence_types, min_confidence=min_confidence
+            ):
+                if res.similarity < min_similarity:
+                    continue
+                cur = merged.get(res.document.id)
+                if cur is None or res.score > cur.score:
+                    merged[res.document.id] = res
+
+        results = sorted(merged.values(), key=lambda r: r.score, reverse=True)
+        cap = k if len(subs) == 1 else min(len(results), max(k, 3 * len(subs)))
+        return results[:cap], sub_questions
 
     def answer(
         self,
@@ -75,19 +111,20 @@ class AnswerGenerator:
         min_confidence: ConfidenceLevel = ConfidenceLevel.LOW,
         min_similarity: float = 0.15,
     ) -> Answer:
-        evidence = self.retriever.retrieve(
-            question, k=k, evidence_types=evidence_types, min_confidence=min_confidence
+        # Retrieve evidence (decomposing multi-part questions first). The
+        # similarity floor is applied per sub-question inside the helper: a
+        # passage only weakly similar to the query is not evidence *for* it — a
+        # core hallucination-prevention control.
+        evidence, sub_questions = self._gather_evidence(
+            question, k=k, evidence_types=evidence_types,
+            min_confidence=min_confidence, min_similarity=min_similarity,
         )
-        # Refuse to answer from barely-relevant matches: a passage that is only
-        # weakly similar to the question is not evidence *for* it. This gate is a
-        # core hallucination-prevention control — without it, extractive answers
-        # would trivially "ground" against whatever the index returned.
-        evidence = [r for r in evidence if r.similarity >= min_similarity]
 
         if not evidence:
             return Answer(
                 question=question,
                 summary=None,
+                sub_questions=sub_questions,
                 caveats=[
                     "No sufficiently-relevant evidence was found in the knowledge base "
                     f"for this question (no passage cleared the similarity floor of "
@@ -130,12 +167,19 @@ class AnswerGenerator:
                         "(showing cited evidence instead): " + "; ".join(report.problems[:3])
                     )
 
+        if sub_questions:
+            caveats.append(
+                "Multi-part question decomposed and retrieved per part: "
+                + " | ".join(sub_questions)
+            )
+
         answer = Answer(
             question=question,
             claims=claims,
             summary=summary,
             caveats=caveats,
             generated_on=date.today().isoformat(),
+            sub_questions=sub_questions,
         )
 
         report = check_answer_grounding(
@@ -156,6 +200,9 @@ class AnswerGenerator:
     def format_markdown(self, answer: Answer) -> str:
         """Render an answer as reviewer-friendly Markdown with grouped evidence."""
         lines: list[str] = [f"## {answer.question}", ""]
+        if answer.sub_questions:
+            lines += ["_Decomposed into: "
+                      + "; ".join(answer.sub_questions) + "_", ""]
         if answer.summary:
             lines += ["### Synthesized answer _(LLM prose, verified against the evidence below)_",
                       "", answer.summary, ""]

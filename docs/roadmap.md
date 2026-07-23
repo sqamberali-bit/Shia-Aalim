@@ -87,7 +87,12 @@ the research loop updates.
       wired through `verify_synthesis` / `AnswerGenerator` / `LectureGenerator`
       / `demo.py --judge`. Rescues true paraphrases and rejects lexical-match
       contradictions the overlap gate gets wrong.
-- [ ] Query decomposition for multi-part questions
+- [x] Query decomposition for multi-part questions (`generation/decompose.py`) —
+      pluggable `QueryDecomposer` (`rule` default, `claude:<model>`). Splits
+      compound questions (multiple `?`, enumerations, interrogative conjunctions;
+      conservative — won't split a noun phrase), retrieves each part, and merges
+      the evidence so no clause starves. Recorded on `Answer.sub_questions`;
+      `demo.py --decompose`.
 - [ ] Human-in-the-loop review UI for confidence promotion
 
 ## Iteration 4 — Depth & rigour
