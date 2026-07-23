@@ -49,6 +49,32 @@ The first query against a not-yet-built index shows a distinct **"Building the
 minute to embed); once cached, the state flips to `ready` and later queries show
 the normal fast-path spinner. The UI refreshes index state after every query.
 
+## Reading a passage in full
+
+Click any evidence block — in an answer, a lecture, or a comparison — to open a
+side **drawer** with the complete record: the Arabic text (RTL), the English
+text/translation and its source, the hadith **grade** and its attributable
+`grade_source`, every locator (surah:ayah / volume / page / hadith no. /
+chapter), the source book, confidence and view-status, and an honest note on
+whether it may be asserted as fact or only weighed as evidence. Close with ×,
+the backdrop, or Escape.
+
+## Comparing sources side by side
+
+The **Compare sources** tab runs one question separately against each book you
+pick (up to 6) and lays the answers out in columns — each answered strictly on
+that book's own evidence — so you can see which books actually speak to the
+question and how. A book with nothing relevant says so rather than inventing
+filler. Every passage is clickable into the same drawer, and the whole
+comparison exports as Markdown.
+
+## History
+
+The **History** tab keeps your recent answers, lectures and comparisons in the
+browser (localStorage, last 30). **Open** revisits one instantly with no
+re-query; **Delete** / **Clear all** manage the list. It is per-browser and
+local — nothing is sent anywhere.
+
 ## Filtering the evidence
 
 Both tabs have a **Filters** panel that narrows what the retriever may draw on —
@@ -109,6 +135,11 @@ The page is backed by three JSON endpoints (usable directly, e.g. from scripts):
 | `GET  /api/sources`| —                                                 | source books + evidence-type facets in the corpus |
 | `POST /api/answer` | `{"question", "k", "embedder", "evidence_types", "source_ids", "min_confidence"}` | `{answer, markdown, embedder}` — `answer` is `Answer.to_dict()` |
 | `POST /api/lecture`| `{"topic", "depth", "embedder", "source_ids"}`    | topic + the 11-section framework, evidence per section, `markdown` |
+| `POST /api/compare`| `{"question", "sources": [...], "k", "embedder", "evidence_types", "min_confidence"}` | `{question, columns: [{source_id, title, answer, markdown}], truncated}` |
+
+`/api/compare` runs one retrieval per book (fan-out capped at 6; `truncated`
+flags when the list was longer). History is a browser-only feature and has no
+endpoint.
 
 `embedder`, `evidence_types`, `source_ids` and `min_confidence` are all optional.
 `evidence_types`/`source_ids` are lists (empty/omitted = no restriction);

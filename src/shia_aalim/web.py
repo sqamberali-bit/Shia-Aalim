@@ -598,6 +598,13 @@ INDEX_HTML = r"""<!doctype html>
   .col .meta { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
   .col .ev { background: var(--panel); }
   .col .empty { padding: 6px 0 12px; font-size: 13px; }
+  .hitem { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; background: var(--panel); }
+  .hmeta { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .htype { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; padding: 2px 8px; border-radius: 999px; color: #fff; flex: none; }
+  .ht-ask { background: var(--accent); } .ht-lecture { background: var(--quran); } .ht-compare { background: var(--hadith); }
+  .hlabel { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .htime { color: var(--muted); font-size: 12px; flex: none; font-variant-numeric: tabular-nums; }
+  .hact { display: flex; gap: 6px; flex: none; }
   .spinner { color: var(--muted); padding: 20px 0; }
   .spinner.building { color: var(--medium); }
   .spinner.building code { color: var(--ink); }
@@ -682,6 +689,7 @@ INDEX_HTML = r"""<!doctype html>
     <div class="tab active" data-tab="ask" onclick="switchTab('ask')">Ask a question</div>
     <div class="tab" data-tab="lecture" onclick="switchTab('lecture')">Prepare a lecture</div>
     <div class="tab" data-tab="compare" onclick="switchTab('compare')">Compare sources</div>
+    <div class="tab" data-tab="history" onclick="switchTab('history')">History</div>
   </div>
 
   <div class="idxrow">
@@ -775,6 +783,14 @@ INDEX_HTML = r"""<!doctype html>
       <button class="mini" onclick="downloadMd('cmp')">⭳ Download .md</button>
     </div>
     <div class="result" id="cmpResult"></div>
+  </section>
+
+  <section id="pane-history" style="display:none">
+    <div class="frow" style="justify-content:space-between; align-items:flex-start">
+      <div class="hint" style="margin:0">Your recent answers, lectures and comparisons — kept in this browser only. Click <b>Open</b> to revisit one instantly (no re-query).</div>
+      <button class="fmini" onclick="clearHistory()">Clear all</button>
+    </div>
+    <div id="historyList" style="margin-top:16px"></div>
   </section>
 
   <div class="status" id="status">Loading corpus status…</div>
@@ -923,6 +939,47 @@ function spinner(base){
   return '<div class="spinner">'+base+'</div>';
 }
 
+// ---- Session history (localStorage) ---------------------------------------
+var HKEY = 'shia-aalim-history', HMAX = 30;
+var qhistory = loadHistory();   // NB: not `history` — that shadows window.history
+var HTYPE = { ask:'Answer', lecture:'Lecture', compare:'Compare' };
+
+function loadHistory(){ try { return JSON.parse(localStorage.getItem(HKEY) || '[]'); } catch(e){ return []; } }
+function saveHistory(){ try { localStorage.setItem(HKEY, JSON.stringify(qhistory.slice(0, HMAX))); } catch(e){} }
+function pushHistory(type, label, data){
+  qhistory.unshift({ id: 'h'+Date.now()+'-'+Math.floor(Math.random()*1e4), type:type, label:label, ts:new Date().toISOString(), data:data });
+  qhistory = qhistory.slice(0, HMAX);
+  saveHistory(); renderHistory();
+}
+function fmtTime(iso){ try { return new Date(iso).toLocaleString(); } catch(e){ return iso; } }
+
+function renderHistory(){
+  var box = document.getElementById('historyList'); if(!box) return;
+  if(!qhistory.length){ box.innerHTML = '<div class="empty">No history yet — ask a question, build a lecture, or run a comparison.</div>'; return; }
+  box.innerHTML = qhistory.map(function(h){
+    return '<div class="hitem"><div class="hmeta">'+
+      '<span class="htype ht-'+h.type+'">'+esc(HTYPE[h.type]||h.type)+'</span>'+
+      '<span class="hlabel">'+esc(h.label)+'</span><span class="htime">'+esc(fmtTime(h.ts))+'</span></div>'+
+      '<div class="hact"><button class="fmini" onclick="restoreHistory(\''+h.id+'\')">Open</button>'+
+      '<button class="fmini" onclick="deleteHistory(\''+h.id+'\')">Delete</button></div></div>';
+  }).join('');
+}
+function restoreHistory(id){
+  var h = qhistory.filter(function(x){ return x.id===id; })[0]; if(!h) return;
+  if(h.type==='ask'){
+    switchTab('ask'); renderAnswer(document.getElementById('askResult'), h.data.answer);
+    lastMd.ask = { text:h.data.markdown||'', name:h.data.answer.question }; showTools('ask');
+  } else if(h.type==='lecture'){
+    switchTab('lecture'); renderLecture(document.getElementById('lecResult'), h.data);
+    lastMd.lec = { text:h.data.markdown||'', name:h.data.topic }; showTools('lec');
+  } else if(h.type==='compare'){
+    switchTab('compare'); renderCompare(document.getElementById('cmpResult'), h.data);
+    lastMd.cmp = { text:compareMarkdown(h.data), name:'compare-'+h.data.question }; showTools('cmp');
+  }
+}
+function deleteHistory(id){ qhistory = qhistory.filter(function(x){ return x.id!==id; }); saveHistory(); renderHistory(); }
+function clearHistory(){ qhistory = []; saveHistory(); renderHistory(); }
+
 // ---- Filters (evidence type, source book, minimum confidence) -------------
 function checked(containerId){
   return Array.prototype.slice.call(document.querySelectorAll('#'+containerId+' input:checked'))
@@ -1025,6 +1082,7 @@ async function ask(){
     renderAnswer(box, data.answer);
     lastMd.ask = { text: data.markdown || '', name: data.answer.question };
     showTools('ask');
+    pushHistory('ask', data.answer.question, {answer: data.answer, markdown: data.markdown});
   } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
   finally { btn.disabled = false; refreshStatus(); }
 }
@@ -1062,6 +1120,7 @@ async function lecture(){
     renderLecture(box, data);
     lastMd.lec = { text: data.markdown || '', name: data.topic };
     showTools('lec');
+    pushHistory('lecture', data.topic, data);
   } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
   finally { btn.disabled = false; refreshStatus(); }
 }
@@ -1085,6 +1144,7 @@ async function compare(){
     renderCompare(box, data);
     lastMd.cmp = { text: compareMarkdown(data), name: 'compare-'+q };
     showTools('cmp');
+    pushHistory('compare', q + ' (' + (data.columns||[]).length + ' books)', data);
   } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
   finally { btn.disabled = false; refreshStatus(); }
 }
@@ -1168,6 +1228,7 @@ function refreshStatus(){
 
 refreshStatus();
 loadFacets();
+renderHistory();
 </script>
 </body>
 </html>

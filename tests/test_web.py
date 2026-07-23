@@ -38,6 +38,21 @@ def test_index_serves_html(client):
     assert "No citation = not a fact" in r.text
 
 
+def test_index_ships_all_client_features(client):
+    # cheap regression guard for the browser-only wiring (no JS engine in tests)
+    html = client.get("/").text
+    for needle in (
+        'data-tab="compare"', 'data-tab="history"',   # tabs
+        'id="drawer"', 'openDrawer(',                 # citation drawer
+        'function compare(', 'renderCompare(',        # compare view
+        'pushHistory(', 'restoreHistory(',            # session history
+        'copyMd(', 'downloadMd(',                     # markdown export
+    ):
+        assert needle in html, f"missing UI wiring: {needle}"
+    # the window.history-shadowing bug must not regress
+    assert "var history" not in html
+
+
 def test_status_reports_corpus(client):
     r = client.get("/api/status")
     assert r.status_code == 200

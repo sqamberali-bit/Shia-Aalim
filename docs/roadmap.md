@@ -113,7 +113,10 @@ the research loop updates.
       rather than crashing. A **filter panel** narrows retrieval by evidence
       type, source book (with per-book counts + confidence, from `/api/sources`),
       and minimum confidence; excluded-everything results name the active
-      filters. See [`docs/web-app.md`](web-app.md).
+      filters. A **citation drawer** (click any passage) shows the full Arabic +
+      grade/locator record; a **Compare sources** view answers one question per
+      book side by side (`/api/compare`); and a browser-local **History** tab
+      revisits past answers/lectures/comparisons. See [`docs/web-app.md`](web-app.md).
 
 ## Iteration 4 — Depth & rigour
 
