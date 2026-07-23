@@ -70,6 +70,22 @@ ingestion) install via extras — see [`docs/architecture.md`](docs/architecture
 pip install -e ".[ingest,embeddings,llm]"
 ```
 
+### Use it in a browser
+
+A minimal local web app wraps the same pipeline behind a search box, a
+lecture-builder tab, and cited/confidence-tagged results — see
+[`docs/web-app.md`](docs/web-app.md):
+
+```bash
+pip install -e ".[web]"      # fastapi + uvicorn
+python -m shia_aalim.web     # → http://127.0.0.1:8000
+```
+
+It answers from whatever corpus is under `data/knowledge/` (build it first with
+`scripts/ingest.py`, or pass `--knowledge-dir` at a folder of `.jsonl` files).
+The browser only *renders* pipeline output; the grounding guarantees are
+unchanged.
+
 ## How it works
 
 ```

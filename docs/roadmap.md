@@ -102,6 +102,12 @@ the research loop updates.
       criteria (file-based or interactive terminal UI), compute the band, and
       update the registry **with an audit trail**. Never raises confidence
       without a validation record. See [`docs/review-workflow.md`](review-workflow.md).
+- [x] Local web front-end (`src/shia_aalim/web.py`, `python -m shia_aalim.web`)
+      — a FastAPI app + one self-contained HTML page (search box, lecture-builder
+      tab, cited/confidence-badged results) wrapping the **same**
+      `AnswerGenerator`/`LectureGenerator`. Presentation only — the grounding
+      guarantees are unchanged. `[web]` extra; degrades to a clear install hint
+      without it. See [`docs/web-app.md`](web-app.md).
 
 ## Iteration 4 — Depth & rigour
 
