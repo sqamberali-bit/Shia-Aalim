@@ -121,7 +121,12 @@ the research loop updates.
 ## Iteration 4 — Depth & rigour
 
 - [ ] Rijāl integration: narrator lookup, chain evaluation surfacing grade sources
-- [ ] Cross-referencing: link a verse to its tafsīr and related narrations
+- [x] Cross-referencing: link a Qurʾān verse to its tafsīr and related narrations
+      (`generation/crossref.py`, `POST /api/crossref`, and a "related tafsir &
+      narrations" action in the citation drawer). Content-based (tafsir/hadith
+      are cited by book, not surah:ayah), labelling each link *explicit* (cites
+      the reference or quotes the verse) vs *thematic*. Nothing invented — every
+      link is a real cited passage that keeps its own confidence.
 - [ ] Tafsīr coverage (al-Mīzān, Majmaʿ al-Bayān, Nemuneh)
 - [ ] Persian/Urdu query + answer support
 - [ ] Comparative (Twelver vs other) mode with explicit sect labelling

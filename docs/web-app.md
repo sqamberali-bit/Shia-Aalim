@@ -59,6 +59,19 @@ chapter), the source book, confidence and view-status, and an honest note on
 whether it may be asserted as fact or only weighed as evidence. Close with ×,
 the backdrop, or Escape.
 
+## Cross-references (verse → tafsir & narrations)
+
+Open the drawer on a **Qurʾān verse** and click *Find related tafsir &
+narrations*. Because tafsir and hadith are cited by book (not by surah:ayah),
+the link is built from content: the verse's own text retrieves the tafsir
+sections, narrations and sibling verses that actually discuss it. Each link is
+labelled **explicit** (the passage cites the verse reference like `5:55` or
+quotes the verse) or **thematic** (topically related by similarity). Every
+related item is itself clickable into the drawer, so you can walk verse →
+tafsir → related narration. Nothing is invented — each is a real cited passage
+that keeps its own confidence; it is a research aid, not an attribution of
+canonical tafsir. Endpoint: `POST /api/crossref {surah, ayah}`.
+
 ## Comparing sources side by side
 
 The **Compare sources** tab runs one question separately against each book you
@@ -136,10 +149,11 @@ The page is backed by three JSON endpoints (usable directly, e.g. from scripts):
 | `POST /api/answer` | `{"question", "k", "embedder", "evidence_types", "source_ids", "min_confidence"}` | `{answer, markdown, embedder}` — `answer` is `Answer.to_dict()` |
 | `POST /api/lecture`| `{"topic", "depth", "embedder", "source_ids"}`    | topic + the 11-section framework, evidence per section, `markdown` |
 | `POST /api/compare`| `{"question", "sources": [...], "k", "embedder", "evidence_types", "min_confidence"}` | `{question, columns: [{source_id, title, answer, markdown}], truncated}` |
+| `POST /api/crossref`| `{"surah", "ayah", "k", "embedder"}`             | `{verse, tafsir: [...], hadith: [...], verses: [...]}` — each item labelled `explicit`/`thematic` |
 
 `/api/compare` runs one retrieval per book (fan-out capped at 6; `truncated`
-flags when the list was longer). History is a browser-only feature and has no
-endpoint.
+flags when the list was longer). `/api/crossref` returns 404 when the verse is
+not in the loaded corpus. History is a browser-only feature and has no endpoint.
 
 `embedder`, `evidence_types`, `source_ids` and `min_confidence` are all optional.
 `evidence_types`/`source_ids` are lists (empty/omitted = no restriction);

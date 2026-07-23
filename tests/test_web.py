@@ -47,6 +47,7 @@ def test_index_ships_all_client_features(client):
         'function compare(', 'renderCompare(',        # compare view
         'pushHistory(', 'restoreHistory(',            # session history
         'copyMd(', 'downloadMd(',                     # markdown export
+        'loadCrossref(', 'crossrefSections(',         # cross-references
     ):
         assert needle in html, f"missing UI wiring: {needle}"
     # the window.history-shadowing bug must not regress
@@ -263,6 +264,52 @@ def test_compare_caps_fan_out(client):
     body = r.json()
     assert len(body["columns"]) == 6  # MAX_COMPARE_SOURCES
     assert body["truncated"] is True
+
+
+def _crossref_stack():
+    from shia_aalim.models import Citation, ConfidenceLevel, Document, EvidenceType
+
+    def d(id, text, et, **cit):
+        return Document(id=id, text=text, evidence_type=et,
+                        citation=Citation(source_id=cit.pop("source_id"), evidence_type=et, **cit),
+                        confidence=ConfidenceLevel.HIGH, language="en")
+    docs = [
+        d("v-5-55", "Your guardian is only Allah His Apostle and the faithful who maintain "
+                    "the prayer and give the zakat while bowing down", EvidenceType.QURAN,
+          source_id="quran", surah=5, ayah=55),
+        d("t-guardian", "The guardian is only Allah and His Apostle and the faithful who "
+                        "maintain the prayer and give the zakat while bowing; the wilayah of Ali",
+          EvidenceType.TAFSIR, source_id="al-mizan", volume="6", chapter="c"),
+        d("h-ref", "The Imam said regarding the verse of wilayah 5:55 the faithful who gives "
+                   "zakat while bowing is Ali", EvidenceType.HADITH,
+          source_id="al-kafi", volume="1", hadith_number="1"),
+    ]
+    stack = web.Stack(docs, web.AppConfig(), known={"quran", "al-mizan", "al-kafi"})
+    stack.engine("tfidf")
+    return stack
+
+
+def test_crossref_links_verse_to_tafsir_and_hadith():
+    client = TestClient(web.create_app(stack=_crossref_stack()))
+    r = client.post("/api/crossref", json={"surah": 5, "ayah": 55})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["verse"]["reference"] == "Qur'an 5:55"
+    assert {i["citation"]["source_id"] for i in body["tafsir"]} == {"al-mizan"}
+    assert {i["citation"]["source_id"] for i in body["hadith"]} == {"al-kafi"}
+    # the narration that cites "5:55" is labelled explicit
+    assert body["hadith"][0]["link_type"] == "explicit"
+
+
+def test_crossref_unknown_verse_404(client):
+    r = client.post("/api/crossref", json={"surah": 114, "ayah": 1})
+    assert r.status_code == 404
+    assert "not in the loaded corpus" in r.json()["error"]
+
+
+def test_crossref_requires_surah_and_ayah(client):
+    r = client.post("/api/crossref", json={"surah": 5})
+    assert r.status_code == 400
 
 
 def test_second_embedder_listed_and_builds_lazily():

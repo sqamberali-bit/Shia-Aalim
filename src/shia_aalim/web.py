@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Optional
 
 from .generation.answer import AnswerGenerator
+from .generation.crossref import CrossReferencer, CrossRefResult, build_verse_index
 from .generation.decompose import make_decomposer
 from .generation.lecture import Lecture, LectureGenerator
 from .generation.synthesizer import make_synthesizer
@@ -82,10 +83,17 @@ try:
         evidence_types: Optional[list[str]] = None
         min_confidence: Optional[str] = None
 
+    class CrossrefBody(_BaseModel):
+        surah: Optional[int] = None
+        ayah: Optional[int] = None
+        k: Optional[int] = None
+        embedder: Optional[str] = None
+
 except ImportError:  # pragma: no cover - only without the web extra
     AskBody = None  # type: ignore
     LectureBody = None  # type: ignore
     CompareBody = None  # type: ignore
+    CrossrefBody = None  # type: ignore
 
 
 # The compare view runs one retrieval per selected book; cap the fan-out.
@@ -150,10 +158,21 @@ class Stack:
         self._engines: dict[str, Engine] = {}
         self._errors: dict[str, str] = {}
         self._facets: Optional[dict] = None
+        self._verse_index: Optional[dict] = None
 
     @property
     def n_documents(self) -> int:
         return len(self.docs)
+
+    def verse_index(self) -> dict:
+        """``(surah, ayah) -> verse Document`` for cross-referencing, built once."""
+        if self._verse_index is None:
+            self._verse_index = build_verse_index(self.docs)
+        return self._verse_index
+
+    def crossref(self, engine: "Engine") -> CrossReferencer:
+        """A CrossReferencer bound to a built engine's retriever."""
+        return CrossReferencer(engine.answers.retriever, self.verse_index())
 
     def facets(self) -> dict:
         """What's actually in this corpus: source books and evidence types.
@@ -315,6 +334,40 @@ def lecture_to_payload(lecture: Lecture) -> dict:
     }
 
 
+def _related_item(item) -> dict:
+    """One cross-reference row, shaped like a lecture evidence item for the drawer."""
+    doc = item.document
+    return {
+        "text": doc.text.strip(),
+        "reference": doc.citation.reference_string(),
+        "confidence": doc.confidence.value,
+        "evidence_type": doc.evidence_type.value,
+        "translation": doc.citation.translation,
+        "view_status": doc.view_status.value if doc.view_status else None,
+        "citation": doc.citation.to_dict(),
+        "link_type": item.link_type,
+        "similarity": round(item.similarity, 4),
+    }
+
+
+def crossref_to_payload(result: CrossRefResult) -> dict:
+    v = result.verse
+    return {
+        "verse": {
+            "surah": v.citation.surah,
+            "ayah": v.citation.ayah,
+            "reference": v.citation.reference_string(),
+            "text": v.text.strip(),
+            "arabic": v.citation.arabic_text,
+            "translation": v.citation.translation,
+            "confidence": v.confidence.value,
+        },
+        "tafsir": [_related_item(i) for i in result.tafsir],
+        "hadith": [_related_item(i) for i in result.hadith],
+        "verses": [_related_item(i) for i in result.verses],
+    }
+
+
 # ---------------------------------------------------------------------------
 # FastAPI app
 # ---------------------------------------------------------------------------
@@ -445,6 +498,25 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
             "columns": columns,
             "truncated": truncated,
         }
+
+    @app.post("/api/crossref")
+    async def api_crossref(body: CrossrefBody):
+        if body.surah is None or body.ayah is None:
+            return JSONResponse({"error": "surah and ayah are required"}, status_code=400)
+        try:
+            engine = stack.engine(body.embedder)
+        except EmbedderUnavailable as exc:
+            return JSONResponse({"error": _embedder_error(body.embedder, exc)}, status_code=503)
+        k = _clamp_int(body.k, default=5, lo=1, hi=15)
+        result = stack.crossref(engine).related(int(body.surah), int(body.ayah), k=k)
+        if result is None:
+            return JSONResponse(
+                {"error": f"Verse {body.surah}:{body.ayah} is not in the loaded corpus."},
+                status_code=404,
+            )
+        payload = crossref_to_payload(result)
+        payload["embedder"] = body.embedder or stack.default_embedder
+        return payload
 
     return app
 
@@ -677,6 +749,10 @@ INDEX_HTML = r"""<!doctype html>
   .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13.5px; }
   .kv .k { align-self: center; }
   .drawer-body .src { color: var(--muted); font-size: 13px; }
+  .xref-btn { margin: 6px 0 4px; }
+  .linktag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; padding: 2px 7px; border-radius: 999px; }
+  .lt-explicit { background: var(--high); color: #fff; }
+  .lt-thematic { background: var(--panel2); color: var(--muted); border: 1px solid var(--line); }
 </style>
 </head>
 <body>
@@ -895,6 +971,12 @@ function openDrawer(d){
     h += '<div class="grp src">'+(d.asserted_as_fact
       ? 'Backed by a complete citation at fact-level confidence.'
       : 'Not asserted as established fact — treat as evidence to weigh, not a settled ruling.')+'</div>';
+  // For a Qur'an verse, offer to pull its tafsir + related narrations.
+  var loc = d.locators || {};
+  if((d.evidence_type||'') === 'quran' && loc.surah != null && loc.ayah != null){
+    h += '<div class="grp"><button class="mini xref-btn" onclick="loadCrossref('+loc.surah+','+loc.ayah+')">⋈ Find related tafsir &amp; narrations</button>'+
+         '<div id="crossrefOut"></div></div>';
+  }
   h += '<div class="grp src">Verify against the primary source before relying on it.</div>';
   document.getElementById('drawerBody').innerHTML = h;
   document.getElementById('drawer').classList.add('open');
@@ -907,6 +989,42 @@ function closeDrawer(){
   document.getElementById('drawerOverlay').classList.remove('open');
 }
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDrawer(); });
+
+// ---- Cross-references: verse -> tafsir + related narrations ----------------
+async function loadCrossref(surah, ayah){
+  var out = document.getElementById('crossrefOut'); if(!out) return;
+  out.innerHTML = '<div class="spinner" style="padding:10px 0">Finding related tafsir &amp; narrations</div>';
+  try {
+    var res = await fetch('/api/crossref', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({surah:surah, ayah:ayah, embedder:selectedEmbedder()})});
+    var data = await res.json();
+    if(data.error){ out.innerHTML = '<div class="empty" style="padding:8px 0">'+esc(data.error)+'</div>'; return; }
+    out.innerHTML = crossrefSections(data);
+  } catch(e){ out.innerHTML = '<div class="empty" style="padding:8px 0">Request failed: '+esc(e.message)+'</div>'; }
+}
+function crossrefSection(title, items){
+  if(!items || !items.length) return '';
+  return '<div class="grp"><div class="k">'+title+' ('+items.length+')</div>'+
+    items.map(function(ev){ return crossrefRow(detailFromEv(ev), ev.link_type); }).join('')+'</div>';
+}
+function crossrefSections(data){
+  var html = crossrefSection('Tafsir', data.tafsir) +
+             crossrefSection('Related narrations', data.hadith) +
+             crossrefSection('Related verses', data.verses);
+  return html || '<div class="empty" style="padding:8px 0">No related tafsir or narrations found in the corpus for this verse.</div>';
+}
+function crossrefRow(d, linkType){
+  var id = regDrawer(d);
+  var conf = d.confidence || 'unverified', type = d.evidence_type || '';
+  var txt = d.text || d.arabic || '';
+  var cls = isArabic(txt) ? 'txt ar' : 'txt';
+  return '<div class="ev clickable" data-d="'+id+'" onclick="openDrawer(drawerReg[this.dataset.d])" style="margin-top:8px" '+
+    'title="Open this passage">'+
+    '<p class="'+cls+'">'+esc(txt)+'</p><div class="badges">'+
+    '<span class="linktag lt-'+esc(linkType)+'">'+esc(linkType)+'</span>'+
+    badge(type,'t',type.replace(/_/g,' '))+badge(conf,'b',conf)+
+    '<span class="ref">'+esc(d.reference || '')+'</span></div></div>';
+}
 
 function refString(cit){
   if(!cit) return '';
