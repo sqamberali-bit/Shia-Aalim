@@ -215,6 +215,41 @@ def test_lecture_filtered_by_source(client):
             assert "al-kafi" in ev["reference"]
 
 
+def test_compare_returns_one_column_per_book(client):
+    r = client.post("/api/compare", json={
+        "question": "guardian and intellect", "sources": ["quran", "al-kafi"], "k": 3,
+    })
+    assert r.status_code == 200
+    body = r.json()
+    cols = {c["source_id"]: c for c in body["columns"]}
+    assert set(cols) == {"quran", "al-kafi"}
+    # each column answers only on its own book's evidence
+    for sid, col in cols.items():
+        for claim in col["answer"]["claims"]:
+            assert all(cit["source_id"] == sid for cit in claim["citations"])
+    assert body["truncated"] is False
+
+
+def test_compare_requires_a_source(client):
+    r = client.post("/api/compare", json={"question": "justice", "sources": []})
+    assert r.status_code == 400
+    assert r.json()["error"]
+
+
+def test_compare_requires_a_question(client):
+    r = client.post("/api/compare", json={"question": "  ", "sources": ["quran"]})
+    assert r.status_code == 400
+
+
+def test_compare_caps_fan_out(client):
+    many = ["quran", "al-kafi", "al-mizan", "nahj-al-balagha", "a", "b", "c", "d"]
+    r = client.post("/api/compare", json={"question": "mercy", "sources": many, "k": 2})
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["columns"]) == 6  # MAX_COMPARE_SOURCES
+    assert body["truncated"] is True
+
+
 def test_second_embedder_listed_and_builds_lazily():
     # offer tfidf + hashing; hashing is 'lazy' until first queried, then 'ready'
     app = web.create_app(stack=_sample_stack(embedders=("tfidf", "hashing")))

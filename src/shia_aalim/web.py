@@ -74,9 +74,22 @@ try:
         embedder: Optional[str] = None
         source_ids: Optional[list[str]] = None
 
+    class CompareBody(_BaseModel):
+        question: str = ""
+        sources: Optional[list[str]] = None  # books to compare, one column each
+        k: Optional[int] = None
+        embedder: Optional[str] = None
+        evidence_types: Optional[list[str]] = None
+        min_confidence: Optional[str] = None
+
 except ImportError:  # pragma: no cover - only without the web extra
     AskBody = None  # type: ignore
     LectureBody = None  # type: ignore
+    CompareBody = None  # type: ignore
+
+
+# The compare view runs one retrieval per selected book; cap the fan-out.
+MAX_COMPARE_SOURCES = 6
 
 
 class EmbedderUnavailable(RuntimeError):
@@ -394,6 +407,45 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
         payload["embedder"] = body.embedder or stack.default_embedder
         return payload
 
+    @app.post("/api/compare")
+    async def api_compare(body: CompareBody):
+        question = (body.question or "").strip()
+        if not question:
+            return JSONResponse({"error": "question is required"}, status_code=400)
+        sources = [s for s in (body.sources or []) if s]
+        if not sources:
+            return JSONResponse({"error": "select at least one book to compare"}, status_code=400)
+        try:
+            engine = stack.engine(body.embedder)
+        except EmbedderUnavailable as exc:
+            return JSONResponse({"error": _embedder_error(body.embedder, exc)}, status_code=503)
+
+        truncated = len(sources) > MAX_COMPARE_SOURCES
+        sources = sources[:MAX_COMPARE_SOURCES]
+        k = _clamp_int(body.k, default=4, lo=1, hi=15)
+        types = _parse_types(body.evidence_types)
+        conf = _parse_confidence(body.min_confidence)
+        titles = {s["id"]: s["title"] for s in stack.facets()["sources"]}
+
+        columns = []
+        for sid in sources:
+            # Same question, each book answered on its own evidence only.
+            ans = engine.answers.answer(
+                question, k=k, evidence_types=types, source_ids={sid}, min_confidence=conf
+            )
+            columns.append({
+                "source_id": sid,
+                "title": titles.get(sid, sid),
+                "answer": ans.to_dict(),
+                "markdown": engine.answers.format_markdown(ans),
+            })
+        return {
+            "question": question,
+            "embedder": body.embedder or stack.default_embedder,
+            "columns": columns,
+            "truncated": truncated,
+        }
+
     return app
 
 
@@ -540,6 +592,12 @@ INDEX_HTML = r"""<!doctype html>
   .sec .body { white-space: pre-wrap; margin: 6px 0 10px; }
   .synth { color: var(--high); font-size: 12px; font-weight: 600; }
   .empty { color: var(--muted); padding: 20px 0; }
+  .cols { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; }
+  .col { flex: 0 0 320px; max-width: 360px; border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px 4px; background: var(--panel2); }
+  .col h4 { margin: 0 0 2px; font-size: 14.5px; }
+  .col .meta { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+  .col .ev { background: var(--panel); }
+  .col .empty { padding: 6px 0 12px; font-size: 13px; }
   .spinner { color: var(--muted); padding: 20px 0; }
   .spinner.building { color: var(--medium); }
   .spinner.building code { color: var(--ink); }
@@ -623,6 +681,7 @@ INDEX_HTML = r"""<!doctype html>
   <div class="tabs">
     <div class="tab active" data-tab="ask" onclick="switchTab('ask')">Ask a question</div>
     <div class="tab" data-tab="lecture" onclick="switchTab('lecture')">Prepare a lecture</div>
+    <div class="tab" data-tab="compare" onclick="switchTab('compare')">Compare sources</div>
   </div>
 
   <div class="idxrow">
@@ -695,6 +754,29 @@ INDEX_HTML = r"""<!doctype html>
     <div class="result" id="lecResult"></div>
   </section>
 
+  <section id="pane-compare" style="display:none">
+    <div class="row">
+      <input type="text" id="cq" placeholder="e.g. the status of the Ahl al-Bayt (a)" onkeydown="if(event.key==='Enter')compare()">
+      <label class="fld">per book<input type="number" id="ck" value="4" min="1" max="15"></label>
+      <button class="go" id="cmpBtn" onclick="compare()">Compare</button>
+    </div>
+    <div class="fcol" style="margin:10px 0">
+      <div class="flabel">Books to compare <span class="active-count" id="cmpFilterCount"></span> <span class="idxnote">pick 2+ (up to 6)</span></div>
+      <input type="text" class="srcsearch" placeholder="filter this list…" oninput="filterSrcList('cmp', this.value)">
+      <div class="checks srclist" id="cmpSources"></div>
+      <div class="frow">
+        <button class="fmini" type="button" onclick="setAllSrc('cmp', true)">Select all</button>
+        <button class="fmini" type="button" onclick="setAllSrc('cmp', false)">Clear</button>
+      </div>
+    </div>
+    <div class="hint">Runs the same question separately against each selected book and lines the answers up side by side — so you can see which books actually speak to it, and how.</div>
+    <div class="toolbar hidden" id="cmpTools">
+      <button class="mini" onclick="copyMd('cmp')">⧉ Copy Markdown</button>
+      <button class="mini" onclick="downloadMd('cmp')">⭳ Download .md</button>
+    </div>
+    <div class="result" id="cmpResult"></div>
+  </section>
+
   <div class="status" id="status">Loading corpus status…</div>
 </main>
 <footer>Shia-Aalim · answers are aids to research, not a substitute for a qualified scholar (marjaʿ). Verify every citation against the primary source.</footer>
@@ -714,8 +796,10 @@ function isArabic(s){ return /[؀-ۿ]/.test(s||''); }
 
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===name));
-  document.getElementById('pane-ask').style.display = name==='ask' ? '' : 'none';
-  document.getElementById('pane-lecture').style.display = name==='lecture' ? '' : 'none';
+  ['ask','lecture','compare','history'].forEach(function(p){
+    var el = document.getElementById('pane-'+p);
+    if(el) el.style.display = (p===name) ? '' : 'none';
+  });
 }
 
 function badge(kind, cls, label){ return '<span class="badge '+cls+'-'+kind+'">'+esc(label)+'</span>'; }
@@ -820,7 +904,7 @@ function refString(cit){
 }
 
 // Last-rendered Markdown per tab, for the copy / download buttons.
-var lastMd = { ask: {text:'', name:'answer'}, lec: {text:'', name:'lecture'} };
+var lastMd = { ask: {text:'', name:'answer'}, lec: {text:'', name:'lecture'}, cmp: {text:'', name:'compare'} };
 function slug(s){ return (s||'shia-aalim').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60) || 'shia-aalim'; }
 function selectedEmbedder(){ var el = document.getElementById('embedder'); return el && el.value ? el.value : null; }
 function showTools(tab){ document.getElementById(tab+'Tools').classList.remove('hidden'); }
@@ -859,16 +943,16 @@ function setAllSrc(prefix, val){
   });
   updateFilterCount(prefix);
 }
+function setCount(id, txt){ var el = document.getElementById(id); if(el) el.textContent = txt; }
 function updateFilterCount(prefix){
-  var n = 0;
   if(prefix === 'ask'){
-    n += checked('askTypes').length + checked('askSources').length;
+    var n = checked('askTypes').length + checked('askSources').length;
     var conf = document.getElementById('askConf');
     if(conf && conf.value !== 'low') n += 1;   // 'low' is the default floor
-    document.getElementById('askFilterCount').textContent = n ? '· '+n+' active' : '';
+    setCount('askFilterCount', n ? '· '+n+' active' : '');
   } else {
-    n = checked('lecSources').length;
-    document.getElementById('lecFilterCount').textContent = n ? '· '+n+' book'+(n>1?'s':'') : '';
+    var m = checked(prefix+'Sources').length;
+    setCount(prefix+'FilterCount', m ? '· '+m+' book'+(m>1?'s':'') : '');
   }
 }
 
@@ -893,6 +977,7 @@ function loadFacets(){
     var srcHtml = function(prefix){ return (f.sources||[]).map(function(s){ return srcRow(prefix, s); }).join(''); };
     document.getElementById('askSources').innerHTML = srcHtml('ask');
     document.getElementById('lecSources').innerHTML = srcHtml('lec');
+    document.getElementById('cmpSources').innerHTML = srcHtml('cmp');
   }).catch(function(){
     document.getElementById('askTypes').innerHTML = '<span class="idxnote">unavailable</span>';
   });
@@ -979,6 +1064,62 @@ async function lecture(){
     showTools('lec');
   } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
   finally { btn.disabled = false; refreshStatus(); }
+}
+
+async function compare(){
+  var q = document.getElementById('cq').value.trim();
+  if(!q) return;
+  var sources = selectedSources('cmp');
+  var box = document.getElementById('cmpResult');
+  if(!sources){ box.innerHTML = '<div class="empty">Select at least one book to compare (use the list above).</div>'; return; }
+  var k = document.getElementById('ck').value;
+  var btn = document.getElementById('cmpBtn');
+  btn.disabled = true; hideTools('cmp');
+  box.innerHTML = spinner('Comparing across '+sources.length+' book'+(sources.length>1?'s':'')+'…');
+  try {
+    var res = await fetch('/api/compare', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      question:q, sources:sources, k:Number(k), embedder:selectedEmbedder()
+    })});
+    var data = await res.json();
+    if(data.error){ box.innerHTML = '<div class="empty">'+esc(data.error)+'</div>'; return; }
+    renderCompare(box, data);
+    lastMd.cmp = { text: compareMarkdown(data), name: 'compare-'+q };
+    showTools('cmp');
+  } catch(e){ box.innerHTML = '<div class="empty">Request failed: '+esc(e.message)+'</div>'; }
+  finally { btn.disabled = false; refreshStatus(); }
+}
+
+function renderCompare(box, data){
+  var h = '<div class="qtitle">'+esc(data.question)+'</div>'+
+    '<p class="subq">Same question, each book answered on its own evidence. Click any passage for details.'+
+    (data.truncated ? ' <b>(limited to the first 6 books)</b>' : '')+'</p>';
+  h += '<div class="cols">' + (data.columns||[]).map(function(col){
+    var claims = (col.answer && col.answer.claims) || [];
+    var out = '<div class="col"><h4>'+esc(col.title)+'</h4>'+
+      '<div class="meta">'+(claims.length ? claims.length+' passage'+(claims.length>1?'s':'') : 'no matching evidence')+'</div>';
+    out += claims.length
+      ? claims.map(c => evidenceBlock(detailFromClaim(c))).join('')
+      : '<div class="empty">Nothing in this book cleared the bar for the question.</div>';
+    return out + '</div>';
+  }).join('') + '</div>';
+  box.innerHTML = h;
+}
+
+function compareMarkdown(data){
+  var lines = ['# Compare — '+data.question, ''];
+  (data.columns||[]).forEach(function(col){
+    lines.push('## '+col.title);
+    var claims = (col.answer && col.answer.claims) || [];
+    if(!claims.length){ lines.push('', '_No matching evidence._', ''); return; }
+    lines.push('');
+    claims.forEach(function(c){
+      var cit = (c.citations && c.citations[0]) || {};
+      lines.push('- **['+c.evidence_type+' · '+String(c.confidence).toUpperCase()+']** '+c.statement);
+      lines.push('  — _'+refString(cit)+'_');
+    });
+    lines.push('');
+  });
+  return lines.join('\n');
 }
 
 function renderLecture(box, L){
