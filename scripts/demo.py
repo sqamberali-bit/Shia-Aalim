@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from shia_aalim.generation.answer import AnswerGenerator  # noqa: E402
 from shia_aalim.generation.lecture import LectureGenerator  # noqa: E402
 from shia_aalim.generation.synthesizer import make_synthesizer  # noqa: E402
+from shia_aalim.grounding.entailment import make_judge  # noqa: E402
 from shia_aalim.ingestion.loaders import iter_knowledge_dir  # noqa: E402
 from shia_aalim.research_loop import build_index  # noqa: E402
 from shia_aalim.sources import load_registry_ids  # noqa: E402
@@ -32,6 +33,10 @@ def main() -> int:
         "--synthesize", default="none", metavar="SPEC",
         help="LLM synthesizer: none | mock | claude:<model> (needs [llm] extra + ANTHROPIC_API_KEY)",
     )
+    parser.add_argument(
+        "--judge", default="lexical", metavar="SPEC",
+        help="entailment judge for verifying synthesis: lexical | mock | claude:<model>",
+    )
     args = parser.parse_args()
 
     docs = list(iter_knowledge_dir(ROOT / "data" / "knowledge"))
@@ -39,14 +44,19 @@ def main() -> int:
     retriever = build_index(docs)
 
     synthesizer = make_synthesizer(args.synthesize)
+    judge = make_judge(args.judge)
 
     if args.lecture:
-        lecture = LectureGenerator(retriever, synthesizer=synthesizer).generate(args.query)
+        lecture = LectureGenerator(
+            retriever, synthesizer=synthesizer, judge=judge
+        ).generate(args.query)
         print(lecture.to_markdown())
         return 0
 
     known = load_registry_ids(ROOT / "data" / "sources" / "registry.yaml")
-    gen = AnswerGenerator(retriever, synthesizer=synthesizer, known_source_ids=known)
+    gen = AnswerGenerator(
+        retriever, synthesizer=synthesizer, known_source_ids=known, judge=judge
+    )
     answer = gen.answer(args.query, k=args.k)
     print(gen.format_markdown(answer))
     return 0

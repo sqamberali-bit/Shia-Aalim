@@ -75,7 +75,24 @@ sentence its cited passage doesn't support (**wrong attribution**), or (3) makes
 a substantive claim grounded in **no** cited evidence (**hallucination**). On
 failure, `AnswerGenerator` **withholds** the prose and falls back to the
 extractive, always-cited evidence — the LLM can make an answer readable, never
-less grounded. (Lexical gate; add an LLM entailment judge for production.)
+less grounded.
+
+The entailment decision (2 and 3 above) is a pluggable **`EntailmentJudge`**
+(`grounding/entailment.py`), selected with `make_judge(spec)`:
+
+| spec | class | needs |
+|---|---|---|
+| `lexical` | `LexicalEntailmentJudge` | none — content-overlap proxy (default) |
+| `claude:<model>` | `ClaudeEntailmentJudge` | `[llm]` + `ANTHROPIC_API_KEY` |
+| `mock` | `MockEntailmentJudge` | none (tests/offline) |
+
+The lexical judge is fast but blunt; a `claude:` judge *complements* it with true
+semantic entailment — rescuing paraphrases the lexical gate wrongly rejects and
+rejecting same-words/wrong-meaning it wrongly passes (both demonstrated in
+`tests/test_entailment.py`). Judges batch all a text's claims into one call and
+default to **UNSUPPORTED when unsure**. Pass one via
+`AnswerGenerator(..., judge=make_judge("claude:claude-sonnet-5"))` (and likewise
+`LectureGenerator`), or `demo.py --judge`.
 
 ```python
 from shia_aalim.generation import make_synthesizer, AnswerGenerator

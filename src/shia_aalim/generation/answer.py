@@ -22,6 +22,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Optional, Protocol
 
+from ..grounding.entailment import EntailmentJudge
 from ..grounding.synthesis import verify_synthesis
 from ..grounding.verify import check_answer_grounding
 from ..models import Answer, Claim, ConfidenceLevel, EvidenceType
@@ -58,10 +59,12 @@ class AnswerGenerator:
         *,
         synthesizer: Optional[Synthesizer] = None,
         known_source_ids: Optional[set[str]] = None,
+        judge: Optional["EntailmentJudge"] = None,
     ) -> None:
         self.retriever = retriever
         self.synthesizer = synthesizer
         self.known_source_ids = known_source_ids
+        self.judge = judge  # entailment judge for verifying synthesized prose
 
     def answer(
         self,
@@ -118,7 +121,7 @@ class AnswerGenerator:
                 # generation fact verification). Reject rather than show
                 # unsupported/invented-citation prose — the cited evidence below
                 # is always available as the grounded fallback.
-                report = verify_synthesis(candidate, evidence)
+                report = verify_synthesis(candidate, evidence, judge=self.judge)
                 if report.grounded:
                     summary = candidate
                 else:

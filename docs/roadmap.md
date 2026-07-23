@@ -81,7 +81,12 @@ the research loop updates.
       Introduction, Practical Lessons, Common Misconceptions, Conclusion) are
       auto-written from a pooled evidence set and verified; ungrounded prose is
       withheld back to the lecturer prompt. Reflection Points stays a human task.
-- [ ] Add LLM-based entailment to complement the lexical grounding gate
+- [x] LLM entailment judge (`grounding/entailment.py`) complementing the lexical
+      grounding gate — pluggable `EntailmentJudge` (`lexical` default,
+      `claude:<model>`, `mock`), batched, defaults to UNSUPPORTED-when-unsure,
+      wired through `verify_synthesis` / `AnswerGenerator` / `LectureGenerator`
+      / `demo.py --judge`. Rescues true paraphrases and rejects lexical-match
+      contradictions the overlap gate gets wrong.
 - [ ] Query decomposition for multi-part questions
 - [ ] Human-in-the-loop review UI for confidence promotion
 

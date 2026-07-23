@@ -26,6 +26,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Optional
 
+from ..grounding.entailment import EntailmentJudge
 from ..grounding.synthesis import verify_synthesis
 from ..models import EvidenceType
 from ..retrieval.retriever import Retriever, RetrievalResult
@@ -97,9 +98,16 @@ _NARRATIVE_PROMPTS = {
 
 
 class LectureGenerator:
-    def __init__(self, retriever: Retriever, *, synthesizer: Optional[Synthesizer] = None) -> None:
+    def __init__(
+        self,
+        retriever: Retriever,
+        *,
+        synthesizer: Optional[Synthesizer] = None,
+        judge: Optional[EntailmentJudge] = None,
+    ) -> None:
         self.retriever = retriever
         self.synthesizer = synthesizer
+        self.judge = judge
 
     def _evidence(
         self, topic: str, types: list[EvidenceType], k: int
@@ -212,7 +220,7 @@ class LectureGenerator:
             prose = self.synthesizer.synthesize(question, pool)
         except Exception:  # noqa: BLE001 - a failed synthesizer just leaves the note
             return
-        if prose and verify_synthesis(prose, pool).grounded:
+        if prose and verify_synthesis(prose, pool, judge=self.judge).grounded:
             section.body = prose
             section.synthesized = True
             section.note = ""
