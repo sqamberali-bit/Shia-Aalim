@@ -97,6 +97,25 @@ def test_lecture_returns_full_framework(client):
             assert ev["reference"]
 
 
+def test_lecture_evidence_carries_full_citation_for_drawer(client):
+    # the drawer needs the full citation (grade, arabic, locators), not just a ref
+    r = client.post("/api/lecture", json={"topic": "intellect worship paradise", "depth": 3})
+    hadith = [ev for s in r.json()["sections"] for ev in s["evidence"]
+              if ev["evidence_type"] == "hadith"]
+    assert hadith, "expected a hadith evidence block"
+    cit = hadith[0]["citation"]
+    assert cit["source_id"] and "grade" in cit           # full citation present
+    assert hadith[0]["citation"]["grade"] == "sahih"     # sample al-kafi doc is graded sahih
+
+
+def test_answer_claims_expose_grade_for_drawer(client):
+    r = client.post("/api/answer", json={"question": "intellect worship paradise", "k": 3})
+    hadith = [c for c in r.json()["answer"]["claims"] if c["evidence_type"] == "hadith"]
+    assert hadith
+    cit = hadith[0]["citations"][0]
+    assert cit["grade"] == "sahih" and cit.get("grade_source")
+
+
 def test_lecture_requires_topic(client):
     r = client.post("/api/lecture", json={"topic": ""})
     assert r.status_code == 400

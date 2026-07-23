@@ -290,6 +290,8 @@ def lecture_to_payload(lecture: Lecture) -> dict:
                         "confidence": r.document.confidence.value,
                         "evidence_type": r.document.evidence_type.value,
                         "translation": r.document.citation.translation,
+                        "view_status": r.document.view_status.value if r.document.view_status else None,
+                        "citation": r.document.citation.to_dict(),
                     }
                     for r in s.evidence
                 ],
@@ -583,6 +585,33 @@ INDEX_HTML = r"""<!doctype html>
   .fmini:hover { border-color: var(--accent); color: var(--accent); }
   .cdot-high { background: var(--high); } .cdot-medium { background: var(--medium); }
   .cdot-low { background: var(--low); } .cdot-unverified { background: var(--unverified); }
+  .ev.clickable { cursor: pointer; transition: border-color .12s; }
+  .ev.clickable:hover { border-color: var(--accent); }
+  .ev .more { color: var(--accent); font-size: 12px; margin-left: 8px; white-space: nowrap; }
+  #drawerOverlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); opacity: 0; pointer-events: none;
+    transition: opacity .18s; z-index: 20;
+  }
+  #drawerOverlay.open { opacity: 1; pointer-events: auto; }
+  #drawer {
+    position: fixed; top: 0; right: 0; height: 100%; width: min(460px, 92vw);
+    background: var(--panel); border-left: 1px solid var(--line); z-index: 21;
+    transform: translateX(100%); transition: transform .2s ease; overflow-y: auto;
+    box-shadow: -12px 0 40px rgba(0,0,0,.25);
+  }
+  #drawer.open { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: flex-start; gap: 10px; padding: 18px 18px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); }
+  .drawer-head h2 { margin: 0; font-size: 16px; line-height: 1.35; flex: 1; }
+  .drawer-close { border: 0; background: var(--panel2); color: var(--ink); border-radius: 8px; width: 30px; height: 30px; font-size: 18px; cursor: pointer; flex: none; }
+  .drawer-body { padding: 16px 18px 40px; }
+  .drawer-body .ar { direction: rtl; text-align: right; font-size: 20px; line-height: 2.05; margin: 4px 0 14px; }
+  .drawer-body .en { font-size: 15px; line-height: 1.65; margin: 0 0 14px; }
+  .drawer-body .grp { margin: 14px 0; }
+  .drawer-body .k { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+  .drawer-body .v { font-size: 14px; margin-top: 2px; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13.5px; }
+  .kv .k { align-self: center; }
+  .drawer-body .src { color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
@@ -670,6 +699,15 @@ INDEX_HTML = r"""<!doctype html>
 </main>
 <footer>Shia-Aalim · answers are aids to research, not a substitute for a qualified scholar (marjaʿ). Verify every citation against the primary source.</footer>
 
+<div id="drawerOverlay" onclick="closeDrawer()"></div>
+<aside id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <h2 id="drawerTitle"></h2>
+    <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">×</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</aside>
+
 <script>
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function isArabic(s){ return /[؀-ۿ]/.test(s||''); }
@@ -682,28 +720,94 @@ function switchTab(name){
 
 function badge(kind, cls, label){ return '<span class="badge '+cls+'-'+kind+'">'+esc(label)+'</span>'; }
 
-function evidenceBlock(ev){
-  var conf = ev.confidence || 'unverified';
-  var type = ev.evidence_type || '';
-  var txt = ev.text || (ev.citation && ev.citation.arabic_text) || '';
-  var ref = ev.reference || '';
-  var cls = isArabic(txt) ? 'txt ar' : 'txt';
-  var trans = ev.translation ? '<p class="txt" style="color:var(--muted);font-size:13.5px">'+esc(ev.translation)+'</p>' : '';
-  return '<div class="ev"><p class="'+cls+'">'+esc(txt)+'</p>'+trans+
-    '<div class="badges">'+badge(type,'t',type.replace(/_/g,' '))+badge(conf,'b',conf)+
-    '<span class="ref">'+esc(ref)+'</span></div></div>';
-}
+// ---- Citation detail drawer ----------------------------------------------
+var drawerReg = {}, drawerSeq = 0;
+function regDrawer(d){ var id = 'd'+(drawerSeq++); drawerReg[id] = d; return id; }
 
-function claimToEvidence(c){
+// A unified evidence "detail" from an answer claim or a lecture evidence item.
+function detailFromClaim(c){
   var cit = (c.citations && c.citations[0]) || {};
   return {
-    text: c.statement,
-    reference: refString(cit),
-    confidence: c.confidence,
-    evidence_type: c.evidence_type,
-    translation: cit.translation || null,
+    text: c.statement, arabic: cit.arabic_text || '',
+    translation: cit.translation || '', translation_source: cit.translation_source || '',
+    reference: refString(cit), confidence: c.confidence, evidence_type: c.evidence_type,
+    view_status: c.view_status || null, grade: cit.grade || 'ungraded',
+    grade_source: cit.grade_source || '', source_id: cit.source_id, locators: cit,
+    asserted_as_fact: c.asserted_as_fact,
   };
 }
+function detailFromEv(ev){
+  var cit = ev.citation || {};
+  return {
+    text: ev.text, arabic: cit.arabic_text || '',
+    translation: ev.translation || cit.translation || '', translation_source: cit.translation_source || '',
+    reference: ev.reference || refString(cit), confidence: ev.confidence, evidence_type: ev.evidence_type,
+    view_status: ev.view_status || null, grade: cit.grade || 'ungraded',
+    grade_source: cit.grade_source || '', source_id: cit.source_id, locators: cit,
+  };
+}
+
+function evidenceBlock(d){
+  var conf = d.confidence || 'unverified';
+  var type = d.evidence_type || '';
+  var txt = d.text || d.arabic || '';
+  var cls = isArabic(txt) ? 'txt ar' : 'txt';
+  var trans = (d.translation && d.translation !== txt)
+    ? '<p class="txt" style="color:var(--muted);font-size:13.5px">'+esc(d.translation)+'</p>' : '';
+  var id = regDrawer(d);
+  return '<div class="ev clickable" data-d="'+id+'" onclick="openDrawer(drawerReg[this.dataset.d])" '+
+    'title="View full passage &amp; source details"><p class="'+cls+'">'+esc(txt)+'</p>'+trans+
+    '<div class="badges">'+badge(type,'t',type.replace(/_/g,' '))+badge(conf,'b',conf)+
+    '<span class="ref">'+esc(d.reference || '')+'<span class="more">details ›</span></span></div></div>';
+}
+
+function locatorRows(cit){
+  var rows = [];
+  function add(k,v){ if(v!==undefined && v!==null && v!=='') rows.push('<div class="k">'+k+'</div><div class="v">'+esc(v)+'</div>'); }
+  add('Surah:Ayah', cit.surah ? cit.surah+':'+cit.ayah : '');
+  add('Volume', cit.volume); add('Page', cit.page);
+  add('Hadith no.', cit.hadith_number); add('Chapter', cit.chapter);
+  return rows.join('');
+}
+
+function openDrawer(d){
+  if(!d) return;
+  var title = (sourceTitles[d.source_id] || d.source_id || 'Passage');
+  document.getElementById('drawerTitle').textContent = title;
+  var h = '<div class="src">'+esc(d.reference || '')+'</div>';
+  h += '<div class="badges" style="margin:10px 0 4px">'+
+       badge(d.evidence_type||'', 't', (d.evidence_type||'').replace(/_/g,' '))+
+       badge(d.confidence||'unverified','b',d.confidence||'unverified')+
+       (d.view_status ? '<span class="badge" style="background:var(--unverified)">'+esc(d.view_status.replace(/_/g,' '))+'</span>' : '')+
+       '</div>';
+  if(d.arabic) h += '<div class="grp"><div class="ar">'+esc(d.arabic)+'</div></div>';
+  if(d.text)   h += '<div class="grp"><div class="k">Text</div><div class="en">'+esc(d.text)+'</div></div>';
+  if(d.translation && d.translation !== d.text)
+    h += '<div class="grp"><div class="k">Translation</div><div class="en">'+esc(d.translation)+'</div></div>';
+  if(d.translation_source)
+    h += '<div class="grp"><div class="k">Translation source</div><div class="v">'+esc(d.translation_source)+'</div></div>';
+  if(d.grade && d.grade !== 'ungraded')
+    h += '<div class="grp"><div class="k">Grade (ʿilm al-rijāl)</div><div class="v">'+esc(d.grade)+
+         (d.grade_source ? ' <span class="src">— '+esc(d.grade_source)+'</span>' : '')+'</div></div>';
+  var loc = locatorRows(d.locators||{});
+  if(loc) h += '<div class="grp"><div class="k">Locators</div><div class="kv" style="margin-top:6px">'+loc+'</div></div>';
+  if(d.asserted_as_fact !== undefined)
+    h += '<div class="grp src">'+(d.asserted_as_fact
+      ? 'Backed by a complete citation at fact-level confidence.'
+      : 'Not asserted as established fact — treat as evidence to weigh, not a settled ruling.')+'</div>';
+  h += '<div class="grp src">Verify against the primary source before relying on it.</div>';
+  document.getElementById('drawerBody').innerHTML = h;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer').setAttribute('aria-hidden','false');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer').setAttribute('aria-hidden','true');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDrawer(); });
+
 function refString(cit){
   if(!cit) return '';
   if(cit.evidence_type==='quran' && cit.surah) return "Qur'an "+cit.surah+':'+cit.ayah;
@@ -781,8 +885,10 @@ function typeRow(t){
     esc(label)+'<span class="cnt">'+t.count.toLocaleString()+'</span></label>';
 }
 
+var sourceTitles = {};   // source_id -> human title, for the drawer header
 function loadFacets(){
   return fetch('/api/sources').then(r=>r.json()).then(function(f){
+    (f.sources||[]).forEach(function(s){ sourceTitles[s.id] = s.title; });
     document.getElementById('askTypes').innerHTML = (f.evidence_types||[]).map(typeRow).join('') || '<span class="idxnote">none</span>';
     var srcHtml = function(prefix){ return (f.sources||[]).map(function(s){ return srcRow(prefix, s); }).join(''); };
     document.getElementById('askSources').innerHTML = srcHtml('ask');
@@ -847,8 +953,8 @@ function renderAnswer(box, a){
   if(!a.claims || !a.claims.length){
     h += '<div class="empty">No sufficiently-relevant evidence was found in the knowledge base for this question.</div>';
   } else {
-    h += '<div class="evhead">Evidence ('+a.claims.length+')</div>';
-    h += a.claims.map(c => evidenceBlock(claimToEvidence(c))).join('');
+    h += '<div class="evhead">Evidence ('+a.claims.length+') · <span class="idxnote">click a passage for full text &amp; source details</span></div>';
+    h += a.claims.map(c => evidenceBlock(detailFromClaim(c))).join('');
   }
   if(a.caveats && a.caveats.length)
     h += '<div class="caveats"><div class="lbl">Caveats</div><ul>'+a.caveats.map(c=>'<li>'+esc(c)+'</li>').join('')+'</ul></div>';
@@ -880,7 +986,7 @@ function renderLecture(box, L){
   h += L.sections.map(s => {
     var out = '<div class="sec"><h3>'+esc(s.title)+(s.synthesized?' <span class="synth">✓ synthesized &amp; verified</span>':'')+'</h3>';
     if(s.body) out += '<div class="body">'+esc(s.body)+'</div>';
-    out += s.evidence.map(evidenceBlock).join('');
+    out += s.evidence.map(function(ev){ return evidenceBlock(detailFromEv(ev)); }).join('');
     if(s.note) out += '<div class="note">Lecturer note: '+esc(s.note)+'</div>';
     return out + '</div>';
   }).join('');
