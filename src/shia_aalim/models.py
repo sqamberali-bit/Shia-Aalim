@@ -148,6 +148,10 @@ class Citation:
     arabic_text: Optional[str] = None
     translation: Optional[str] = None
     translation_source: Optional[str] = None
+    # Optional Urdu translation (e.g. a vetted Qur'an translation), so a verse can
+    # be shown with Arabic + English + Urdu from real sources (not AI-translated).
+    translation_ur: Optional[str] = None
+    translation_ur_source: Optional[str] = None
 
     # Authenticity metadata (hadith)
     grade: HadithGrade = HadithGrade.UNGRADED
@@ -248,6 +252,8 @@ class Document:
             arabic_text=cit.get("arabic_text"),
             translation=cit.get("translation"),
             translation_source=cit.get("translation_source"),
+            translation_ur=cit.get("translation_ur"),
+            translation_ur_source=cit.get("translation_ur_source"),
             grade=HadithGrade(cit.get("grade", "ungraded")),
             grade_source=cit.get("grade_source"),
         )

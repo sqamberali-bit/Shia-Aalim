@@ -19,10 +19,13 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="${CORPUS_SRC_DIR:-/tmp/shia-sources}"
 mkdir -p "$SRC/quran"
 
-echo ">> [1/4] Qur'an editions (fawazahmed0/quran-api)"
+echo ">> [1/4] Qur'an editions (fawazahmed0/quran-api): Arabic + English + Urdu (Jawadi)"
 base="https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions"
 curl -fsSL "$base/ara-quranuthmanihaf.json" -o "$SRC/quran/quran-ara-quranuthmanihaf.json"
 curl -fsSL "$base/eng-aliquliqarai.json"    -o "$SRC/quran/quran-eng-aliquliqarai.json"
+# Vetted Urdu translation — Syed Zeeshan Haider Jawadi (source: tanzil.net)
+curl -fsSL "$base/urd-syedzeeshanhaid.json" -o "$SRC/quran/quran-urd-syedzeeshanhaid.json" \
+  || echo "   (Urdu edition fetch failed — verses will show Arabic + English only)"
 
 echo ">> [2/4] ThaqalaynData (narmafraz/ThaqalaynData, CC0)"
 if [ ! -d "$SRC/ThaqalaynData/.git" ]; then

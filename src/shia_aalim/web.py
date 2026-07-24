@@ -834,6 +834,7 @@ INDEX_HTML = r"""<!doctype html>
   }
   .ev .txt { margin: 0 0 8px; }
   .ev .ar { direction: rtl; text-align: right; font-family: var(--font-arabic); font-size: 19px; line-height: 2.05; }
+  .ev .ur-inline { direction: rtl; text-align: right; font-family: var(--font-urdu); font-size: 16px; line-height: 2.1; color: var(--ink); margin: 4px 0 8px; }
   .badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .badge {
     font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
@@ -933,8 +934,9 @@ INDEX_HTML = r"""<!doctype html>
   .drawer-head h2 { margin: 0; font-size: 16px; line-height: 1.35; flex: 1; }
   .drawer-close { border: 0; background: var(--panel2); color: var(--ink); border-radius: 8px; width: 30px; height: 30px; font-size: 18px; cursor: pointer; flex: none; }
   .drawer-body { padding: 16px 18px 40px; }
-  .drawer-body .ar { direction: rtl; text-align: right; font-size: 20px; line-height: 2.05; margin: 4px 0 14px; }
+  .drawer-body .ar { direction: rtl; text-align: right; font-family: var(--font-arabic); font-size: 20px; line-height: 2.05; margin: 4px 0 14px; }
   .drawer-body .en { font-size: 15px; line-height: 1.65; margin: 0 0 14px; }
+  .drawer-body .ur { direction: rtl; text-align: right; font-family: var(--font-urdu); font-size: 18px; line-height: 2.2; margin: 2px 0 6px; }
   .drawer-body .grp { margin: 14px 0; }
   .drawer-body .k { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
   .drawer-body .v { font-size: 14px; margin-top: 2px; }
@@ -1205,6 +1207,7 @@ function detailFromClaim(c){
   return {
     text: c.statement, arabic: cit.arabic_text || '',
     translation: cit.translation || '', translation_source: cit.translation_source || '',
+    translation_ur: cit.translation_ur || '', translation_ur_source: cit.translation_ur_source || '',
     reference: refString(cit), confidence: c.confidence, evidence_type: c.evidence_type,
     view_status: c.view_status || null, grade: cit.grade || 'ungraded',
     grade_source: cit.grade_source || '', source_id: cit.source_id, locators: cit,
@@ -1216,6 +1219,7 @@ function detailFromEv(ev){
   return {
     text: ev.text, arabic: cit.arabic_text || '',
     translation: ev.translation || cit.translation || '', translation_source: cit.translation_source || '',
+    translation_ur: cit.translation_ur || '', translation_ur_source: cit.translation_ur_source || '',
     reference: ev.reference || refString(cit), confidence: ev.confidence, evidence_type: ev.evidence_type,
     view_status: ev.view_status || null, grade: cit.grade || 'ungraded',
     grade_source: cit.grade_source || '', source_id: cit.source_id, locators: cit,
@@ -1242,9 +1246,10 @@ function evidenceBlock(d){
   var cls = isArabic(txt) ? 'txt ar' : 'txt';
   var trans = (d.translation && d.translation !== txt)
     ? '<p class="txt" style="color:var(--muted);font-size:13.5px">'+esc(d.translation)+'</p>' : '';
+  var ur = d.translation_ur ? '<p class="txt ur-inline">'+esc(d.translation_ur)+'</p>' : '';
   var id = regDrawer(d);
   return '<div class="ev clickable" data-d="'+id+'" onclick="openDrawer(drawerReg[this.dataset.d])" '+
-    'title="View full passage &amp; source details"><p class="'+cls+'">'+esc(txt)+'</p>'+trans+
+    'title="View full passage &amp; source details"><p class="'+cls+'">'+esc(txt)+'</p>'+trans+ur+
     '<div class="badges">'+badge(type,'t',type.replace(/_/g,' '))+badge(conf,'b',conf)+
     '<span class="ref">'+esc(d.reference || '')+'<span class="more">'+t('details')+'</span></span></div></div>';
 }
@@ -1272,6 +1277,9 @@ function openDrawer(d){
   if(d.text)   h += '<div class="grp"><div class="k">Text</div><div class="en">'+esc(d.text)+'</div></div>';
   if(d.translation && d.translation !== d.text)
     h += '<div class="grp"><div class="k">Translation</div><div class="en">'+esc(d.translation)+'</div></div>';
+  if(d.translation_ur)
+    h += '<div class="grp"><div class="k">اردو ترجمہ · Urdu translation</div><div class="ur">'+esc(d.translation_ur)+'</div>'+
+         (d.translation_ur_source ? '<div class="src">— '+esc(d.translation_ur_source)+'</div>' : '')+'</div>';
   if(d.translation_source)
     h += '<div class="grp"><div class="k">Translation source</div><div class="v">'+esc(d.translation_source)+'</div></div>';
   // Transmission chain (rijāl) — a surface reading of the text, clearly caveated.
@@ -1754,6 +1762,9 @@ function applyStatus(s){
   sel.disabled = (s.embedders||[]).length < 2;   // nothing to switch between
   onEmbedderChange();
 
+  // Reflect the server's default evidence count in the input (once), so the
+  // user isn't stuck at the old hardcoded value. They can still dial it (up to 25).
+  if(!window._kInit && s.default_k){ var ke=document.getElementById('k'); if(ke) ke.value = s.default_k; window._kInit = true; }
   // Reveal the answer-language picker only when AI synthesis is actually live.
   var ai = s.ai || {};
   document.getElementById('langSel').style.display = ai.synthesis ? '' : 'none';

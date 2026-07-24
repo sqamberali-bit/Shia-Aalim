@@ -149,6 +149,13 @@ and falling back to raw snippets. You do **not** need to set `JUDGE` yourself.
 To show more evidence per answer (e.g. more Qurʾānic verses), add a variable
 `K` = `12` (default 8; max 25).
 
+### Qur'an in Arabic + English + Urdu
+Every Qur'anic verse in the corpus now carries its **Arabic** original, an
+**English** translation (Ali Quli Qarai), and a vetted **Urdu** translation
+(Syed Zeeshan Haider Jawadi, via tanzil.net) — all from real sources, none
+AI-translated. They show inline on the evidence card and in the citation drawer,
+and Claude uses the vetted Urdu verbatim when composing an Urdu answer.
+
 ### Answers in Urdu / Arabic
 Once `SYNTHESIZE=claude:…` is on, an **Answer in: English · اردو · العربية**
 picker appears on the Ask tab. Pick Urdu (or Arabic) and Claude writes the

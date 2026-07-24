@@ -78,6 +78,8 @@ def format_evidence_block(evidence: Sequence[RetrievalResult]) -> str:
         parts.append(f"ENGLISH: {d.text.strip()}")
         if c.translation and c.translation.strip() != d.text.strip():
             parts.append(f"TRANSLATION: {c.translation.strip()}")
+        if c.translation_ur:  # vetted Urdu (use this — do not re-translate the verse)
+            parts.append(f"URDU: {c.translation_ur.strip()}")
         lines.append("\n".join(parts))
     return "\n\n".join(lines)
 
@@ -113,7 +115,7 @@ class ClaudeSynthesizer:
         model: str = "claude-sonnet-5",
         *,
         api_key: Optional[str] = None,
-        max_tokens: int = 4096,
+        max_tokens: int = 8192,
         temperature: float = 0.2,
     ) -> None:
         try:
@@ -153,16 +155,17 @@ class ClaudeSynthesizer:
             "do NOT just quote or list passages. Structure it with these headings:\n"
             "1. **Direct answer** — 1–3 sentences.\n"
             "2. **Explanation** — synthesise the evidence into a coherent account.\n"
-            "3. **Qur'anic evidence** — for EACH relevant verse, show the full Arabic text "
-            "(from the evidence), then its English translation, then an Urdu translation. "
-            "Never give a bare reference without the verse and translations.\n"
+            "3. **Qur'anic evidence** — for EACH relevant verse, show the full Arabic "
+            "text (from the ARABIC field), then its English translation (ENGLISH), then "
+            "its Urdu translation (use the URDU field verbatim where provided — it is a "
+            "vetted translation; do NOT re-translate the verse yourself). Never give a "
+            "bare reference without the verse and its translations.\n"
             "4. **Hadith evidence** — reconcile multiple narrations; note grade/authenticity "
             "and practical import. Cite each.\n"
-            "5. **Tafsir synthesis** — compare the tafsir explanations present in the evidence; "
-            "do not paste raw Arabic paragraphs.\n"
-            "6. **Scholarly views** — where present.\n"
-            "7. **Practical lessons.**\n"
-            "8. **Sources** — bibliography of the exact citations used.\n\n"
+            "5. **Scholarly / tafsir views** — where present in the evidence; do not paste "
+            "raw Arabic paragraphs and do not compare tafsirs that are not in the evidence.\n"
+            "6. **Practical lessons.**\n"
+            "7. **Sources** — bibliography of the exact citations used.\n\n"
             "RULES: Every factual sentence must carry a [n] citation to the evidence above. "
             "Do NOT add facts, verses, hadith or opinions that are not in the evidence. If the "
             "evidence lacks something (e.g. a tafsir), say so rather than inventing it. Prefer "

@@ -52,6 +52,8 @@ def build_quran_documents(
     translation_path: str | Path,
     *,
     translation_name: str,
+    urdu_path: str | Path | None = None,
+    urdu_name: str | None = None,
     arabic_source_id: str = "quran",
     confidence: ConfidenceLevel = ConfidenceLevel.HIGH,
 ) -> list[Document]:
@@ -59,11 +61,15 @@ def build_quran_documents(
 
     ``text`` is the English translation (so English queries retrieve it); the
     canonical Arabic is preserved in ``citation.arabic_text`` for display and
-    verification. Confidence defaults to HIGH because the canonical Arabic is
-    present, making every verse independently checkable against its reference.
+    verification. If ``urdu_path`` is given, a vetted **Urdu** translation is
+    attached too (``citation.translation_ur``), so a verse can be shown with
+    Arabic + English + Urdu — all from real sources, none AI-translated.
+    Confidence defaults to HIGH because the canonical Arabic is present, making
+    every verse independently checkable against its reference.
     """
     arabic = load_edition(arabic_path)
     translation = load_edition(translation_path)
+    urdu = load_edition(urdu_path) if urdu_path else {}
 
     docs: list[Document] = []
     for (surah, ayah), ar_text in arabic.items():
@@ -72,6 +78,7 @@ def build_quran_documents(
             # Never invent a translation for a missing verse; skip and let the
             # coverage metric flag the gap.
             continue
+        ur_text = urdu.get((surah, ayah))
         citation = Citation(
             source_id=arabic_source_id,
             evidence_type=EvidenceType.QURAN,
@@ -80,6 +87,8 @@ def build_quran_documents(
             arabic_text=ar_text,
             translation=en_text,
             translation_source=translation_name,
+            translation_ur=ur_text or None,
+            translation_ur_source=(urdu_name if ur_text else None),
         )
         docs.append(
             Document(

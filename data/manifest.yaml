@@ -43,6 +43,8 @@ works:
     expected_docs: 6236
     output: data/knowledge/quran/quran.jsonl
     build: {source: quran-api, adapter: quran}
+    note: "Uthmani Arabic + English (Ali Quli Qarai) + Urdu (Syed Zeeshan Haider
+      Jawadi, via tanzil.net). Each verse carries Arabic + English + Urdu."
 
   # ---- Hadith (structured, graded where recorded) ----
   - id: al-kafi

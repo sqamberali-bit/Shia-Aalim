@@ -54,6 +54,7 @@ RUN if [ -n "$SEMANTIC" ]; then \
 ENV HOST=0.0.0.0 \
     PORT=7860 \
     EMBEDDER=tfidf \
+    K=15 \
     PYTHONUNBUFFERED=1
 EXPOSE 7860
 

@@ -55,8 +55,12 @@ def ingest_quran(quran_dir: Path) -> int:
     if not (arabic.exists() and qarai.exists()):
         print(f"  [skip] Qur'an editions not found in {quran_dir}")
         return 0
+    # Optional vetted Urdu translation (Syed Zeeshan Haider Jawadi, via tanzil.net)
+    urdu = quran_dir / "quran-urd-syedzeeshanhaid.json"
     docs = build_quran_documents(
-        arabic, qarai, translation_name="Ali Quli Qarai (via fawazahmed0/quran-api)"
+        arabic, qarai, translation_name="Ali Quli Qarai (via fawazahmed0/quran-api)",
+        urdu_path=urdu if urdu.exists() else None,
+        urdu_name="Syed Zeeshan Haider Jawadi (via fawazahmed0/quran-api, tanzil.net)",
     )
     write_jsonl(docs, KNOWLEDGE / "quran" / "quran.jsonl")
     return len(docs)
