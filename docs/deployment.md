@@ -137,7 +137,17 @@ settings (no rebuild, no code edit):
    ("tawheed", "namaz") are corrected before searching, shown as *Interpreted as: …*.
 
 The Space restarts and answers now open with a **Synthesized answer** section
-(the cited evidence stays below it).
+(the cited evidence stays below it). The synthesized answer is *structured*
+(direct answer → explanation → Qurʾānic evidence with full Arabic + translation →
+hadith → tafsir synthesis → practical lessons → sources) and English+Urdu.
+
+When `SYNTHESIZE=claude:…` is on, the answer is **verified by a fast semantic
+(Haiku) judge automatically** — this is what lets genuine AI synthesis
+(paraphrase/reasoning) pass, instead of being rejected by a word-overlap check
+and falling back to raw snippets. You do **not** need to set `JUDGE` yourself.
+
+To show more evidence per answer (e.g. more Qurʾānic verses), add a variable
+`K` = `12` (default 8; max 25).
 
 ### Answers in Urdu / Arabic
 Once `SYNTHESIZE=claude:…` is on, an **Answer in: English · اردو · العربية**
@@ -162,7 +172,8 @@ command):
 | `HOST` | `0.0.0.0` (in image) | Bind address |
 | `KNOWLEDGE_DIR` | `data/knowledge` | Corpus directory |
 | `EMBEDDER` | `tfidf` | `tfidf` · `hashing` · `st:BAAI/bge-m3` · a comma list |
-| `SYNTHESIZE` | `none` | `none` · `claude:<model>` — AI-written, verified answers (also enables Urdu/Arabic) |
+| `SYNTHESIZE` | `none` | `none` · `claude:<model>` — AI-written, verified answers (also enables Urdu/Arabic; auto-uses a semantic verifier) |
 | `REFINE` | `none` | `none` · `claude:<model>` — AI spelling/term correction of the query |
-| `JUDGE` | `lexical` | `lexical` · `claude:<model>` — entailment verifier |
+| `K` | `8` | evidence passages per answer (1–25) |
+| `JUDGE` | `lexical` | `lexical` · `claude:<model>` — override the verifier (auto = Haiku when synthesis is on) |
 | `DECOMPOSE` | `none` | `none` · `rule` · `claude:<model>` — split multi-part questions |

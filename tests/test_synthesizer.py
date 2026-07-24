@@ -103,6 +103,47 @@ def test_answer_rejects_unverified_synthesis():
     assert any("REJECTED" in c for c in ans.caveats)
 
 
+def test_paraphrased_synthesis_accepted_by_semantic_judge():
+    # THE fix: genuine AI synthesis paraphrases the evidence, so the lexical
+    # word-overlap judge wrongly rejects it. With a semantic (LLM) judge — modelled
+    # here as a mock that entails — the paraphrase is accepted, not withheld.
+    from shia_aalim.grounding.entailment import MockEntailmentJudge
+
+    class Paraphraser:
+        def synthesize(self, q, ev, *, language="English"):
+            # faithful synthesis, but almost no shared content words with the verse
+            return "Divine will removes impurity from the Prophet's household [1]."
+
+    r = build_index(sample_corpus())
+    # lexical judge alone would reject this (low overlap) -> withheld
+    lexical_only = AnswerGenerator(r, synthesizer=Paraphraser())
+    assert lexical_only.answer("purification of the People of the House", k=3).summary is None
+    # with a semantic judge (mock: always entails), the synthesis is kept
+    semantic = AnswerGenerator(
+        r, synthesizer=Paraphraser(),
+        cross_lingual_judge=MockEntailmentJudge(decide=lambda c, p: True),
+    )
+    assert semantic.answer("purification of the People of the House", k=3).summary is not None
+
+
+def test_evidence_block_includes_arabic_and_english():
+    from shia_aalim.generation.synthesizer import format_evidence_block
+    from shia_aalim.models import Citation, ConfidenceLevel, Document, EvidenceType
+    from shia_aalim.retrieval.retriever import RetrievalResult
+
+    doc = Document(
+        id="v", text="Your guardian is only Allah, His Apostle, and the faithful",
+        evidence_type=EvidenceType.QURAN,
+        citation=Citation(source_id="quran", evidence_type=EvidenceType.QURAN, surah=5, ayah=55,
+                          arabic_text="إِنَّمَا وَلِيُّكُمُ اللَّهُ", translation="Your guardian is only Allah…"),
+        confidence=ConfidenceLevel.HIGH,
+    )
+    block = format_evidence_block([RetrievalResult(document=doc, similarity=0.9, score=0.9)])
+    assert "ARABIC: إِنَّمَا وَلِيُّكُمُ اللَّهُ" in block
+    assert "ENGLISH:" in block
+    assert "Qur'an 5:55" in block
+
+
 def test_answer_survives_synthesizer_exception():
     class Broken:
         def synthesize(self, q, ev):

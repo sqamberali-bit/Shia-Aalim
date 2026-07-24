@@ -53,14 +53,32 @@ def load_system_prompt() -> str:
 
 
 def format_evidence_block(evidence: Sequence[RetrievalResult]) -> str:
-    """Render evidence as a numbered ``[n]`` list the model must cite against."""
+    """Render evidence as a numbered ``[n]`` list the model must cite against.
+
+    Includes the Arabic original and grade where present so the model can render
+    full Qur'anic verses (Arabic + translation) and reconcile hadith by grade —
+    without inventing anything beyond what is listed here.
+    """
     lines: list[str] = []
     for i, res in enumerate(evidence, 1):
         d = res.document
-        ref = d.citation.reference_string()
-        conf = d.confidence.value
+        c = d.citation
+        ref = c.reference_string()
         etype = d.evidence_type.value
-        lines.append(f"[{i}] ({etype} · {ref} · {conf}) {d.text.strip()}")
+        head = f"[{i}] ({etype} · {ref} · confidence={d.confidence.value}"
+        if c.grade and c.grade.value != "ungraded":
+            head += f" · grade={c.grade.value}"
+            if c.grade_source:
+                head += f" [{c.grade_source}]"
+        head += ")"
+        parts = [head]
+        if c.arabic_text:
+            parts.append(f"ARABIC: {c.arabic_text.strip()}")
+        # d.text is the English (translation for Qur'an, matn for hadith, etc.)
+        parts.append(f"ENGLISH: {d.text.strip()}")
+        if c.translation and c.translation.strip() != d.text.strip():
+            parts.append(f"TRANSLATION: {c.translation.strip()}")
+        lines.append("\n".join(parts))
     return "\n\n".join(lines)
 
 
@@ -95,7 +113,7 @@ class ClaudeSynthesizer:
         model: str = "claude-sonnet-5",
         *,
         api_key: Optional[str] = None,
-        max_tokens: int = 1024,
+        max_tokens: int = 4096,
         temperature: float = 0.2,
     ) -> None:
         try:
@@ -119,17 +137,36 @@ class ClaudeSynthesizer:
         self, question: str, evidence: list[RetrievalResult], *, language: str = "English"
     ) -> str:
         block = format_evidence_block(evidence)
-        lang_line = ""
-        if language and language.strip().lower() not in ("english", "en", ""):
+        is_english = (not language) or language.strip().lower() in ("english", "en", "")
+        if is_english:
             lang_line = (
-                f"\n\nWrite your ENTIRE answer in {language}. Keep the [n] citation markers "
-                "exactly as bracketed digits. Translate the *meaning* of the evidence "
-                "faithfully into " + language + " — never add anything the evidence does not "
-                "state, and do not omit the citations. Keep proper names recognisable."
+                "Write the explanatory prose in ENGLISH. After each English section, "
+                "add its faithful URDU rendering on a new line prefixed with 'اردو: '."
+            )
+        else:
+            lang_line = (
+                f"Write the explanatory prose in {language}. Keep proper names recognisable."
             )
         user = (
-            f"QUESTION:\n{question}\n\nEVIDENCE:\n{block}\n\n"
-            "Write a grounded, cited answer using only the evidence above." + lang_line
+            f"QUESTION:\n{question}\n\nEVIDENCE (numbered — cite ONLY these with [n]):\n{block}\n\n"
+            "Write an ORIGINAL, SYNTHESISED answer — reason across ALL the evidence together; "
+            "do NOT just quote or list passages. Structure it with these headings:\n"
+            "1. **Direct answer** — 1–3 sentences.\n"
+            "2. **Explanation** — synthesise the evidence into a coherent account.\n"
+            "3. **Qur'anic evidence** — for EACH relevant verse, show the full Arabic text "
+            "(from the evidence), then its English translation, then an Urdu translation. "
+            "Never give a bare reference without the verse and translations.\n"
+            "4. **Hadith evidence** — reconcile multiple narrations; note grade/authenticity "
+            "and practical import. Cite each.\n"
+            "5. **Tafsir synthesis** — compare the tafsir explanations present in the evidence; "
+            "do not paste raw Arabic paragraphs.\n"
+            "6. **Scholarly views** — where present.\n"
+            "7. **Practical lessons.**\n"
+            "8. **Sources** — bibliography of the exact citations used.\n\n"
+            "RULES: Every factual sentence must carry a [n] citation to the evidence above. "
+            "Do NOT add facts, verses, hadith or opinions that are not in the evidence. If the "
+            "evidence lacks something (e.g. a tafsir), say so rather than inventing it. Prefer "
+            "synthesis and reasoning over long verbatim quotes. " + lang_line
         )
         resp = self._client.messages.create(
             model=self.model,

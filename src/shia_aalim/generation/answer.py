@@ -206,10 +206,11 @@ class AnswerGenerator:
         summary = None
         caveats: list[str] = []
         if self.synthesizer is not None:
-            # A non-English answer can only be VERIFIED by a cross-lingual (Claude)
-            # judge — the lexical judge can't match Urdu prose to English evidence.
-            # Without one, we don't emit an unverifiable answer.
-            verify_judge = self.cross_lingual_judge if non_english else self.judge
+            # Verify synthesised prose with the SEMANTIC (LLM) judge whenever one is
+            # available — the lexical word-overlap judge wrongly rejects faithful
+            # AI *synthesis* (paraphrase), which is exactly what we want the model
+            # to do. The LLM judge also verifies non-English answers cross-lingually.
+            verify_judge = self.cross_lingual_judge or self.judge
             if non_english and self.cross_lingual_judge is None:
                 caveats.append(
                     f"Answer language '{lang_name}' needs an AI verifier (JUDGE=claude:…) to "

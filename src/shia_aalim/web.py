@@ -175,12 +175,17 @@ class Stack:
         self._judge = self._safe("judge", make_judge, config.judge) or make_judge("lexical")
         self._decomposer = self._safe("decomposer", make_decomposer, config.decompose)
         self._refiner = self._safe("refiner", make_refiner, config.refine)
-        # A cross-lingual (Claude) judge for verifying non-English answers. Built
-        # from the synthesizer's model when Claude synthesis is on.
+        # The judge that VERIFIES synthesised prose (semantic entailment, incl.
+        # cross-lingual). This is what stops genuine AI synthesis from being
+        # wrongly rejected by lexical word-overlap. Prefer an explicit claude
+        # JUDGE; otherwise, when Claude synthesis is on, auto-build a FAST Haiku
+        # verifier (cheaper/quicker than re-using the synthesis model).
         self._cross_lingual_judge = None
-        if config.synthesize.startswith("claude"):
-            model = config.synthesize.split(":", 1)[1] if ":" in config.synthesize else "claude-sonnet-5"
-            self._cross_lingual_judge = self._safe("verifier", make_judge, f"claude:{model}")
+        if config.judge.startswith("claude"):
+            self._cross_lingual_judge = self._judge  # explicit claude judge doubles as verifier
+        elif config.synthesize.startswith("claude"):
+            self._cross_lingual_judge = self._safe(
+                "verifier", make_judge, "claude:claude-haiku-4-5-20251001")
         self._engines: dict[str, Engine] = {}
         self._errors: dict[str, str] = {}
         self._facets: Optional[dict] = None
@@ -1815,7 +1820,8 @@ def main(argv: Optional[list[str]] = None) -> int:
                         help="none | rule | claude:<model> (env: DECOMPOSE)")
     parser.add_argument("--refine", default=os.environ.get("REFINE", "none"),
                         help="AI query correction: none | mock | claude:<model> (env: REFINE)")
-    parser.add_argument("--k", type=int, default=6, help="default evidence count per answer")
+    parser.add_argument("--k", type=int, default=int(os.environ.get("K", "8")),
+                        help="default evidence passages per answer (env: K)")
     args = parser.parse_args(argv)
 
     try:
