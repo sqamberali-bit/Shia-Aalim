@@ -747,7 +747,20 @@ INDEX_HTML = r"""<!doctype html>
     background: color-mix(in srgb, var(--panel) 88%, transparent);
     backdrop-filter: saturate(1.4) blur(8px); position: sticky; top: 0; z-index: 15;
   }
-  .brand { display: flex; align-items: center; gap: 13px; max-width: 1060px; margin: 0 auto; }
+  .hwrap { display: flex; align-items: center; gap: 14px; max-width: 1060px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 13px; flex: 1; min-width: 0; }
+  .uilang { display: inline-flex; gap: 3px; padding: 3px; background: var(--panel2); border: 1px solid var(--line); border-radius: 999px; flex: none; }
+  .ui-pill { padding: 5px 12px; border: 0; background: transparent; color: var(--muted); border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 600; }
+  .ui-pill.active { background: var(--panel); color: var(--accent); box-shadow: var(--shadow-sm); }
+  .ui-pill .native { font-family: var(--font-urdu); font-size: 15px; }
+  /* Urdu interface: right-to-left, Urdu typeface for the chrome. */
+  html[dir=rtl] body { font-family: var(--font-urdu); }
+  html[dir=rtl] .qtitle, html[dir=rtl] h1 { font-family: var(--font-urdu); }
+  html[dir=rtl] .ref, html[dir=rtl] code, html[dir=rtl] input, html[dir=rtl] .cnt,
+  html[dir=rtl] .htime, html[dir=rtl] select { direction: ltr; }
+  html[dir=rtl] .badges, html[dir=rtl] .frow, html[dir=rtl] .row { direction: rtl; }
+  html[dir=rtl] .ev .txt:not(.ar) { text-align: right; }
+  html[dir=rtl] input[type=text] { text-align: right; }
   .brand .mark {
     width: 40px; height: 40px; border-radius: 11px; flex: none; display: grid; place-items: center;
     font-size: 21px; color: #fff; background: linear-gradient(150deg, var(--accent), var(--accent2));
@@ -946,37 +959,43 @@ INDEX_HTML = r"""<!doctype html>
 </head>
 <body>
 <header>
-  <div class="brand">
-    <div class="mark">☾</div>
-    <div>
-      <h1>Shia-Aalim <span class="ar">شیعہ عالِم</span></h1>
-      <div class="tag">Evidence-first Twelver (Ithnā ʿAsharī) research &amp; lecture assistant · <b>No citation = not a fact.</b></div>
+  <div class="hwrap">
+    <div class="brand">
+      <div class="mark">☾</div>
+      <div>
+        <h1>Shia-Aalim <span class="ar">شیعہ عالِم</span></h1>
+        <div class="tag" data-i18n="tagline">Evidence-first Twelver (Ithnā ʿAsharī) research &amp; lecture assistant · <b>No citation = not a fact.</b></div>
+      </div>
+    </div>
+    <div class="uilang" title="Interface language">
+      <button class="ui-pill active" data-uilang="en" onclick="applyUiLang('en')">EN</button>
+      <button class="ui-pill" data-uilang="ur" onclick="applyUiLang('ur')"><span class="native">اردو</span></button>
     </div>
   </div>
 </header>
 <main>
   <div class="tabs">
-    <div class="tab active" data-tab="ask" onclick="switchTab('ask')">Ask a question</div>
-    <div class="tab" data-tab="lecture" onclick="switchTab('lecture')">Prepare a lecture</div>
-    <div class="tab" data-tab="compare" onclick="switchTab('compare')">Compare sources</div>
-    <div class="tab" data-tab="rijal" onclick="switchTab('rijal')">Narrators</div>
-    <div class="tab" data-tab="history" onclick="switchTab('history')">History</div>
+    <div class="tab active" data-tab="ask" data-i18n="tab_ask" onclick="switchTab('ask')">Ask a question</div>
+    <div class="tab" data-tab="lecture" data-i18n="tab_lecture" onclick="switchTab('lecture')">Prepare a lecture</div>
+    <div class="tab" data-tab="compare" data-i18n="tab_compare" onclick="switchTab('compare')">Compare sources</div>
+    <div class="tab" data-tab="rijal" data-i18n="tab_rijal" onclick="switchTab('rijal')">Narrators</div>
+    <div class="tab" data-tab="history" data-i18n="tab_history" onclick="switchTab('history')">History</div>
   </div>
 
   <div class="idxrow">
-    <label for="embedder">Retrieval index</label>
+    <label for="embedder" data-i18n="retrieval_index">Retrieval index</label>
     <select id="embedder" disabled onchange="onEmbedderChange()"><option>loading…</option></select>
     <span class="idxnote" id="idxnote"></span>
   </div>
 
   <section id="pane-ask">
     <div class="row">
-      <input type="text" id="q" placeholder="e.g. What does the Qur'an say about justice?" onkeydown="if(event.key==='Enter')ask()">
-      <label class="fld">evidence<input type="number" id="k" value="6" min="1" max="25"></label>
-      <button class="go" id="askBtn" onclick="ask()">Ask</button>
+      <input type="text" id="q" data-i18n-ph="ask_ph" placeholder="e.g. What does the Qur'an say about justice?" onkeydown="if(event.key==='Enter')ask()">
+      <label class="fld"><span data-i18n="evidence">evidence</span><input type="number" id="k" value="6" min="1" max="25"></label>
+      <button class="go" id="askBtn" data-i18n="ask_btn" onclick="ask()">Ask</button>
     </div>
     <details class="filters" id="askFilters">
-      <summary>Filters <span class="active-count" id="askFilterCount"></span></summary>
+      <summary><span data-i18n="filters">Filters</span> <span class="active-count" id="askFilterCount"></span></summary>
       <div class="fgrid">
         <div class="fcol">
           <div class="flabel">Evidence type</div>
@@ -997,13 +1016,13 @@ INDEX_HTML = r"""<!doctype html>
         <input type="text" class="srcsearch" placeholder="filter this list…" oninput="filterSrcList('ask', this.value)">
         <div class="checks srclist" id="askSources"></div>
         <div class="frow">
-          <button class="fmini" type="button" onclick="setAllSrc('ask', true)">Select all</button>
-          <button class="fmini" type="button" onclick="setAllSrc('ask', false)">Clear</button>
+          <button class="fmini" type="button" onclick="setAllSrc('ask', true)" data-i18n="select_all">Select all</button>
+          <button class="fmini" type="button" onclick="setAllSrc('ask', false)" data-i18n="clear">Clear</button>
         </div>
       </div>
     </details>
     <div class="langsel" id="langSel" style="display:none">
-      <span class="lbl">Answer in</span>
+      <span class="lbl" data-i18n="answer_in">Answer in</span>
       <div class="lang-pills">
         <button class="lang-pill active" data-lang="en" onclick="setAnswerLang('en')">English</button>
         <button class="lang-pill" data-lang="ur" onclick="setAnswerLang('ur')"><span class="native">اردو</span> Urdu</button>
@@ -1011,81 +1030,81 @@ INDEX_HTML = r"""<!doctype html>
       </div>
       <span class="idxnote" id="langNote"></span>
     </div>
-    <div class="hint">Every answer is grounded in retrieved, cited passages. Weak or disputed evidence is flagged, never hidden.</div>
+    <div class="hint" data-i18n="ask_hint">Every answer is grounded in retrieved, cited passages. Weak or disputed evidence is flagged, never hidden.</div>
     <div class="toolbar hidden" id="askTools">
-      <button class="mini" onclick="copyMd('ask')">⧉ Copy Markdown</button>
-      <button class="mini" onclick="downloadMd('ask')">⭳ Download .md</button>
+      <button class="mini" data-i18n="copy_md" onclick="copyMd('ask')">⧉ Copy Markdown</button>
+      <button class="mini" data-i18n="download_md" onclick="downloadMd('ask')">⭳ Download .md</button>
     </div>
     <div class="result" id="askResult"></div>
   </section>
 
   <section id="pane-lecture" style="display:none">
     <div class="row">
-      <input type="text" id="topic" placeholder="e.g. The patience (ṣabr) of Imam Husayn (a)" onkeydown="if(event.key==='Enter')lecture()">
-      <label class="fld">depth<input type="number" id="depth" value="4" min="1" max="10"></label>
-      <button class="go" id="lecBtn" onclick="lecture()">Build outline</button>
+      <input type="text" id="topic" data-i18n-ph="lecture_ph" placeholder="e.g. The patience (ṣabr) of Imam Husayn (a)" onkeydown="if(event.key==='Enter')lecture()">
+      <label class="fld"><span data-i18n="depth">depth</span><input type="number" id="depth" value="4" min="1" max="10"></label>
+      <button class="go" id="lecBtn" data-i18n="build_outline" onclick="lecture()">Build outline</button>
     </div>
     <details class="filters" id="lecFilters">
-      <summary>Restrict to sources <span class="active-count" id="lecFilterCount"></span></summary>
+      <summary><span data-i18n="restrict_sources">Restrict to sources</span> <span class="active-count" id="lecFilterCount"></span></summary>
       <input type="text" class="srcsearch" placeholder="filter this list…" oninput="filterSrcList('lec', this.value)">
       <div class="checks srclist" id="lecSources"></div>
       <div class="frow">
-        <button class="fmini" type="button" onclick="setAllSrc('lec', true)">Select all</button>
-        <button class="fmini" type="button" onclick="setAllSrc('lec', false)">Clear</button>
+        <button class="fmini" type="button" onclick="setAllSrc('lec', true)" data-i18n="select_all">Select all</button>
+        <button class="fmini" type="button" onclick="setAllSrc('lec', false)" data-i18n="clear">Clear</button>
       </div>
     </details>
-    <div class="hint">Builds the 11-section majlis/khutbah framework. Evidence sections are filled from cited passages; narrative sections are LLM-written only when a synthesizer is enabled and the prose verifies against the evidence.</div>
+    <div class="hint" data-i18n="lecture_hint">Builds the 11-section majlis/khutbah framework. Evidence sections are filled from cited passages; narrative sections are LLM-written only when a synthesizer is enabled and the prose verifies against the evidence.</div>
     <div class="toolbar hidden" id="lecTools">
-      <button class="mini" onclick="copyMd('lec')">⧉ Copy Markdown</button>
-      <button class="mini" onclick="downloadMd('lec')">⭳ Download .md</button>
+      <button class="mini" data-i18n="copy_md" onclick="copyMd('lec')">⧉ Copy Markdown</button>
+      <button class="mini" data-i18n="download_md" onclick="downloadMd('lec')">⭳ Download .md</button>
     </div>
     <div class="result" id="lecResult"></div>
   </section>
 
   <section id="pane-compare" style="display:none">
     <div class="row">
-      <input type="text" id="cq" placeholder="e.g. the status of the Ahl al-Bayt (a)" onkeydown="if(event.key==='Enter')compare()">
-      <label class="fld">per book<input type="number" id="ck" value="4" min="1" max="15"></label>
-      <button class="go" id="cmpBtn" onclick="compare()">Compare</button>
+      <input type="text" id="cq" data-i18n-ph="compare_ph" placeholder="e.g. the status of the Ahl al-Bayt (a)" onkeydown="if(event.key==='Enter')compare()">
+      <label class="fld"><span data-i18n="per_book">per book</span><input type="number" id="ck" value="4" min="1" max="15"></label>
+      <button class="go" id="cmpBtn" data-i18n="compare_btn" onclick="compare()">Compare</button>
     </div>
     <div class="fcol" style="margin:10px 0">
       <div class="flabel">Books to compare <span class="active-count" id="cmpFilterCount"></span> <span class="idxnote">pick 2+ (up to 6)</span></div>
       <input type="text" class="srcsearch" placeholder="filter this list…" oninput="filterSrcList('cmp', this.value)">
       <div class="checks srclist" id="cmpSources"></div>
       <div class="frow">
-        <button class="fmini" type="button" onclick="setAllSrc('cmp', true)">Select all</button>
-        <button class="fmini" type="button" onclick="setAllSrc('cmp', false)">Clear</button>
+        <button class="fmini" type="button" onclick="setAllSrc('cmp', true)" data-i18n="select_all">Select all</button>
+        <button class="fmini" type="button" onclick="setAllSrc('cmp', false)" data-i18n="clear">Clear</button>
       </div>
     </div>
-    <div class="hint">Runs the same question separately against each selected book and lines the answers up side by side — so you can see which books actually speak to it, and how.</div>
+    <div class="hint" data-i18n="compare_hint">Runs the same question separately against each selected book and lines the answers up side by side — so you can see which books actually speak to it, and how.</div>
     <div class="toolbar hidden" id="cmpTools">
-      <button class="mini" onclick="copyMd('cmp')">⧉ Copy Markdown</button>
-      <button class="mini" onclick="downloadMd('cmp')">⭳ Download .md</button>
+      <button class="mini" data-i18n="copy_md" onclick="copyMd('cmp')">⧉ Copy Markdown</button>
+      <button class="mini" data-i18n="download_md" onclick="downloadMd('cmp')">⭳ Download .md</button>
     </div>
     <div class="result" id="cmpResult"></div>
   </section>
 
   <section id="pane-rijal" style="display:none">
     <div class="row">
-      <input type="text" id="rq" placeholder="look up a narrator, e.g. Yunus Bin Abdul Rahman" onkeydown="if(event.key==='Enter')lookupNarrator()">
-      <button class="go" id="rqBtn" onclick="lookupNarrator()">Look up</button>
+      <input type="text" id="rq" data-i18n-ph="rijal_ph" placeholder="look up a narrator, e.g. Yunus Bin Abdul Rahman" onkeydown="if(event.key==='Enter')lookupNarrator()">
+      <button class="go" id="rqBtn" data-i18n="lookup_btn" onclick="lookupNarrator()">Look up</button>
     </div>
-    <div class="hint">Reads each narration's chain (isnad) <b>as it appears in the text</b> and surfaces the <b>attributed</b> gradings — a research aid, not a rijāl verdict. The system never grades a narrator or narration itself.</div>
+    <div class="hint" data-i18n="rijal_hint">Reads each narration's chain (isnad) <b>as it appears in the text</b> and surfaces the <b>attributed</b> gradings — a research aid, not a rijāl verdict. The system never grades a narrator or narration itself.</div>
     <div id="rijalSummary" style="margin-top:14px"></div>
     <div class="result" id="rijalResult"></div>
   </section>
 
   <section id="pane-history" style="display:none">
     <div class="frow" style="justify-content:space-between; align-items:flex-start">
-      <div class="hint" style="margin:0">Your recent answers, lectures and comparisons — kept in this browser only. Click <b>Open</b> to revisit one instantly (no re-query).</div>
-      <button class="fmini" onclick="clearHistory()">Clear all</button>
+      <div class="hint" style="margin:0" data-i18n="history_hint">Your recent answers, lectures and comparisons — kept in this browser only. Click <b>Open</b> to revisit one instantly (no re-query).</div>
+      <button class="fmini" data-i18n="clear_all" onclick="clearHistory()">Clear all</button>
     </div>
     <div id="historyList" style="margin-top:16px"></div>
   </section>
 
   <div class="status" id="status">Loading corpus status…</div>
 </main>
-<footer>Shia-Aalim · answers are aids to research, not a substitute for a qualified scholar (marjaʿ). Verify every citation against the primary source.</footer>
+<footer data-i18n="footer">Shia-Aalim · answers are aids to research, not a substitute for a qualified scholar (marjaʿ). Verify every citation against the primary source.</footer>
 
 <div id="drawerOverlay" onclick="closeDrawer()"></div>
 <aside id="drawer" aria-hidden="true">
@@ -1099,6 +1118,66 @@ INDEX_HTML = r"""<!doctype html>
 <script>
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function isArabic(s){ return /[؀-ۿ]/.test(s||''); }
+
+// ---- Urdu interface (i18n) ------------------------------------------------
+var UR = {
+  tagline: 'شواہد پر مبنی اثنا عشری شیعہ تحقیق و تقریر کا معاون · <b>بغیر حوالہ کوئی بات حقیقت نہیں۔</b>',
+  tab_ask: 'سوال پوچھیں', tab_lecture: 'تقریر تیار کریں', tab_compare: 'مآخذ کا موازنہ',
+  tab_rijal: 'راوی / رجال', tab_history: 'سابقہ',
+  retrieval_index: 'تلاش کا اشاریہ',
+  ask_ph: 'مثلاً: قرآن عدل کے بارے میں کیا کہتا ہے؟',
+  evidence: 'شواہد', ask_btn: 'پوچھیں', answer_in: 'جواب کی زبان',
+  ask_hint: 'ہر جواب حوالہ شدہ، مستند اقتباسات پر مبنی ہوتا ہے۔ کمزور یا مختلف فیہ شواہد کی نشاندہی کی جاتی ہے، چھپائے نہیں جاتے۔',
+  copy_md: '⧉ مارک ڈاؤن کاپی کریں', download_md: '⭳ ڈاؤن لوڈ (.md)',
+  lecture_ph: 'مثلاً: امام حسینؑ کا صبر', depth: 'گہرائی', build_outline: 'خاکہ بنائیں',
+  lecture_hint: 'گیارہ حصوں پر مشتمل مجلس/خطبہ کا خاکہ بناتا ہے۔ شواہد والے حصے مستند اقتباسات سے بھرے جاتے ہیں؛ بیانیہ حصے صرف تصدیق کے بعد AI لکھتا ہے۔',
+  compare_ph: 'مثلاً: اہلِ بیتؑ کا مقام', per_book: 'فی کتاب', compare_btn: 'موازنہ',
+  compare_hint: 'ایک ہی سوال کو منتخب کتب پر الگ الگ چلاتا ہے اور جوابات کو ساتھ ساتھ دکھاتا ہے۔',
+  rijal_ph: 'کسی راوی کو تلاش کریں، مثلاً: یونس بن عبد الرحمٰن', lookup_btn: 'تلاش کریں',
+  rijal_hint: 'ہر روایت کی سند کو <b>جیسا کہ متن میں موجود ہے</b> پڑھتا ہے اور <b>منسوب</b> درجات ظاہر کرتا ہے — یہ تحقیقی معاون ہے، رجالی فیصلہ نہیں۔ نظام خود کسی راوی یا روایت کو درجہ نہیں دیتا۔',
+  history_hint: 'آپ کے حالیہ جوابات، تقاریر اور موازنے — صرف اِس براؤزر میں محفوظ۔ فوری دیکھنے کے لیے <b>کھولیں</b> پر کلک کریں۔',
+  clear_all: 'سب صاف کریں',
+  query_lang: 'سوال کی زبان', caveats: 'انتباہات',
+  filters: 'فلٹرز', restrict_sources: 'مآخذ محدود کریں', select_all: 'سب منتخب کریں', clear: 'صاف کریں',
+  footer: 'شیعہ عالِم · جوابات تحقیق میں معاون ہیں، کسی مستند عالم (مرجع) کا نعم البدل نہیں۔ ہر حوالے کی اصل مأخذ سے تصدیق کریں۔',
+  // dynamic labels used by the JS
+  searching: 'تلاش جاری ہے…', building_outline: 'خاکہ تیار ہو رہا ہے…', comparing: 'موازنہ جاری ہے…',
+  evidence_head: 'شواہد', click_passage: 'مکمل متن اور مأخذ کے لیے کسی اقتباس پر کلک کریں',
+  details: 'تفصیل ›', open: 'کھولیں', del: 'حذف',
+};
+var uiLang = 'en', _origHTML = {}, _origPh = {};
+// English defaults for labels generated in JS (not present in the static DOM).
+var EN_DYN = {
+  searching: 'Searching the corpus…', building_outline: 'Building the outline…', comparing: 'Comparing…',
+  evidence_head: 'Evidence', click_passage: 'click a passage for full text & source details',
+  details: 'details ›', open: 'Open', del: 'Delete', query_lang: 'Query language', caveats: 'Caveats',
+};
+function t(k){
+  if(uiLang==='ur' && UR[k]!==undefined) return UR[k];
+  if(_origHTML[k]!==undefined) return _origHTML[k];
+  if(EN_DYN[k]!==undefined) return EN_DYN[k];
+  return k;
+}
+function captureOrig(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){ _origHTML[el.getAttribute('data-i18n')] = el.innerHTML; });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ _origPh[el.getAttribute('data-i18n-ph')] = el.getAttribute('placeholder'); });
+}
+function applyUiLang(l){
+  uiLang = (l==='ur') ? 'ur' : 'en';
+  try { localStorage.setItem('shia-ui-lang', uiLang); } catch(e){}
+  document.documentElement.setAttribute('dir', uiLang==='ur' ? 'rtl' : 'ltr');
+  document.documentElement.setAttribute('lang', uiLang);
+  document.querySelectorAll('.ui-pill').forEach(function(p){ p.classList.toggle('active', p.dataset.uilang===uiLang); });
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    el.innerHTML = (uiLang==='ur' && UR[k]!==undefined) ? UR[k] : (_origHTML[k]!==undefined ? _origHTML[k] : el.innerHTML);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+    var k = el.getAttribute('data-i18n-ph');
+    var v = (uiLang==='ur' && UR[k]!==undefined) ? UR[k] : _origPh[k];
+    if(v !== undefined) el.setAttribute('placeholder', v);
+  });
+}
 
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===name));
@@ -1162,7 +1241,7 @@ function evidenceBlock(d){
   return '<div class="ev clickable" data-d="'+id+'" onclick="openDrawer(drawerReg[this.dataset.d])" '+
     'title="View full passage &amp; source details"><p class="'+cls+'">'+esc(txt)+'</p>'+trans+
     '<div class="badges">'+badge(type,'t',type.replace(/_/g,' '))+badge(conf,'b',conf)+
-    '<span class="ref">'+esc(d.reference || '')+'<span class="more">details ›</span></span></div></div>';
+    '<span class="ref">'+esc(d.reference || '')+'<span class="more">'+t('details')+'</span></span></div></div>';
 }
 
 function locatorRows(cit){
@@ -1396,8 +1475,8 @@ function renderHistory(){
     return '<div class="hitem"><div class="hmeta">'+
       '<span class="htype ht-'+h.type+'">'+esc(HTYPE[h.type]||h.type)+'</span>'+
       '<span class="hlabel">'+esc(h.label)+'</span><span class="htime">'+esc(fmtTime(h.ts))+'</span></div>'+
-      '<div class="hact"><button class="fmini" onclick="restoreHistory(\''+h.id+'\')">Open</button>'+
-      '<button class="fmini" onclick="deleteHistory(\''+h.id+'\')">Delete</button></div></div>';
+      '<div class="hact"><button class="fmini" onclick="restoreHistory(\''+h.id+'\')">'+t('open')+'</button>'+
+      '<button class="fmini" onclick="deleteHistory(\''+h.id+'\')">'+t('del')+'</button></div></div>';
   }).join('');
 }
 function restoreHistory(id){
@@ -1506,7 +1585,7 @@ async function ask(){
   var k = document.getElementById('k').value;
   var box = document.getElementById('askResult');
   var btn = document.getElementById('askBtn');
-  btn.disabled = true; hideTools('ask'); box.innerHTML = spinner('Searching the corpus…');
+  btn.disabled = true; hideTools('ask'); box.innerHTML = spinner(t('searching'));
   try {
     var res = await fetch('/api/answer', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
       question:q, k:Number(k), embedder:selectedEmbedder(),
@@ -1537,7 +1616,7 @@ function renderAnswer(box, a){
   if(a.refined_query)
     h += '<p class="subq">Interpreted as: <b>'+esc(a.refined_query)+'</b></p>';
   if(a.query_language && a.query_language !== 'en' && a.query_language !== 'unknown')
-    h += '<p class="subq">Query language: <b>'+esc(LANG_NAME[a.query_language] || a.query_language)+'</b></p>';
+    h += '<p class="subq">'+t('query_lang')+': <b>'+esc(LANG_NAME[a.query_language] || a.query_language)+'</b></p>';
   if(a.sub_questions && a.sub_questions.length)
     h += '<p class="subq">Decomposed into: '+a.sub_questions.map(esc).join(' · ')+'</p>';
   if(a.summary){
@@ -1549,11 +1628,11 @@ function renderAnswer(box, a){
   if(!a.claims || !a.claims.length){
     h += '<div class="empty">No sufficiently-relevant evidence was found in the knowledge base for this question.</div>';
   } else {
-    h += '<div class="evhead">Evidence ('+a.claims.length+') · <span class="idxnote">click a passage for full text &amp; source details</span></div>';
+    h += '<div class="evhead">'+t('evidence_head')+' ('+a.claims.length+') · <span class="idxnote">'+t('click_passage')+'</span></div>';
     h += a.claims.map(c => evidenceBlock(detailFromClaim(c))).join('');
   }
   if(a.caveats && a.caveats.length)
-    h += '<div class="caveats"><div class="lbl">Caveats</div><ul>'+a.caveats.map(c=>'<li>'+esc(c)+'</li>').join('')+'</ul></div>';
+    h += '<div class="caveats"><div class="lbl">'+t('caveats')+'</div><ul>'+a.caveats.map(c=>'<li>'+esc(c)+'</li>').join('')+'</ul></div>';
   box.innerHTML = h;
 }
 
@@ -1563,7 +1642,7 @@ async function lecture(){
   var depth = document.getElementById('depth').value;
   var box = document.getElementById('lecResult');
   var btn = document.getElementById('lecBtn');
-  btn.disabled = true; hideTools('lec'); box.innerHTML = spinner('Building the outline…');
+  btn.disabled = true; hideTools('lec'); box.innerHTML = spinner(t('building_outline'));
   try {
     var res = await fetch('/api/lecture', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
       topic:t, depth:Number(depth), embedder:selectedEmbedder(), source_ids: selectedSources('lec')
@@ -1587,7 +1666,7 @@ async function compare(){
   var k = document.getElementById('ck').value;
   var btn = document.getElementById('cmpBtn');
   btn.disabled = true; hideTools('cmp');
-  box.innerHTML = spinner('Comparing across '+sources.length+' book'+(sources.length>1?'s':'')+'…');
+  box.innerHTML = spinner(t('comparing'));
   try {
     var res = await fetch('/api/compare', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
       question:q, sources:sources, k:Number(k), embedder:selectedEmbedder()
@@ -1695,6 +1774,8 @@ function refreshStatus(){
     .catch(()=>{ document.getElementById('status').textContent = ''; });
 }
 
+captureOrig();
+try { applyUiLang(localStorage.getItem('shia-ui-lang') || 'en'); } catch(e) { applyUiLang('en'); }
 refreshStatus();
 loadFacets();
 renderHistory();
