@@ -15,10 +15,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY . /app
 
-# Install the app with the web + llm extras. anthropic is a small, pure-Python
-# dependency, so Claude synthesis is available whenever ANTHROPIC_API_KEY and
-# SYNTHESIZE=claude:<model> are set at runtime (no rebuild needed to switch on).
-RUN pip install --no-cache-dir -e ".[web,llm]"
+# Install the app with the web + llm + mcp extras. anthropic is a small,
+# pure-Python dependency, so Claude synthesis is available whenever
+# ANTHROPIC_API_KEY and SYNTHESIZE=claude:<model> are set at runtime (no rebuild
+# needed to switch on). The mcp extra lets this same process also expose a remote
+# MCP endpoint at /mcp (see ENABLE_MCP below) so Claude can connect by URL.
+RUN pip install --no-cache-dir -e ".[web,llm,mcp]"
 
 # Corpus scope: "public" (~60k docs, default, fits small hosts) or "full"
 # (~122k docs incl. Biḥār 101 vols + al-Mīzān 40 vols; needs ~2–4 GB RAM).
@@ -51,10 +53,20 @@ RUN if [ -n "$SEMANTIC" ]; then \
 
 # HOST/PORT/EMBEDDER are read by the app from the environment. PaaS platforms
 # that inject their own $PORT (Render, Cloud Run) override this automatically.
+#
+# Remote MCP: ENABLE_MCP=1 mounts an MCP endpoint at /mcp in this same process,
+# sharing the one loaded corpus, so Claude (claude.ai Custom Connector / Claude
+# Desktop remote MCP) can connect by URL — e.g. https://<space>.hf.space/mcp.
+# MCP_ALLOWED_HOSTS=* turns off the localhost-only Host check (needed behind a
+# public domain). For a private endpoint, set MCP_BEARER_TOKEN=<secret> so
+# callers must send `Authorization: Bearer <secret>`. Set ENABLE_MCP=0 to serve
+# the web UI only.
 ENV HOST=0.0.0.0 \
     PORT=7860 \
     EMBEDDER=tfidf \
     K=15 \
+    ENABLE_MCP=1 \
+    MCP_ALLOWED_HOSTS=* \
     PYTHONUNBUFFERED=1
 EXPOSE 7860
 

@@ -48,28 +48,56 @@ Best if you can run the repo + corpus on the same machine as Claude Desktop.
 
 ---
 
-## Route B — Remote (host it; connect by URL)
+## Route B — Remote (host it once; connect by URL)
 
-Best if you can't run it locally. Run the server on a host and connect Claude to
-its URL (claude.ai **Custom Connector**, or Claude Desktop remote MCP).
+Best if you can't run it locally. Host the server and connect Claude to its URL
+(claude.ai **Custom Connector**, or Claude Desktop remote MCP).
 
-Run it with an HTTP transport (bind to the platform's port):
+### B1 — Mounted in the web app (recommended: one Space, one corpus load)
+
+The web-app container can serve **both** the web UI *and* the MCP endpoint from
+a single process, so the ~122k-doc corpus loads once. The Dockerfile enables
+this by default:
+
+```dockerfile
+ENV ENABLE_MCP=1 \
+    MCP_ALLOWED_HOSTS=*     # allow the public Space domain through the Host check
+```
+
+Deploy the image as usual (see `docs/deploy-huggingface-stepbystep.md`). The MCP
+endpoint is then live at **`https://<your-space>.hf.space/mcp`** alongside the UI
+at `/`.
+
+Controls (Space → Settings → Variables/Secrets):
+
+| Env var | Effect |
+| --- | --- |
+| `ENABLE_MCP=1` | Mount `/mcp` in the web process (set `0` for UI-only). |
+| `MCP_ALLOWED_HOSTS=*` | Turn off the localhost-only Host check (required behind a public domain). Or list exact hosts, e.g. `my-space.hf.space`. |
+| `MCP_BEARER_TOKEN=<secret>` | Require `Authorization: Bearer <secret>` on `/mcp` (leave unset for an open endpoint). The web UI is never behind this gate. |
+
+### B2 — Standalone MCP process
+
+If you prefer a dedicated service (no web UI), run the server directly:
 
 ```bash
 pip install -e ".[mcp]"
-HOST=0.0.0.0 PORT=8000 python -m shia_aalim.mcp_server --transport streamable-http
+HOST=0.0.0.0 PORT=8000 MCP_ALLOWED_HOSTS=* \
+  python -m shia_aalim.mcp_server --transport streamable-http
 ```
 
-- On a host that bakes the corpus into the image (like the web-app Dockerfile),
-  run the same image with this command instead of the web server, or deploy a
-  second service. The endpoint is served at `/<mcp>` per the MCP HTTP spec
-  (`http://<host>:<port>/mcp`).
-- In **claude.ai → Settings → Connectors → Add custom connector**, give the
-  server's public HTTPS URL. (Remote connectors need HTTPS; some setups also
-  require the server to implement OAuth — for private use, Claude Desktop's
-  developer/remote-MCP option is the lighter path.)
+The endpoint is served at `/mcp` per the MCP HTTP spec
+(`http://<host>:<port>/mcp`). `sse` is also supported (`--transport sse`).
 
-`sse` is also supported (`--transport sse`) for clients that prefer it.
+### Connecting Claude
+
+- In **claude.ai → Settings → Connectors → Add custom connector**, give the
+  server's public HTTPS URL ending in `/mcp`. If you set `MCP_BEARER_TOKEN`, add
+  the `Authorization: Bearer <secret>` header where the connector dialog allows
+  it. (Remote connectors need HTTPS; some claude.ai setups also require the
+  server to implement OAuth — if yours does, Claude Desktop's remote-MCP option
+  is the lighter path.)
+- In **Claude Desktop** you can add the same URL as a remote MCP server.
 
 ---
 

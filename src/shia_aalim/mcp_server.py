@@ -68,6 +68,34 @@ def _render(results: list[RetrievalResult], *, max_chars: int = 1200) -> str:
     return "\n\n".join(blocks)
 
 
+def _transport_security():
+    """DNS-rebinding / Host-header policy for the HTTP transports.
+
+    A hosted MCP endpoint sits behind an unpredictable public domain (e.g. an HF
+    Space URL), which the default localhost-only allowlist would reject with 421.
+    Configure it via env:
+
+      * ``MCP_ALLOWED_HOSTS``   — comma-separated Host values to allow
+        (e.g. ``my-space.hf.space``). ``*`` disables Host/Origin checks entirely
+        (rely on ``MCP_BEARER_TOKEN`` + HTTPS instead).
+      * ``MCP_ALLOWED_ORIGINS`` — comma-separated allowed Origins (optional).
+
+    With nothing set, the library default (localhost only) stands — correct for
+    local stdio/desktop use.
+    """
+    try:
+        from mcp.server.transport_security import TransportSecuritySettings
+    except ImportError:  # pragma: no cover - optional extra
+        return None
+    hosts = [h.strip() for h in os.environ.get("MCP_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    origins = [o.strip() for o in os.environ.get("MCP_ALLOWED_ORIGINS", "").split(",") if o.strip()]
+    if not hosts and not origins:
+        return None
+    if "*" in hosts or "*" in origins:
+        return TransportSecuritySettings(enable_dns_rebinding_protection=False)
+    return TransportSecuritySettings(allowed_hosts=hosts or ["*"], allowed_origins=origins or ["*"])
+
+
 def _types(evidence_types: Optional[list[str]]) -> Optional[list[EvidenceType]]:
     if not evidence_types:
         return None
@@ -90,15 +118,20 @@ _INSTRUCTIONS = (
 )
 
 
-def create_mcp(config: Optional[web.AppConfig] = None):
-    """Build the FastMCP server with the corpus loaded and tools registered."""
+def create_mcp(config: Optional[web.AppConfig] = None, *, stack: Optional[web.Stack] = None):
+    """Build the FastMCP server with the corpus loaded and tools registered.
+
+    ``stack`` lets a caller pass an already-built :class:`shia_aalim.web.Stack`
+    (e.g. the web app's) so the corpus + index load once and are shared by both
+    the web UI and the MCP endpoint. Otherwise it is built from ``config``.
+    """
     try:
         from mcp.server.fastmcp import FastMCP
     except ImportError as exc:  # pragma: no cover - optional extra
         raise ImportError(_MCP_HINT) from exc
 
-    config = config or web.AppConfig()
-    stack = web.build_stack(config)
+    config = config or (stack.config if stack else web.AppConfig())
+    stack = stack or web.build_stack(config)
     retriever = stack.engine().answers.retriever
 
     mcp = FastMCP(
@@ -106,6 +139,7 @@ def create_mcp(config: Optional[web.AppConfig] = None):
         instructions=_INSTRUCTIONS,
         host=os.environ.get("HOST", "127.0.0.1"),
         port=int(os.environ.get("PORT", "8000")),
+        transport_security=_transport_security(),
     )
 
     @mcp.tool()
@@ -198,6 +232,61 @@ def create_mcp(config: Optional[web.AppConfig] = None):
         return "\n".join(lines)
 
     return mcp
+
+
+def build_http_app(
+    config: Optional[web.AppConfig] = None,
+    *,
+    stack: Optional[web.Stack] = None,
+    bearer_token: Optional[str] = None,
+):
+    """Return ``(mcp, asgi_app)`` for the streamable-HTTP MCP endpoint.
+
+    The returned ASGI app serves the MCP endpoint at ``mcp.settings.streamable_http_path``
+    (``/mcp`` by default). Mount it into another ASGI app (e.g. the FastAPI web
+    app) so one process serves both the web UI and a remote MCP endpoint from a
+    single loaded corpus. The caller MUST run ``mcp.session_manager.run()`` for
+    the app's lifetime — use :func:`session_lifespan` for that.
+
+    If ``bearer_token`` is given, requests must send
+    ``Authorization: Bearer <token>``; anything else gets 401. This is a light
+    guard for a private remote endpoint, not a full OAuth flow.
+    """
+    mcp = create_mcp(config, stack=stack)
+    app = mcp.streamable_http_app()
+    if bearer_token:
+        _require_bearer(app, bearer_token)
+    return mcp, app
+
+
+def _require_bearer(app, token: str) -> None:
+    """Add a tiny bearer-token gate to a Starlette app (private remote use)."""
+    from starlette.middleware.base import BaseHTTPMiddleware
+    from starlette.responses import JSONResponse
+
+    expected = f"Bearer {token}"
+
+    class _BearerAuth(BaseHTTPMiddleware):
+        async def dispatch(self, request, call_next):
+            if request.headers.get("authorization") != expected:
+                return JSONResponse({"error": "unauthorized"}, status_code=401)
+            return await call_next(request)
+
+    app.add_middleware(_BearerAuth)
+
+
+def session_lifespan(mcp):
+    """An async context manager that runs the FastMCP session manager.
+
+    Wire it into the host app's lifespan so mounted streamable-HTTP sessions
+    work::
+
+        @asynccontextmanager
+        async def lifespan(app):
+            async with session_lifespan(mcp):
+                yield
+    """
+    return mcp.session_manager.run()
 
 
 def main(argv: Optional[list[str]] = None) -> int:

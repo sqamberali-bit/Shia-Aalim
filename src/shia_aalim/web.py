@@ -456,11 +456,29 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
 
     stack = stack or build_stack(config)
 
+    # Optionally expose a remote MCP endpoint at /mcp from this same process, so
+    # one Space serves the web UI *and* lets Claude connect by URL — sharing the
+    # single loaded corpus. Gated on ENABLE_MCP; the mcp extra must be installed.
+    mcp_ctx = _maybe_build_mcp(stack)
+    app_kwargs: dict = {}
+    if mcp_ctx is not None:
+        from contextlib import asynccontextmanager
+
+        _mcp, _mcp_app, _lifespan_cm = mcp_ctx
+
+        @asynccontextmanager
+        async def lifespan(_app):
+            async with _lifespan_cm:
+                yield
+
+        app_kwargs["lifespan"] = lifespan
+
     app = FastAPI(
         title="Shia-Aalim",
         description="Evidence-first Twelver Shia research & lecture assistant. "
         "No citation = not a fact.",
         version="0.1.0",
+        **app_kwargs,
     )
     app.state.stack = stack
 
@@ -635,7 +653,34 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
             "narrations": narrations,
         }
 
+    if mcp_ctx is not None:
+        # Mounted at "/" so the endpoint lands at the MCP path (default /mcp),
+        # sharing this app's already-loaded corpus.
+        app.mount("/", _mcp_app)
+
     return app
+
+
+def _maybe_build_mcp(stack: "Stack"):
+    """Build the mountable MCP app when ENABLE_MCP is set, else return None.
+
+    Returns ``(mcp, asgi_app, lifespan_cm)`` or ``None``. Failures (missing
+    extra, etc.) are logged and treated as "MCP off" — they never break the web
+    app.
+    """
+    if os.environ.get("ENABLE_MCP", "").strip().lower() not in ("1", "true", "yes", "on"):
+        return None
+    try:
+        from . import mcp_server
+        token = os.environ.get("MCP_BEARER_TOKEN") or None
+        mcp, mcp_app = mcp_server.build_http_app(stack=stack, bearer_token=token)
+        path = mcp.settings.streamable_http_path
+        note = f" (bearer-token protected)" if token else ""
+        print(f"[shia-aalim] remote MCP endpoint enabled at {path}{note}", file=sys.stderr)
+        return mcp, mcp_app, mcp_server.session_lifespan(mcp)
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"[shia-aalim] ENABLE_MCP set but MCP could not start: {exc}", file=sys.stderr)
+        return None
 
 
 def _narration_payload(doc: Document, *, position: int = -1, chain_length: int = 0) -> dict:

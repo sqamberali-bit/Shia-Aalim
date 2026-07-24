@@ -97,3 +97,18 @@ Two settings, no rebuild:
 The Space restarts; answers now open with a **Synthesized answer** section
 above the cited evidence. Billed per Anthropic API usage (one call per
 question). Delete the `SYNTHESIZE` variable to turn it off.
+
+## Connect Claude to the corpus (remote MCP) — already on
+The image mounts a remote **MCP endpoint** in the same process (`ENABLE_MCP=1`,
+`MCP_ALLOWED_HOSTS=*` are baked in), so once the Space is up it's live at:
+
+```
+https://<your-space>.hf.space/mcp
+```
+
+Add it in **claude.ai → Settings → Connectors → Add custom connector** (paste
+that URL) — Claude can then pull cited passages from the whole corpus with no
+Project size cap. To lock it down, Space → *Settings → Variables and secrets* →
+**New secret** `MCP_BEARER_TOKEN` = a random string, and send it as
+`Authorization: Bearer <token>`. Set the variable `ENABLE_MCP=0` to serve the
+web UI only. Full details: [`mcp-server.md`](mcp-server.md).

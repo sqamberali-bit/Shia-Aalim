@@ -55,3 +55,78 @@ def test_search_respects_type_filter():
                 {"query": "intellect worship", "k": 5, "evidence_types": ["hadith"]})
     # only hadith passages -> no Qur'an reference lines
     assert "· quran ·" not in out
+
+
+def test_create_mcp_shares_a_prebuilt_stack():
+    # Passing an existing Stack means the corpus/index is not rebuilt.
+    stack = web.build_stack(web.AppConfig(knowledge_dir=ROOT / "data" / "knowledge" / "sample"))
+    server = mcp_server.create_mcp(stack=stack)
+    names = {t.name for t in asyncio.run(server.list_tools())}
+    assert "search_sources" in names
+
+
+def test_mounted_mcp_endpoint_handshakes_and_keeps_web_ui(monkeypatch):
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setenv("MCP_ALLOWED_HOSTS", "*")  # let the TestClient host through
+    stack = web.build_stack(web.AppConfig(knowledge_dir=ROOT / "data" / "knowledge" / "sample"))
+    mcp, mcp_app = mcp_server.build_http_app(stack=stack)
+
+    from fastapi import FastAPI
+    from contextlib import asynccontextmanager
+
+    @asynccontextmanager
+    async def lifespan(_app):
+        async with mcp_server.session_lifespan(mcp):
+            yield
+
+    app = FastAPI(lifespan=lifespan)
+
+    @app.get("/ping")
+    async def ping():
+        return {"ok": True}
+
+    app.mount("/", mcp_app)
+
+    init = {"jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": "2025-03-26", "capabilities": {},
+                       "clientInfo": {"name": "t", "version": "1"}}}
+    headers = {"Content-Type": "application/json",
+               "Accept": "application/json, text/event-stream",
+               # a real deploy allows its own host; TestClient uses "testserver"
+               "Host": "localhost"}
+    with TestClient(app) as client:
+        assert client.get("/ping").status_code == 200  # host app routes survive
+        r = client.post("/mcp", json=init, headers=headers)
+        assert r.status_code == 200
+        assert "shia-aalim" in r.text
+
+
+def test_bearer_token_guards_the_endpoint(monkeypatch):
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from fastapi import FastAPI
+    from contextlib import asynccontextmanager
+
+    monkeypatch.setenv("MCP_ALLOWED_HOSTS", "*")
+    stack = web.build_stack(web.AppConfig(knowledge_dir=ROOT / "data" / "knowledge" / "sample"))
+    mcp, mcp_app = mcp_server.build_http_app(stack=stack, bearer_token="secret")
+
+    @asynccontextmanager
+    async def lifespan(_app):
+        async with mcp_server.session_lifespan(mcp):
+            yield
+
+    app = FastAPI(lifespan=lifespan)
+    app.mount("/", mcp_app)
+
+    init = {"jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": "2025-03-26", "capabilities": {},
+                       "clientInfo": {"name": "t", "version": "1"}}}
+    base = {"Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream", "Host": "localhost"}
+    with TestClient(app) as client:
+        assert client.post("/mcp", json=init, headers=base).status_code == 401
+        ok = client.post("/mcp", json=init, headers={**base, "Authorization": "Bearer secret"})
+        assert ok.status_code == 200
