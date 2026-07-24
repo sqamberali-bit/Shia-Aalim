@@ -62,6 +62,8 @@ def main() -> int:
     p.add_argument("--knowledge-dir", default=str(KNOWLEDGE))
     p.add_argument("--out", default=str(ROOT / "export" / "full"))
     p.add_argument("--only", default="", help="comma-separated source ids (default: all)")
+    p.add_argument("--max-mb", type=float, default=0.0,
+                   help="split any book larger than this into numbered parts (0 = never)")
     args = p.parse_args()
 
     only = {s.strip() for s in args.only.split(",") if s.strip()} or None
@@ -80,19 +82,36 @@ def main() -> int:
     index_lines = ["# Shia-Aalim corpus export", "",
                    "Each file is one source book; every passage is headed by its exact "
                    "citation. Qur'anic verses include Arabic + English + Urdu.", ""]
+    cap = int(args.max_mb * 1_000_000) if args.max_mb > 0 else 0
     for sid, docs in sorted(by_source.items(), key=lambda kv: -len(kv[1])):
         docs.sort(key=lambda d: (d.citation.surah or 0, d.citation.ayah or 0, d.id))
         title = titles.get(sid, sid)
-        fp = out / f"{sid}.txt"
-        with fp.open("w", encoding="utf-8") as fh:
-            fh.write(f"SOURCE: {title}  (id: {sid})\n")
-            fh.write(f"{len(docs)} passages. Verify every citation against the primary source.\n\n")
-            for d in docs:
-                fh.write(_passage(d) + "\n\n")
-        size_mb = fp.stat().st_size / 1e6
-        index_lines.append(f"- **{title}** — {len(docs):,} passages ({size_mb:.1f} MB) → `{sid}.txt`")
+        passages = [_passage(d) + "\n\n" for d in docs]
+
+        # Split into numbered parts when a book exceeds the cap (at passage
+        # boundaries, so no citation is ever cut in half).
+        parts: list[list[str]] = [[]]
+        size = 0
+        for pas in passages:
+            if cap and size and size + len(pas.encode("utf-8")) > cap:
+                parts.append([])
+                size = 0
+            parts[-1].append(pas)
+            size += len(pas.encode("utf-8"))
+
+        multi = len(parts) > 1
+        for i, part in enumerate(parts, 1):
+            name = f"{sid}.part{i:02d}.txt" if multi else f"{sid}.txt"
+            fp = out / name
+            label = f"{title} (part {i}/{len(parts)})" if multi else title
+            with fp.open("w", encoding="utf-8") as fh:
+                fh.write(f"SOURCE: {label}  (id: {sid})\n")
+                fh.write("Verify every citation against the primary source.\n\n")
+                fh.writelines(part)
+            size_mb = fp.stat().st_size / 1e6
+            index_lines.append(f"- **{label}** — {len(part):,} passages ({size_mb:.1f} MB) → `{name}`")
+            print(f"  {len(part):>6,}  {size_mb:5.1f} MB  {fp.name}")
         total += len(docs)
-        print(f"  {len(docs):>6,}  {size_mb:5.1f} MB  {fp.name}")
 
     (out / "INDEX.md").write_text("\n".join(index_lines) + "\n", encoding="utf-8")
     print(f"\nExported {total:,} passages across {len(by_source)} books to {out}")
