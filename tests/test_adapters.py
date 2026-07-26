@@ -64,6 +64,25 @@ def test_parse_grading_multiple_graders_preserved():
 def test_parse_grading_empty_is_ungraded():
     assert parse_grading(None)[0] is HadithGrade.UNGRADED
     assert parse_grading([])[0] is HadithGrade.UNGRADED
+    assert parse_grading({})[0] is HadithGrade.UNGRADED
+
+
+def test_parse_grading_dict_form_mohseni():
+    # Muhsini's works store gradings as {grader: verdict}. muʿtabar = reliable.
+    grade, source, all_grades = parse_grading({"mohseni": "معتبر"})
+    assert grade is HadithGrade.MUWATHTHAQ
+    assert "mohseni" in source and "معتبر" in source  # grader + verdict preserved
+    assert all_grades == [HadithGrade.MUWATHTHAQ]
+
+
+def test_parse_grading_negated_reliability_is_not_reliable():
+    # "غير معتبر" (not reliable) must never classify as reliable.
+    assert parse_grading({"mohseni": "غير معتبر"})[0] is HadithGrade.DAIF
+
+
+def test_parse_grading_persian_letter_forms():
+    # ضعیف uses a Persian yaa; it must still classify as weak.
+    assert parse_grading({"mohseni": "ضعیف"})[0] is HadithGrade.DAIF
 
 
 def test_citation_locators_variable_depth():
@@ -97,6 +116,20 @@ def test_build_hadith_documents_from_fixtures():
     graded = [d for d in docs if d.citation.grade is not HadithGrade.UNGRADED]
     assert graded
     assert graded[0].citation.grade_source
+
+
+def test_build_documents_can_be_typed_biographical():
+    # Kitab al-Du'afa is a rijal work — same ThaqalaynData layout, but ingested
+    # as BIOGRAPHICAL so narrator-criticism is not presented as hadith.
+    docs = build_hadith_documents(
+        FIXTURES / "thaqalayn" / "1", source_id="kitab-al-duafa",
+        book_title="Kitab al-Du'afa", evidence_type=EvidenceType.BIOGRAPHICAL,
+    )
+    assert docs
+    for d in docs:
+        assert d.evidence_type is EvidenceType.BIOGRAPHICAL
+        assert d.citation.evidence_type is EvidenceType.BIOGRAPHICAL
+        assert "biographical" in d.tags
 
 
 def test_hadith_confidence_is_conservative_across_graders():

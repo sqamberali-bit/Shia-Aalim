@@ -25,19 +25,21 @@ import re
 from pathlib import Path
 from typing import Iterable, Optional
 
-from ...ingestion.normalize import strip_tashkeel
+from ...ingestion.normalize import normalize_for_search, strip_tashkeel
 from ...models import Citation, ConfidenceLevel, Document, EvidenceType, HadithGrade
 
 _TAG = re.compile(r"<[^>]+>")
 _WS = re.compile(r"\s+")
 
-# Arabic grade term (diacritics stripped) -> canonical grade. Checked in this
-# order so more specific / weakness terms win over the generic صحيح substring.
+# Arabic grade term (diacritics stripped, Persian letters folded to Arabic) ->
+# canonical grade. Checked in this order so more specific / weakness terms win
+# over the generic صحيح substring.
 _GRADE_TERMS: list[tuple[str, HadithGrade]] = [
     ("مرسل", HadithGrade.MURSAL),
     ("مجهول", HadithGrade.MAJHUL),
     ("موثق", HadithGrade.MUWATHTHAQ),
     ("قوي", HadithGrade.MUWATHTHAQ),  # qawī (strong) → nearest reliable tier
+    ("معتبر", HadithGrade.MUWATHTHAQ),  # muʿtabar (reliable) — Muhsini's rulings
     ("ضعيف", HadithGrade.DAIF),
     ("حسن", HadithGrade.HASAN),
     ("صحيح", HadithGrade.SAHIH),  # also matches كالصحيح ("like-authentic")
@@ -74,19 +76,28 @@ def _clean(text: str) -> str:
 
 
 def _classify_one(grading: str) -> HadithGrade:
-    stripped = strip_tashkeel(grading)
+    # Fold diacritics + Persian letter forms (ضعیف→ضعيف, غیر→غير) so the Arabic
+    # grade terms match regardless of the source's orthography.
+    norm = normalize_for_search(grading)
+    # "غير معتبر" (not reliable) must never be read as reliable — guard the
+    # negation before the positive معتبر term below.
+    if "معتبر" in norm and "غير" in norm:
+        return HadithGrade.DAIF
     for term, grade in _GRADE_TERMS:
-        if term in stripped:
+        if term in norm:
             return grade
-    low = grading.lower()
     for word, grade in _GRADE_WORDS_EN:
-        if word in low:
+        if word in norm:
             return grade
     return HadithGrade.UNGRADED
 
 
-def parse_grading(gradings: Optional[list[str]]) -> tuple[HadithGrade, str, list[HadithGrade]]:
-    """Parse a hadith's grading strings.
+def parse_grading(gradings) -> tuple[HadithGrade, str, list[HadithGrade]]:
+    """Parse a hadith's grading(s).
+
+    ThaqalaynData stores gradings in two shapes: a **list** of attributed strings
+    (e.g. al-Kāfī: ``"Majlisī: <grade> - Mirʾāt …"``) or a **{grader: grade}
+    dict** (e.g. Muḥsinī's works: ``{"mohseni": "معتبر"}``). Both are accepted.
 
     Returns ``(primary_grade, grade_source, all_grades)`` where ``primary_grade``
     is the first grader's grade (typically Allāma al-Majlisī), ``grade_source``
@@ -95,8 +106,14 @@ def parse_grading(gradings: Optional[list[str]]) -> tuple[HadithGrade, str, list
     """
     if not gradings:
         return HadithGrade.UNGRADED, "", []
-    grades = [_classify_one(g) for g in gradings]
-    source = "; ".join(_clean(g) for g in gradings)
+    if isinstance(gradings, dict):
+        items = [f"{grader}: {verdict}" for grader, verdict in gradings.items() if verdict]
+    else:
+        items = [g for g in gradings if g]
+    if not items:
+        return HadithGrade.UNGRADED, "", []
+    grades = [_classify_one(g) for g in items]
+    source = "; ".join(_clean(g) for g in items)
     primary = grades[0] if grades else HadithGrade.UNGRADED
     return primary, source, grades
 
@@ -195,6 +212,7 @@ def build_hadith_documents(
     translation_keys: Optional[list[str]] = None,
     translation_name: str = "Hubeali (via ThaqalaynData, CC0)",
     citation_style: str = "hierarchical",
+    evidence_type: EvidenceType = EvidenceType.HADITH,
 ) -> list[Document]:
     """Build hadith :class:`Document`s from a ThaqalaynData book directory.
 
@@ -206,6 +224,9 @@ def build_hadith_documents(
     ``translation_keys`` is a candidate list (books use different translators);
     the first present key wins. ``citation_style`` selects the locator mapping
     (``hierarchical`` for the Four Books, ``nahj`` for Nahj al-Balāgha).
+    ``evidence_type`` lets a rijāl work (e.g. Kitāb al-Ḍuʿafāʾ) be typed
+    ``BIOGRAPHICAL`` rather than ``HADITH`` — the ThaqalaynData layout is the
+    same; only the classification differs.
     """
     book_dir = Path(book_dir)
     keys = translation_keys or ["en.hubeali"]
@@ -239,7 +260,7 @@ def build_hadith_documents(
 
         citation = Citation(
             source_id=source_id,
-            evidence_type=EvidenceType.HADITH,
+            evidence_type=evidence_type,
             volume=loc.get("volume") or None,
             chapter=loc.get("chapter"),
             hadith_number=loc.get("hadith_number"),
@@ -253,10 +274,10 @@ def build_hadith_documents(
             Document(
                 id=f"{source_id}-{loc['id_suffix']}",
                 text=english or arabic,
-                evidence_type=EvidenceType.HADITH,
+                evidence_type=evidence_type,
                 citation=citation,
                 confidence=confidence,
-                tags=["hadith", source_id, f"grade-{grade.value}"],
+                tags=[evidence_type.value, source_id, f"grade-{grade.value}"],
                 language="en" if english else "ar",
             )
         )

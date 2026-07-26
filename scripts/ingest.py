@@ -97,6 +97,16 @@ HADITH_TARGETS = [
     ("books/kitab-al-mumin", "kitab-al-mumin", "Kitab al-Mu'min (al-Ahwazi)", "kitab-al-mumin.jsonl", ["en.muhajir-b-ali"], "hierarchical", "Muhajir b. Ali (via ThaqalaynData, CC0)"),
     ("books/kitab-al-zuhd", "kitab-al-zuhd", "Kitab al-Zuhd (al-Ahwazi)", "kitab-al-zuhd.jsonl", ["en.shaykh-tahir-ridha-jaffer"], "hierarchical", "Shaykh Tahir Ridha Jaffer (via ThaqalaynData, CC0)"),
     ("books/fadail-al-shia", "fadail-al-shia", "Fada'il al-Shia (al-Saduq)", "fadail-al-shia.jsonl", ["en.badr-shahin"], "hierarchical", "Badr Shahin (via ThaqalaynData, CC0)"),
+    # Mu'jam al-Ahadith al-Mu'tabara — a modern compilation of narrations its
+    # author (Muhammad Asif Muhsini) judged reliable; ~428/555 carry gradings.
+    ("books/mujam-al-ahadith-al-mutabara", "mujam-al-ahadith-al-mutabara", "Mu'jam al-Ahadith al-Mu'tabara (Muhsini)", "mujam-al-ahadith-al-mutabara.jsonl", ["en.ammaar-muslim"], "hierarchical", "Ammaar Muslim (via ThaqalaynData, CC0)"),
+]
+
+# Kitab al-Du'afa (Ibn al-Ghada'iri) is a *rijal* work — verdicts on weak
+# narrators, not isnad-bearing hadith — so it is typed BIOGRAPHICAL. Same
+# ThaqalaynData layout; only the classification differs.
+BIOGRAPHICAL_TARGETS = [
+    ("books/kitab-al-duafa", "kitab-al-duafa", "Kitab al-Du'afa (Ibn al-Ghada'iri)", "kitab-al-duafa.jsonl", ["en.tashayyu"], "hierarchical", "Tashayyu (via ThaqalaynData, CC0)"),
 ]
 
 # Prose works from the Shiavault Markdown mirror (al-islam.org). These are
@@ -185,6 +195,25 @@ def ingest_hadith(thaqalayn_dir: Path) -> int:
             write_jsonl(docs, KNOWLEDGE / "hadith" / out)
             total += len(docs)
     total += ingest_al_kafi_volumes(thaqalayn_dir)
+    # Rijal (biographical) works from ThaqalaynData — same layout, typed as
+    # BIOGRAPHICAL so narrator-criticism is not presented as hadith.
+    for rel, source_id, title, out, keys, style, tname in BIOGRAPHICAL_TARGETS:
+        book_dir = thaqalayn_dir / rel
+        if not book_dir.exists():
+            print(f"  [skip] {rel} not found under {thaqalayn_dir}")
+            continue
+        docs = build_hadith_documents(
+            book_dir,
+            source_id=source_id,
+            book_title=title,
+            translation_keys=keys,
+            translation_name=tname,
+            citation_style=style,
+            evidence_type=EvidenceType.BIOGRAPHICAL,
+        )
+        if docs:
+            write_jsonl(docs, KNOWLEDGE / "biographical" / out)
+            total += len(docs)
     return total
 
 

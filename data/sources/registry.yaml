@@ -294,6 +294,25 @@ sources:
     confidence: medium
     notes: "Ingested from CC0 ThaqalaynData."
 
+  - id: mujam-al-ahadith-al-mutabara
+    title: "Muʿjam al-Aḥādīth al-Muʿtabara"
+    kind: hadith
+    author: "Muḥammad Āṣif Muḥsinī"
+    translator: "Ammaar Muslim (English, as ingested)"
+    language: ar
+    confidence: medium
+    notes: "Modern compilation of narrations the author judged muʿtabar (reliable); most entries carry gradings. Ingested from CC0 ThaqalaynData."
+
+  # ---- Rijāl / biographical (ʿilm al-rijāl) ----
+  - id: kitab-al-duafa
+    title: "Kitāb al-Ḍuʿafāʾ (al-Rijāl)"
+    kind: biographical
+    author: "Aḥmad ibn al-Ḥusayn Ibn al-Ghaḍāʾirī"
+    translator: "Tashayyu (English, as ingested)"
+    language: ar
+    confidence: medium
+    notes: "Rijāl work — verdicts on weak narrators, not hadith. A research aid for narrator criticism; the system never issues rijāl verdicts itself. Ingested from CC0 ThaqalaynData."
+
   # ---- Classical primary sources ----
   - id: nahj-al-balagha
     title: "Nahj al-Balāgha"
