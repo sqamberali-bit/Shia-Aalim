@@ -38,11 +38,19 @@ if [ ! -d "$SRC/shiavault/.git" ]; then
     || echo "   (shiavault clone failed — prose works will be skipped)"
 fi
 
-echo ">> [4/4] Ingesting into data/knowledge/ ..."
+echo ">> [4/5] Mafatih al-Jinan (aminpaydar/Mafatih, Apache-2.0)"
+mkdir -p "$SRC/mafatih"
+curl -fsSL \
+  "https://raw.githubusercontent.com/aminpaydar/Mafatih/master/mafatih-server/chapters.json" \
+  -o "$SRC/mafatih/chapters.json" \
+  || echo "   (Mafatih fetch failed — it will be skipped)"
+
+echo ">> [5/5] Ingesting into data/knowledge/ ..."
 python "$ROOT/scripts/ingest.py" \
   --quran-dir "$SRC/quran" \
   --thaqalayn-dir "$SRC/ThaqalaynData" \
-  --shiavault-dir "$SRC/shiavault"
+  --shiavault-dir "$SRC/shiavault" \
+  --mafatih-json "$SRC/mafatih/chapters.json"
 
 count="$(find "$ROOT/data/knowledge" -name '*.jsonl' -not -path '*/sample/*' -exec cat {} + 2>/dev/null | wc -l | tr -d ' ')"
 echo ">> Done — ${count} documents under data/knowledge/"

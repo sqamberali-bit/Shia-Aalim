@@ -154,9 +154,17 @@ sources:
     title: "Wasāʾil al-Shīʿa"
     kind: hadith
     author: "Shaykh al-Hurr al-Amili"
+    translator: "English translation, wasail-al-shia.net"
     language: ar
-    confidence: high
-    notes: "Major fiqh-hadith collection organised by legal topic."
+    confidence: medium
+    notes: >
+      Major fiqh-hadith collection organised by legal topic. Ingested from
+      English text-layer volume PDFs (ws<N>_eng.pdf), one document per numbered
+      narration, cited by volume + section + hadith number with the Arabic matn
+      preserved. PARTIAL: only the volumes present are ingested (vol 1 so far of
+      ~30). These PDFs record no rijāl grade, so narrations are ungraded and
+      confidence is capped at medium — grade against a rijāl source before
+      treating any narration as authentic.
 
   - id: mustadrak-al-wasail
     title: "Mustadrak al-Wasāʾil"
@@ -337,9 +345,17 @@ sources:
     title: "Mafātīḥ al-Jinān"
     kind: scholarly_opinion
     author: "Shaykh Abbas al-Qummi"
+    translator: "Husayn Ansariyan (Persian)"
     language: ar
-    confidence: high
-    notes: "Compilation of du'a/ziyarat; a devotional manual, cite compiler + section."
+    url: "https://github.com/aminpaydar/Mafatih"
+    license: "Apache-2.0 (aminpaydar/Mafatih dataset)"
+    confidence: medium
+    notes: >
+      Compilation of duʿāʾ/ziyārāt; a devotional manual. Ingested complete from
+      the Apache-2.0 aminpaydar/Mafatih JSON tree — one document per Arabic
+      supplication passage, cited by bāb / faṣl / article. The attached
+      translation is PERSIAN (Ansariyan), not English; no English edition is
+      included. Cite compiler + section.
 
   - id: tawhid-al-mufaddal
     title: "Tawḥīd al-Mufaḍḍal"

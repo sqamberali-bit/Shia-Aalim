@@ -17,9 +17,11 @@ Ghayba collections; **Muʿtabar** — Muʿjam al-Aḥādīth al-Muʿtabara (Mu�
 rijāl work **Kitāb al-Ḍuʿafāʾ** (Ibn al-Ghaḍāʾirī, narrator criticism, typed
 *biographical*); classical works via the Shiavault mirror — **Tawḥīd al-Mufaḍḍal,
 Tuḥaf al-ʿUqūl, Mishkāt al-Anwār, A Shiʿite Creed, Jāmiʿ al-Saʿādāt** — plus the
-Shiavault history tier (*The Message*, Maqtal al-Ḥusayn, Kitāb al-Irshād); and, in
+Shiavault history tier (*The Message*, Maqtal al-Ḥusayn, Kitāb al-Irshād);
+**Mafātīḥ al-Jinān** complete (Arabic duʿāʾ/ziyārāt with the Persian rendering);
+**Wasāʾil al-Shīʿa** cited per-narration (vol 1 so far, Arabic + English); and, in
 the full build, **Biḥār al-Anwār** (101 vols) and **Tafsīr al-Mīzān** (40 vols) —
-~125k cited passages.
+~128k cited passages.
 
 Install the extra: `pip install -e ".[mcp]"`.
 

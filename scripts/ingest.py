@@ -31,11 +31,14 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from shia_aalim.ingestion.adapters.bihar import build_bihar_documents, volume_from_filename  # noqa: E402
+from shia_aalim.ingestion.adapters.mafatih import build_mafatih_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.plaintext import build_textbook_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.plaintext import volume_from_filename as txt_volume  # noqa: E402
 from shia_aalim.ingestion.adapters.quran import build_quran_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.shiavault import build_prose_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.thaqalayn import build_hadith_documents  # noqa: E402
+from shia_aalim.ingestion.adapters.wasail import build_wasail_documents  # noqa: E402
+from shia_aalim.ingestion.adapters.wasail import volume_from_filename as wasail_volume  # noqa: E402
 from shia_aalim.models import ConfidenceLevel, Document, EvidenceType  # noqa: E402
 
 KNOWLEDGE = ROOT / "data" / "knowledge"
@@ -276,6 +279,43 @@ def ingest_almizan(almizan_dir: Path) -> int:
     return total
 
 
+def ingest_mafatih(json_path: Path) -> int:
+    """Ingest Mafātīḥ al-Jinān from the Apache-2.0 structured JSON tree."""
+    if not json_path.exists():
+        print(f"  [skip] Mafātīḥ JSON not found at {json_path}")
+        return 0
+    docs = build_mafatih_documents(json_path)
+    if not docs:
+        print(f"  [skip] no documents built from {json_path}")
+        return 0
+    write_jsonl(docs, KNOWLEDGE / "prose" / "mafatih-al-jinan.jsonl")
+    return len(docs)
+
+
+def ingest_wasail(wasail_dir: Path) -> int:
+    """Ingest Wasāʾil al-Shīʿa volumes from English text-layer PDFs (ws<N>_eng.pdf).
+
+    One shard per volume; each narration cited by volume + section + hadith number.
+    Only the volumes actually present are ingested — missing ones are skipped, not
+    approximated.
+    """
+    pdfs = sorted(
+        wasail_dir.glob("**/ws*_eng.pdf"),
+        key=lambda p: int(wasail_volume(p) or 0),
+    )
+    if not pdfs:
+        print(f"  [skip] no ws*_eng.pdf under {wasail_dir}")
+        return 0
+    total = 0
+    for pdf in pdfs:
+        vol = wasail_volume(pdf) or "0"
+        docs = build_wasail_documents(pdf, volume=vol)
+        if docs:
+            write_jsonl(docs, KNOWLEDGE / "hadith" / f"wasail-al-shia-v{int(vol):02d}.jsonl")
+            total += len(docs)
+    return total
+
+
 def ingest_bihar(bihar_dir: Path) -> int:
     """Ingest the hubeali English Bihar al-Anwar PDFs (V1..V101), one shard/volume."""
     pdfs = sorted(
@@ -302,9 +342,13 @@ def main() -> int:
     parser.add_argument("--shiavault-dir", default=os.environ.get("SHIAVAULT_DIR"))
     parser.add_argument("--bihar-dir", default=os.environ.get("BIHAR_DIR"))
     parser.add_argument("--almizan-dir", default=os.environ.get("ALMIZAN_DIR"))
+    parser.add_argument("--wasail-dir", default=os.environ.get("WASAIL_DIR"),
+                        help="directory containing Wasail al-Shia ws<N>_eng.pdf volumes")
+    parser.add_argument("--mafatih-json", default=os.environ.get("MAFATIH_JSON"),
+                        help="path to the Mafatih al-Jinan chapters.json")
     args = parser.parse_args()
 
-    n_quran = n_hadith = n_prose = n_bihar = n_almizan = 0
+    n_quran = n_hadith = n_prose = n_bihar = n_almizan = n_wasail = n_mafatih = 0
     if args.quran_dir:
         print("Ingesting Qur'an...")
         n_quran = ingest_quran(Path(args.quran_dir))
@@ -335,8 +379,22 @@ def main() -> int:
     else:
         print("  [skip] no --almizan-dir / ALMIZAN_DIR")
 
-    print(f"\nDone. {n_quran} Qur'an verses, {n_hadith + n_bihar} hadith "
-          f"({n_bihar} Bihar), {n_prose + n_almizan} prose passages ({n_almizan} al-Mizan).")
+    if args.wasail_dir:
+        print("Ingesting Wasail al-Shia (English PDFs, per-hadith)...")
+        n_wasail = ingest_wasail(Path(args.wasail_dir))
+    else:
+        print("  [skip] no --wasail-dir / WASAIL_DIR")
+
+    if args.mafatih_json:
+        print("Ingesting Mafatih al-Jinan (structured JSON)...")
+        n_mafatih = ingest_mafatih(Path(args.mafatih_json))
+    else:
+        print("  [skip] no --mafatih-json / MAFATIH_JSON")
+
+    print(f"\nDone. {n_quran} Qur'an verses, {n_hadith + n_bihar + n_wasail} hadith "
+          f"({n_bihar} Bihar, {n_wasail} Wasail), "
+          f"{n_prose + n_almizan + n_mafatih} prose passages "
+          f"({n_almizan} al-Mizan, {n_mafatih} Mafatih).")
     return 0
 
 

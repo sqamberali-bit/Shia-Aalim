@@ -68,8 +68,22 @@ the research loop updates.
       hubeali English text-layer PDFs via a new PyMuPDF adapter (`adapters/bihar.py`),
       one document per page cited by volume + hubeali page (~43k pages, medium
       confidence, ungraded). Corpus lives in external data.
-- [ ] Upload-needed (not on GitHub): Wasāʾil al-Shīʿa, Mustadrak al-Wasāʾil,
-      Mafātīḥ al-Jinān; enrich Faqīh/Tahdhīb/Istibṣār with Kitāb titles
+- [x] **Mafātīḥ al-Jinān — complete** from the Apache-2.0 `aminpaydar/Mafatih`
+      JSON tree via a new adapter (`adapters/mafatih.py`): 1991 Arabic
+      supplication passages cited by bāb / faṣl / article, with the **Persian**
+      (Ansariyan) rendering attached where present. No English edition — the
+      adapter labels the translation Persian and never machine-translates.
+- [x] **Wasāʾil al-Shīʿa — per-hadith ingestion** from English text-layer volume
+      PDFs via a new adapter (`adapters/wasail.py`): splits on the `Hadith N`
+      markers and reads volume + section from each page's running header, so every
+      narration is cited as *v1, Section 8, h.114* with the Arabic matn preserved
+      (1296 narrations from vol 1). **Partial — vol 1 of ~30**; more volumes drop
+      in automatically as `ws<N>_eng.pdf` files are added. Ungraded (the PDFs
+      record no rijāl grade), confidence capped at medium.
+- [ ] Wasāʾil al-Shīʿa remaining volumes (2–30) as `ws<N>_eng.pdf`; Mustadrak
+      al-Wasāʾil (Arabic full text is available from OpenITI — needs a mARkdown
+      adapter — or upload an English edition); enrich Faqīh/Tahdhīb/Istibṣār with
+      Kitāb titles
 - [x] Semantic-embedder integration + retrieval upgrades:
       - `SentenceTransformerEmbedder` (BGE-M3/E5/Jina) behind `EmbeddingProvider`,
         selectable via `make_embedder("st:<model>")` — runs wherever the model is
