@@ -35,6 +35,15 @@ the research loop updates.
       with real Book titles) + `scripts/ingest.py`
 - [x] Further al-Saduq/al-Mufid hadith collections (al-Khiṣāl, both Amālī, ʿUyūn
       Akhbār al-Riḍā, al-Tawḥīd = 4280) from CC0 ThaqalaynData
+- [x] **Complete ThaqalaynData coverage** — added the last two collections:
+      **Muʿjam al-Aḥādīth al-Muʿtabara** (Muḥsinī, 555 narrations, 428 graded
+      *muʿtabar*/reliable) as hadith, and **Kitāb al-Ḍuʿafāʾ** (Ibn al-Ghaḍāʾirī,
+      226 entries) typed **BIOGRAPHICAL** — a rijāl work (narrator criticism), not
+      isnād-bearing hadith. Also fixed dict-form `{grader: grade}` grading parsing
+      (Muḥsinī's Faqīh/ʿUyūn/Muʿjam were silently ungraded) and added the
+      *muʿtabar* grade with a `غير معتبر` ("not reliable") negation guard. Corpus
+      now **~122.7k docs**. (Kamāl al-Dīn remains out — it is an empty stub in the
+      source dataset.)
 - [x] Prose tier via a new Shiavault Markdown adapter — Sīra (*The Message*),
       Maqtal al-Husayn, Kitāb al-Irshād, al-Ṣaḥīfa al-Sajjādiyya, chapter-level
       citations, medium confidence.

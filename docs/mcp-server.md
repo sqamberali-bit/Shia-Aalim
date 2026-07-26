@@ -9,6 +9,15 @@ The server does retrieval only (Claude is the LLM), reusing the same corpus and
 index as the web app. Tools: `search_sources`, `get_quran_verse` (Arabic +
 English + Urdu), `verse_cross_references`, `lookup_narrator`, `list_books`.
 
+**Corpus coverage** (see the live list any time via the `list_books` tool): the
+Qur'an (Arabic + English + Urdu Jawadi); the **complete Four Books** (al-Kāfī all
+8 volumes, Man Lā Yaḥḍuruhu al-Faqīh, Tahdhīb al-Aḥkām, al-Istibṣār) with rijāl
+gradings; Nahj al-Balāgha and al-Ṣaḥīfa al-Sajjādiyya; the al-Ṣadūq/al-Mufīd and
+Ghayba collections; **Muʿtabar** — Muʿjam al-Aḥādīth al-Muʿtabara (Muḥsinī); the
+rijāl work **Kitāb al-Ḍuʿafāʾ** (Ibn al-Ghaḍāʾirī, narrator criticism, typed
+*biographical*); the Shiavault prose/history tier; and, in the full build, **Biḥār
+al-Anwār** (101 vols) and **Tafsīr al-Mīzān** (40 vols) — ~122.7k cited passages.
+
 Install the extra: `pip install -e ".[mcp]"`.
 
 ---
