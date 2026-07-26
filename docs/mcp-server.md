@@ -15,8 +15,11 @@ Qur'an (Arabic + English + Urdu Jawadi); the **complete Four Books** (al-Kāfī 
 gradings; Nahj al-Balāgha and al-Ṣaḥīfa al-Sajjādiyya; the al-Ṣadūq/al-Mufīd and
 Ghayba collections; **Muʿtabar** — Muʿjam al-Aḥādīth al-Muʿtabara (Muḥsinī); the
 rijāl work **Kitāb al-Ḍuʿafāʾ** (Ibn al-Ghaḍāʾirī, narrator criticism, typed
-*biographical*); the Shiavault prose/history tier; and, in the full build, **Biḥār
-al-Anwār** (101 vols) and **Tafsīr al-Mīzān** (40 vols) — ~122.7k cited passages.
+*biographical*); classical works via the Shiavault mirror — **Tawḥīd al-Mufaḍḍal,
+Tuḥaf al-ʿUqūl, Mishkāt al-Anwār, A Shiʿite Creed, Jāmiʿ al-Saʿādāt** — plus the
+Shiavault history tier (*The Message*, Maqtal al-Ḥusayn, Kitāb al-Irshād); and, in
+the full build, **Biḥār al-Anwār** (101 vols) and **Tafsīr al-Mīzān** (40 vols) —
+~125k cited passages.
 
 Install the extra: `pip install -e ".[mcp]"`.
 

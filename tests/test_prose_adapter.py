@@ -51,3 +51,22 @@ def test_prose_skips_short_chapters(tmp_path):
     (book / "1-tiny.md").write_text("Tiny\n====\n\nshort", encoding="utf-8")
     docs = build_prose_documents(book, source_id="x", evidence_type=EvidenceType.HISTORICAL)
     assert docs == []  # too-short chapter is skipped, never padded/fabricated
+
+
+def test_prose_source_drops_placeholder_metadata(tmp_path):
+    # Upstream metadata sometimes carries "N/A" placeholders; they must not leak
+    # into the citation's source string.
+    book = tmp_path / "b"
+    book.mkdir()
+    (book / "metadata.yml").write_text(
+        "translator: N/A\npublisher: Ansariyan\nsource_url: http://example.org/x\n",
+        encoding="utf-8",
+    )
+    (book / "1-intro.md").write_text(
+        "Intro\n====\n\n" + ("This is a sufficiently long chapter body. " * 4),
+        encoding="utf-8",
+    )
+    docs = build_prose_documents(book, source_id="x", evidence_type=EvidenceType.HADITH)
+    assert docs
+    src = docs[0].citation.translation_source or ""
+    assert "N/A" not in src and "Ansariyan" in src

@@ -341,6 +341,58 @@ sources:
     confidence: high
     notes: "Compilation of du'a/ziyarat; a devotional manual, cite compiler + section."
 
+  - id: tawhid-al-mufaddal
+    title: "Tawḥīd al-Mufaḍḍal"
+    kind: hadith
+    author: "Narrated from Imam Jaʿfar al-Ṣādiq by al-Mufaḍḍal ibn ʿUmar"
+    translator: "Bashir Alidina (English)"
+    language: ar
+    url: "https://www.al-islam.org/tradition-of-mufaddal-pearls-of-wisdom-from-imam-jafar-as-sadiq"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Four-session dictation on the wisdom of creation. Prose, chapter-level citations; ungraded translation — verify against the Arabic."
+
+  - id: tuhaf-al-uqul
+    title: "Tuḥaf al-ʿUqūl ʿan Āl al-Rasūl"
+    kind: hadith
+    author: "al-Ḥasan ibn ʿAlī ibn Shuʿba al-Ḥarrānī"
+    language: ar
+    url: "https://www.al-islam.org/tuhaf-al-uqul"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Classical collection of the Imams' sermons and counsels. Prose, chapter-level citations; ungraded translation."
+
+  - id: mishkat-al-anwar
+    title: "Mishkāt al-Anwār fī Ghurar al-Akhbār"
+    kind: hadith
+    author: "ʿAlī al-Ṭabarsī (al-Ṭabrisī)"
+    language: ar
+    url: "https://www.al-islam.org/provisions-journey-mishkat-al-anwar-volume-1"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Hadith anthology on virtues and ethics (2 vols). Prose, cite by volume + chapter."
+
+  - id: a-shiite-creed
+    title: "A Shiʿite Creed (Risālat al-Iʿtiqādāt)"
+    kind: scholarly_opinion
+    author: "Shaykh al-Ṣadūq (Ibn Bābawayh)"
+    translator: "Asaf A. A. Fyzee (English)"
+    language: ar
+    url: "https://www.al-islam.org/shiite-creed-shaykh-saduq"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Foundational Imāmī creed. Doctrinal exposition; cite by chapter."
+
+  - id: jami-al-saadat
+    title: "Jāmiʿ al-Saʿādāt (The Collector of Felicities)"
+    kind: scholarly_opinion
+    author: "Muḥammad Mahdī al-Narāqī"
+    language: ar
+    url: "https://www.al-islam.org/jami-al-saadat-collector-felicities"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Classical work of Islamic ethics (akhlāq). Prose, chapter-level citations."
+
   # ---- Scholarly works (representative; expand continuously) ----
   - id: mutahhari-works
     title: "Collected Works of Murtada Mutahhari"

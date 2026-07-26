@@ -47,6 +47,13 @@ the research loop updates.
 - [x] Prose tier via a new Shiavault Markdown adapter — Sīra (*The Message*),
       Maqtal al-Husayn, Kitāb al-Irshād, al-Ṣaḥīfa al-Sajjādiyya, chapter-level
       citations, medium confidence.
+- [x] Classical primary works from the Shiavault mirror (chapter-level citations,
+      medium confidence): **Tawḥīd al-Mufaḍḍal** (153), **Tuḥaf al-ʿUqūl**
+      (al-Ḥarrānī, 937), **Mishkāt al-Anwār** (al-Ṭabarsī, 2 vols, 959),
+      **A Shiʿite Creed** (al-Ṣadūq's Iʿtiqādāt, 210) and **Jāmiʿ al-Saʿādāt**
+      (al-Narāqī, akhlāq, 108) = +2367 passages. Creed/ethics typed
+      `scholarly_opinion`; the rest `hadith`. Adapter now drops placeholder
+      ("N/A") metadata from citation provenance.
 - [x] Tafsīr al-Mīzān — **complete 40-volume English edition** (Tawheed Institute
       Australia) via a new plain-text/OCR adapter (`adapters/plaintext.py`),
       18,125 sections cited by volume + section (supersedes the earlier partial

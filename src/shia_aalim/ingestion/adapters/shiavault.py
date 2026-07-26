@@ -106,9 +106,18 @@ def build_prose_documents(
     """
     book_dir = Path(book_dir)
     meta = _read_metadata(book_dir)
-    publisher = meta.get("publisher")
-    translator = meta.get("translator") or meta.get("author")
-    src_url = meta.get("source_url")
+
+    def _meta(*keys: str) -> Optional[str]:
+        # Return the first present, non-placeholder metadata value.
+        for k in keys:
+            v = meta.get(k)
+            if v and str(v).strip().lower() not in ("n/a", "na", "none", "-", "unknown"):
+                return str(v).strip()
+        return None
+
+    publisher = _meta("publisher")
+    translator = _meta("translator", "author")
+    src_url = _meta("source_url")
     tsource = " / ".join(x for x in [translator, publisher, src_url] if x) or "Shiavault (al-islam.org mirror)"
 
     chapters = sorted(

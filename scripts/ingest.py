@@ -120,6 +120,14 @@ PROSE_TARGETS = [
     ("books/the-message", "the-message-subhani", "historical", None, "seerah-the-message.jsonl"),
     ("books/maqtal-al-husayn", "maqtal-al-husayn", "historical", None, "maqtal-al-husayn.jsonl"),
     ("books/kitab-al-irshad-1", "kitab-al-irshad", "historical", None, "kitab-al-irshad.jsonl"),
+    # Classical primary hadith / creed / ethics (chapter-level citations, medium
+    # confidence — English translations via the Shiavault mirror).
+    ("books/tradition-of-mufaddal", "tawhid-al-mufaddal", "hadith", None, "tawhid-al-mufaddal.jsonl"),
+    ("books/tuhaf-al-uqul-the-masterpieces-of-the-mind", "tuhaf-al-uqul", "hadith", None, "tuhaf-al-uqul.jsonl"),
+    ("books/provisions-for-the-journey-mishkat-volume-1", "mishkat-al-anwar", "hadith", "1", "mishkat-al-anwar-v1.jsonl"),
+    ("books/provisions-for-the-journey-mishkat-volume-2", "mishkat-al-anwar", "hadith", "2", "mishkat-al-anwar-v2.jsonl"),
+    ("books/a-shi-ite-creed", "a-shiite-creed", "scholarly_opinion", None, "a-shiite-creed.jsonl"),
+    ("books/jami-al-sa-adat-the-collector-of-felicities", "jami-al-saadat", "scholarly_opinion", None, "jami-al-saadat.jsonl"),
 ]
 
 
