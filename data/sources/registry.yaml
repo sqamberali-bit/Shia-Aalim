@@ -148,7 +148,7 @@ sources:
     language: ar
     url: "https://hubeali.com/"
     confidence: medium
-    notes: "Complete 101-volume English text (hubeali PDFs) ingested page-by-page; cite by volume + hubeali page. Encyclopaedic compilation containing strong AND weak reports plus al-Majlisi's commentary, with NO per-hadith rijal grade in these PDFs — grade every narration against a rijal source before treating it as authentic. Corpus is external (see docs/data-management.md)."
+    notes: "Complete 101-volume English text (hubeali PDFs) ingested per-hadith; cited as Bihar al-Anwar vN, Ch X, H Y using footnote-based splitting. Encyclopaedic compilation containing strong AND weak reports plus al-Majlisi's commentary, with NO per-hadith rijal grade in these PDFs — grade every narration against a rijal source before treating it as authentic. Corpus is external (see docs/data-management.md)."
 
   - id: wasail-al-shia
     title: "Wasāʾil al-Shīʿa"

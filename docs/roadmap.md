@@ -64,10 +64,10 @@ the research loop updates.
       small committed sample; integrity tests skip on bare checkouts). See
       [`docs/data-management.md`](data-management.md). Chosen over Git LFS
       because the corpus is derived and outgrows the LFS free tier.
-- [x] **Biḥār al-Anwār — complete (all 101 volumes)** ingested from the uploaded
-      hubeali English text-layer PDFs via a new PyMuPDF adapter (`adapters/bihar.py`),
-      one document per page cited by volume + hubeali page (~43k pages, medium
-      confidence, ungraded). Corpus lives in external data.
+- [x] **Biḥār al-Anwār — per-hadith (all 101 volumes)** ingested from the uploaded
+      hubeali English text-layer PDFs via `adapters/bihar.py`, one document per
+      narration cited as *Biḥār al-Anwār, vN, Ch X, H Y* using footnote-based
+      splitting (medium confidence, ungraded). Corpus lives in external data.
 - [x] **Mafātīḥ al-Jinān — complete** from the Apache-2.0 `aminpaydar/Mafatih`
       JSON tree via a new adapter (`adapters/mafatih.py`): 1991 Arabic
       supplication passages cited by bāb / faṣl / article, with the **Persian**
