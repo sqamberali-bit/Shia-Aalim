@@ -131,6 +131,8 @@ PROSE_TARGETS = [
     ("books/provisions-for-the-journey-mishkat-volume-2", "mishkat-al-anwar", "hadith", "2", "mishkat-al-anwar-v2.jsonl"),
     ("books/a-shi-ite-creed", "a-shiite-creed", "scholarly_opinion", None, "a-shiite-creed.jsonl"),
     ("books/jami-al-sa-adat-the-collector-of-felicities", "jami-al-saadat", "scholarly_opinion", None, "jami-al-saadat.jsonl"),
+    ("books/lohoof-sighs-of-sorrow", "al-luhuf", "historical", None, "al-luhuf.jsonl"),
+    ("books/the-event-of-taff-the-earliest-historical-account-of-the-tragedy-of-karbala", "maqtal-abu-mikhnaf", "historical", None, "maqtal-abu-mikhnaf.jsonl"),
 ]
 
 

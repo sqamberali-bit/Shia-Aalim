@@ -80,6 +80,11 @@ the research loop updates.
       (1296 narrations from vol 1). **Partial — vol 1 of ~30**; more volumes drop
       in automatically as `ws<N>_eng.pdf` files are added. Ungraded (the PDFs
       record no rijāl grade), confidence capped at medium.
+- [x] **Mustanid maqtal collection** — ingested two classical authenticated maqtal
+      works via the Shiavault mirror: **Al-Luhuf ʿalā Qatlā al-Ṭufūf** (Ibn Tawus,
+      7th/13th c., 494 passages) and **Maqtal Abu Mikhnaf / The Event of Taff**
+      (earliest Karbala account, 2nd/8th c., 553 passages). Both cited chapter-level,
+      medium confidence, joining the existing al-Muqarram Maqtal (878 passages).
 - [ ] Wasāʾil al-Shīʿa remaining volumes (2–30) as `ws<N>_eng.pdf`; Mustadrak
       al-Wasāʾil (Arabic full text is available from OpenITI — needs a mARkdown
       adapter — or upload an English edition); enrich Faqīh/Tahdhīb/Istibṣār with

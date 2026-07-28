@@ -14,7 +14,7 @@
 # -----------------------------------------------------------------------------
 
 version: 1
-total_expected_docs: 121871
+total_expected_docs: 122918
 
 # A published snapshot of the full built corpus. Leave url/sha256 null until a
 # bundle is produced with `scripts/fetch_data.py --make-bundle` and hosted.
@@ -159,6 +159,16 @@ works:
     tier: prose
     expected_docs: 878
     output: data/knowledge/prose/maqtal-al-husayn.jsonl
+    build: {source: shiavault, adapter: shiavault}
+  - id: al-luhuf
+    tier: prose
+    expected_docs: 494
+    output: data/knowledge/prose/al-luhuf.jsonl
+    build: {source: shiavault, adapter: shiavault}
+  - id: maqtal-abu-mikhnaf
+    tier: prose
+    expected_docs: 553
+    output: data/knowledge/prose/maqtal-abu-mikhnaf.jsonl
     build: {source: shiavault, adapter: shiavault}
   - id: sahifa-sajjadiyya
     tier: prose

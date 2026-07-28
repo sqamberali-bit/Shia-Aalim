@@ -447,7 +447,29 @@ sources:
     url: "https://www.al-islam.org/maqtal-al-husayn"
     license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
     confidence: medium
-    notes: "History of Karbala. Prose, chapter-level citations; corroborate reports against primary maqatil."
+    notes: "History of Karbala (al-Muqarram). Prose, chapter-level citations; corroborate reports against primary maqatil."
+
+  - id: al-luhuf
+    title: "Al-Luhuf ʿalā Qatlā al-Ṭufūf (Lohoof — Sighs of Sorrow)"
+    kind: historical
+    author: "Sayyid Ibn Tawus (d. 664 AH)"
+    translator: "Sayyid Athar Husayn S.H. Rizvi (English, Naba Organization)"
+    language: en
+    url: "https://www.al-islam.org/lohoof-sighs-sorrow-sayyid-ibn-tawus"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Classical mustanid maqtal of Karbala by the 7th-century scholar Ibn Tawus. Divided into three parts: events before, during, and after Ashura. Prose, chapter-level citations."
+
+  - id: maqtal-abu-mikhnaf
+    title: "The Event of Taff — Maqtal al-Husayn (Abu Mikhnaf)"
+    kind: historical
+    author: "Abu Mikhnaf (Lut b. Yahya al-Azdi, d. 157 AH)"
+    translator: "ʿUmar Kumo (English, ABWA Publishing)"
+    language: en
+    url: "https://www.al-islam.org/event-taff-earliest-historical-account-tragedy-karbala-abu-mikhnaf"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Earliest historical account of Karbala, reconstructed and researched by Shaikh Muhammad Hadi al-Yusufi al-Gharawi. Abu Mikhnaf had access to eyewitnesses of Karbala. Prose, chapter-level citations."
 
   - id: kitab-al-irshad
     title: "Kitab al-Irshad (The Book of Guidance)"
