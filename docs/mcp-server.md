@@ -20,9 +20,10 @@ Tuḥaf al-ʿUqūl, Mishkāt al-Anwār, A Shiʿite Creed, Jāmiʿ al-Saʿādāt*
 Shiavault history tier (*The Message*, Maqtal al-Ḥusayn (al-Muqarram), **Al-Luhuf**
 (Ibn Tawus), **Maqtal Abu Mikhnaf** (Event of Taff), Kitāb al-Irshād);
 **Mafātīḥ al-Jinān** complete (Arabic duʿāʾ/ziyārāt with the Persian rendering);
-**Wasāʾil al-Shīʿa** cited per-narration (vol 1 so far, Arabic + English); and, in
-the full build, **Biḥār al-Anwār** (101 vols) and **Tafsīr al-Mīzān** (40 vols) —
-~128k cited passages.
+**Wasāʾil al-Shīʿa** cited per-narration (vol 1 so far, Arabic + English);
+**ʿIlal al-Sharāʾiʿ** (Shaykh al-Ṣadūq, 2 vols / 17 parts, 1,452 narrations,
+per-chapter/hadith, Arabic + English); and, in the full build, **Biḥār al-Anwār**
+(101 vols) and **Tafsīr al-Mīzān** (40 vols) — ~124k cited passages.
 
 Install the extra: `pip install -e ".[mcp]"`.
 

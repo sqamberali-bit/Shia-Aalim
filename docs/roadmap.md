@@ -85,6 +85,11 @@ the research loop updates.
       7th/13th c., 494 passages) and **Maqtal Abu Mikhnaf / The Event of Taff**
       (earliest Karbala account, 2nd/8th c., 553 passages). Both cited chapter-level,
       medium confidence, joining the existing al-Muqarram Maqtal (878 passages).
+- [x] **ʿIlal al-Sharāʾiʿ — per-chapter/hadith ingestion** from hubeali English
+      text-layer PDFs (2 volumes, 17 parts, 647 chapters). Splits by chapter heading
+      (`CHAPTER N – Reasons for…`) then by `Hadith N` markers within chapters.
+      Arabic/English separated by script detection. 1,452 documents, ungraded,
+      medium confidence. Rebuild: `scripts/ingest.py --ilal-dir <clone>`.
 - [ ] Wasāʾil al-Shīʿa remaining volumes (2–30) as `ws<N>_eng.pdf`; Mustadrak
       al-Wasāʾil (Arabic full text is available from OpenITI — needs a mARkdown
       adapter — or upload an English edition); enrich Faqīh/Tahdhīb/Istibṣār with

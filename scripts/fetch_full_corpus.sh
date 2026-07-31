@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
-# Rebuild the FULL corpus (~122k docs): the public set PLUS Biḥār al-Anwār
-# (101 vols) and Tafsīr al-Mīzān (40 vols), from their public GitHub source
-# repos. Needs pymupdf (for the Biḥār PDFs) and ~2–4 GB RAM to index — prefer a
+# Rebuild the FULL corpus (~124k docs): the public set PLUS Biḥār al-Anwār
+# (101 vols), Tafsīr al-Mīzān (40 vols), and ʿIlal al-Sharāʾiʿ (2 vols),
+# from their public GitHub source repos. Needs pymupdf and ~2–4 GB RAM to
+# index — prefer a
 # host with plenty of memory (Hugging Face Spaces free tier is fine).
 #
 # Override the source repos via env if you forked them:
@@ -30,11 +31,13 @@ pip install --no-cache-dir "pymupdf>=1.24"
 
 # Wasāʾil al-Shīʿa English volume PDFs (ws<N>_eng.pdf) ship in the same source
 # repo as al-Mīzān, so the clone above already has them — ingest per-hadith.
-echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil"
+# ʿIlal al-Sharāʾiʿ PDFs ship alongside Biḥār in the same source repo.
+echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil + ʿIlal"
 python "$ROOT/scripts/ingest.py" \
   --bihar-dir "$SRC/bihar" \
   --almizan-dir "$SRC/almizan" \
-  --wasail-dir "$SRC/almizan"
+  --wasail-dir "$SRC/almizan" \
+  --ilal-dir "$SRC/bihar"
 
 count="$(find "$ROOT/data/knowledge" -name '*.jsonl' -not -path '*/sample/*' -exec cat {} + 2>/dev/null | wc -l | tr -d ' ')"
 echo ">> Full corpus ready — ${count} documents under data/knowledge/"

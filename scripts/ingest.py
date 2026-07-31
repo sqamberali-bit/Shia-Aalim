@@ -344,6 +344,8 @@ def ingest_ilal(ilal_dir: Path) -> int:
     pdfs = sorted(ilal_dir.glob("**/*ILLAL*AL*SHARAI*.pdf"), key=lambda p: p.name)
     if not pdfs:
         pdfs = sorted(ilal_dir.glob("**/*Illal*.pdf"), key=lambda p: p.name)
+    seen_names: set[str] = set()
+    pdfs = [p for p in pdfs if p.name not in seen_names and not seen_names.add(p.name)]  # type: ignore[func-returns-value]
     if not pdfs:
         print(f"  [skip] no Ilal al-Sharayi PDFs under {ilal_dir}")
         return 0

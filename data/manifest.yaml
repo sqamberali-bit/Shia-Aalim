@@ -14,7 +14,7 @@
 # -----------------------------------------------------------------------------
 
 version: 1
-total_expected_docs: 122918
+total_expected_docs: 124370
 
 # A published snapshot of the full built corpus. Leave url/sha256 null until a
 # bundle is produced with `scripts/fetch_data.py --make-bundle` and hosted.
@@ -190,3 +190,9 @@ works:
     output: data/knowledge/hadith/bihar-al-anwar-v*.jsonl
     build: {source: "github:sqamberali-bit/bihar-al-anwar-source", adapter: bihar}
     note: "Complete 101-vol hubeali English PDFs. Source PDFs live in the GitHub repo sqamberali-bit/bihar-al-anwar-source (pdfs/BiharAlAnwaar_V*.pdf), so this IS reproducible: clone it and run `scripts/ingest.py --bihar-dir <clone>` (needs pymupdf). One doc per page; cite volume + hubeali page."
+  - id: ilal-al-sharayi
+    tier: hadith
+    expected_docs: 1452
+    output: data/knowledge/hadith/ilal-al-sharayi-v*.jsonl
+    build: {source: "github:sqamberali-bit/bihar-al-anwar-source", adapter: ilal}
+    note: "Shaykh al-Saduq's Ilal al-Sharayi (2 vols, 17 parts). Hubeali English text-layer PDFs. Per-chapter/hadith splitting with Arabic/English separation. Ungraded. Rebuild: `scripts/ingest.py --ilal-dir <clone>` (needs pymupdf)."
