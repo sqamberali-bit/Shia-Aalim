@@ -150,6 +150,16 @@ sources:
     confidence: medium
     notes: "Complete 101-volume English text (hubeali PDFs) ingested per-hadith; cited as Bihar al-Anwar vN, Ch X, H Y using footnote-based splitting. Encyclopaedic compilation containing strong AND weak reports plus al-Majlisi's commentary, with NO per-hadith rijal grade in these PDFs — grade every narration against a rijal source before treating it as authentic. Corpus is external (see docs/data-management.md)."
 
+  - id: ilal-al-sharayi
+    title: "ʿIlal al-Sharāʾiʿ (Reasons for the Laws)"
+    kind: hadith
+    author: "Shaykh al-Ṣadūq (Ibn Bābawayh, d. 381 AH)"
+    translator: "Hubeali (English, www.hubeali.com)"
+    language: ar
+    url: "https://hubeali.com/online-books/online-english-books/illal-al-sharaie/"
+    confidence: medium
+    notes: "647 chapters of narrations explaining the reasons behind Islamic rulings, from the Prophet (S) and the Twelve Imams (as). Ingested per-chapter/per-hadith from hubeali English text-layer PDFs (2 volumes, multiple parts). No per-hadith rijal grade — grade every narration against a rijal source. Corpus is external (see docs/data-management.md)."
+
   - id: wasail-al-shia
     title: "Wasāʾil al-Shīʿa"
     kind: hadith

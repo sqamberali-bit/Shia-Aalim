@@ -31,6 +31,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from shia_aalim.ingestion.adapters.bihar import build_bihar_documents, volume_from_filename  # noqa: E402
+from shia_aalim.ingestion.adapters.ilal import build_ilal_documents  # noqa: E402
+from shia_aalim.ingestion.adapters.ilal import volume_part_from_filename as ilal_vol_part  # noqa: E402
 from shia_aalim.ingestion.adapters.mafatih import build_mafatih_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.plaintext import build_textbook_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.plaintext import volume_from_filename as txt_volume  # noqa: E402
@@ -337,6 +339,26 @@ def ingest_bihar(bihar_dir: Path) -> int:
     return total
 
 
+def ingest_ilal(ilal_dir: Path) -> int:
+    """Ingest the hubeali English Ilal al-Sharayi PDFs."""
+    pdfs = sorted(ilal_dir.glob("**/*ILLAL*AL*SHARAI*.pdf"), key=lambda p: p.name)
+    if not pdfs:
+        pdfs = sorted(ilal_dir.glob("**/*Illal*.pdf"), key=lambda p: p.name)
+    if not pdfs:
+        print(f"  [skip] no Ilal al-Sharayi PDFs under {ilal_dir}")
+        return 0
+    total = 0
+    for pdf in pdfs:
+        vol, part = ilal_vol_part(pdf)
+        vol = vol or "?"
+        part = part or "?"
+        docs = build_ilal_documents(pdf, volume=vol)
+        if docs:
+            write_jsonl(docs, KNOWLEDGE / "hadith" / f"ilal-al-sharayi-v{vol}-p{part}.jsonl")
+            total += len(docs)
+    return total
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--quran-dir", default=os.environ.get("QURAN_DIR"))
@@ -346,11 +368,13 @@ def main() -> int:
     parser.add_argument("--almizan-dir", default=os.environ.get("ALMIZAN_DIR"))
     parser.add_argument("--wasail-dir", default=os.environ.get("WASAIL_DIR"),
                         help="directory containing Wasail al-Shia ws<N>_eng.pdf volumes")
+    parser.add_argument("--ilal-dir", default=os.environ.get("ILAL_DIR"),
+                        help="directory containing Ilal al-Sharayi hubeali PDFs")
     parser.add_argument("--mafatih-json", default=os.environ.get("MAFATIH_JSON"),
                         help="path to the Mafatih al-Jinan chapters.json")
     args = parser.parse_args()
 
-    n_quran = n_hadith = n_prose = n_bihar = n_almizan = n_wasail = n_mafatih = 0
+    n_quran = n_hadith = n_prose = n_bihar = n_almizan = n_wasail = n_ilal = n_mafatih = 0
     if args.quran_dir:
         print("Ingesting Qur'an...")
         n_quran = ingest_quran(Path(args.quran_dir))
@@ -387,14 +411,20 @@ def main() -> int:
     else:
         print("  [skip] no --wasail-dir / WASAIL_DIR")
 
+    if args.ilal_dir:
+        print("Ingesting Ilal al-Sharayi (hubeali PDFs)...")
+        n_ilal = ingest_ilal(Path(args.ilal_dir))
+    else:
+        print("  [skip] no --ilal-dir / ILAL_DIR")
+
     if args.mafatih_json:
         print("Ingesting Mafatih al-Jinan (structured JSON)...")
         n_mafatih = ingest_mafatih(Path(args.mafatih_json))
     else:
         print("  [skip] no --mafatih-json / MAFATIH_JSON")
 
-    print(f"\nDone. {n_quran} Qur'an verses, {n_hadith + n_bihar + n_wasail} hadith "
-          f"({n_bihar} Bihar, {n_wasail} Wasail), "
+    print(f"\nDone. {n_quran} Qur'an verses, {n_hadith + n_bihar + n_wasail + n_ilal} hadith "
+          f"({n_bihar} Bihar, {n_wasail} Wasail, {n_ilal} Ilal), "
           f"{n_prose + n_almizan + n_mafatih} prose passages "
           f"({n_almizan} al-Mizan, {n_mafatih} Mafatih).")
     return 0
