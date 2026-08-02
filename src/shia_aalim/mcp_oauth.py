@@ -16,13 +16,14 @@ The issuer URL is the public URL of your Space
 
 from __future__ import annotations
 
-import hashlib
 import os
 import secrets
 import time
 from dataclasses import dataclass, field
 from typing import Optional
 from urllib.parse import urlencode
+
+from pydantic import AnyUrl
 
 from mcp.server.auth.provider import (
     AuthorizationParams,
@@ -35,13 +36,30 @@ _CLIENT_SECRET = os.environ.get("MCP_OAUTH_CLIENT_SECRET") or None
 _TOKEN_TTL = 3600 * 24 * 7  # 7 days
 
 
+class _OpenRedirectClient(OAuthClientInformationFull):
+    """Client that accepts any redirect_uri (public corpus, nothing to protect)."""
+
+    def validate_redirect_uri(self, redirect_uri: AnyUrl | None) -> AnyUrl:
+        if redirect_uri is not None:
+            return redirect_uri
+        if self.redirect_uris and len(self.redirect_uris) == 1:
+            return self.redirect_uris[0]
+        raise ValueError("redirect_uri required")
+
+
 @dataclass
 class _AuthCode:
     client_id: str
     code_challenge: str
     redirect_uri: str
     scopes: list[str]
+    redirect_uri_provided_explicitly: bool = True
     created: float = field(default_factory=time.time)
+    expires_at: float = 0.0
+
+    def __post_init__(self):
+        if not self.expires_at:
+            self.expires_at = self.created + 600  # 10 min
 
 
 @dataclass
@@ -61,6 +79,7 @@ class _RefreshToken:
     client_id: str
     scopes: list[str]
     created: float = field(default_factory=time.time)
+    expires_at: float = 0.0
 
 
 class ShiaAalimOAuthProvider(
@@ -77,11 +96,11 @@ class ShiaAalimOAuthProvider(
         self._register_default_client()
 
     def _register_default_client(self) -> None:
-        self._clients[_CLIENT_ID] = OAuthClientInformationFull(
+        self._clients[_CLIENT_ID] = _OpenRedirectClient(
             client_id=_CLIENT_ID,
             client_secret=_CLIENT_SECRET,
             client_name="Shia-Aalim MCP Client",
-            redirect_uris=["https://claude.ai/oauth/callback", "http://localhost/callback"],
+            redirect_uris=["https://claude.ai/api/mcp/auth_callback"],
             token_endpoint_auth_method="none" if not _CLIENT_SECRET else "client_secret_post",
             grant_types=["authorization_code", "refresh_token"],
             response_types=["code"],
@@ -107,6 +126,7 @@ class ShiaAalimOAuthProvider(
             code_challenge=params.code_challenge,
             redirect_uri=str(params.redirect_uri),
             scopes=params.scopes or [],
+            redirect_uri_provided_explicitly=params.redirect_uri_provided_explicitly,
         )
         query = {"code": code}
         if params.state:
@@ -201,7 +221,7 @@ class ShiaAalimOAuthProvider(
         return None
 
     async def revoke_token(
-        self, token: _AccessToken | _RefreshToken
+        self, token: _AccessToken | _RefreshToken,
     ) -> None:
         if isinstance(token, _AccessToken):
             self._access_tokens = {
