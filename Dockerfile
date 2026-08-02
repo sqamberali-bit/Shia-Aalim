@@ -61,12 +61,20 @@ RUN if [ -n "$SEMANTIC" ]; then \
 # public domain). For a private endpoint, set MCP_BEARER_TOKEN=<secret> so
 # callers must send `Authorization: Bearer <secret>`. Set ENABLE_MCP=0 to serve
 # the web UI only.
+#
+# OAuth: MCP_OAUTH=1 enables the built-in OAuth authorization server so
+# claude.ai Custom Connectors can authenticate reliably. Set the connector's
+# OAuth Client ID to the value of MCP_OAUTH_CLIENT_ID (default: shia-aalim-mcp).
+# The issuer URL is auto-detected from SPACE_HOST on HF Spaces; otherwise set
+# MCP_OAUTH_ISSUER_URL to your public URL.
 ENV HOST=0.0.0.0 \
     PORT=7860 \
     EMBEDDER=tfidf \
     K=15 \
     ENABLE_MCP=1 \
     MCP_ALLOWED_HOSTS=* \
+    MCP_OAUTH=1 \
+    MCP_OAUTH_CLIENT_ID=shia-aalim-mcp \
     PYTHONUNBUFFERED=1
 EXPOSE 7860
 

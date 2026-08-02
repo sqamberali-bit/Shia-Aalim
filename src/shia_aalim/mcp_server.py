@@ -118,6 +118,38 @@ _INSTRUCTIONS = (
 )
 
 
+def _maybe_oauth():
+    """Build OAuth provider + AuthSettings when MCP_OAUTH=1 (or MCP_OAUTH_CLIENT_ID is set)."""
+    enabled = os.environ.get("MCP_OAUTH", "").strip().lower() in ("1", "true", "yes", "on")
+    has_client = bool(os.environ.get("MCP_OAUTH_CLIENT_ID"))
+    if not enabled and not has_client:
+        return None, None
+
+    try:
+        from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions
+    except ImportError:  # pragma: no cover
+        return None, None
+
+    from .mcp_oauth import ShiaAalimOAuthProvider
+
+    issuer = os.environ.get("MCP_OAUTH_ISSUER_URL", "").strip()
+    if not issuer:
+        issuer = os.environ.get("SPACE_HOST", "").strip()
+        if issuer and not issuer.startswith("http"):
+            issuer = f"https://{issuer}"
+    if not issuer:
+        print("[shia-aalim] MCP OAuth: set MCP_OAUTH_ISSUER_URL or SPACE_HOST", file=sys.stderr)
+        return None, None
+
+    provider = ShiaAalimOAuthProvider()
+    settings = AuthSettings(
+        issuer_url=issuer,
+        resource_server_url=issuer,
+        client_registration_options=ClientRegistrationOptions(enabled=True),
+    )
+    return provider, settings
+
+
 def create_mcp(config: Optional[web.AppConfig] = None, *, stack: Optional[web.Stack] = None):
     """Build the FastMCP server with the corpus loaded and tools registered.
 
@@ -134,12 +166,16 @@ def create_mcp(config: Optional[web.AppConfig] = None, *, stack: Optional[web.St
     stack = stack or web.build_stack(config)
     retriever = stack.engine().answers.retriever
 
+    oauth_provider, auth_settings = _maybe_oauth()
+
     mcp = FastMCP(
         "shia-aalim",
         instructions=_INSTRUCTIONS,
         host=os.environ.get("HOST", "127.0.0.1"),
         port=int(os.environ.get("PORT", "8000")),
         transport_security=_transport_security(),
+        auth_server_provider=oauth_provider,
+        auth=auth_settings,
     )
 
     @mcp.tool()

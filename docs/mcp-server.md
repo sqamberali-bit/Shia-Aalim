@@ -91,6 +91,9 @@ Controls (Space → Settings → Variables/Secrets):
 | `ENABLE_MCP=1` | Mount `/mcp` in the web process (set `0` for UI-only). |
 | `MCP_ALLOWED_HOSTS=*` | Turn off the localhost-only Host check (required behind a public domain). Or list exact hosts, e.g. `my-space.hf.space`. |
 | `MCP_BEARER_TOKEN=<secret>` | Require `Authorization: Bearer <secret>` on `/mcp` (leave unset for an open endpoint). The web UI is never behind this gate. |
+| `MCP_OAUTH=1` | Enable the built-in OAuth authorization server so claude.ai Custom Connectors can authenticate reliably (no more disconnections). |
+| `MCP_OAUTH_CLIENT_ID=shia-aalim-mcp` | The OAuth Client ID to enter in the connector settings (default: `shia-aalim-mcp`). |
+| `MCP_OAUTH_ISSUER_URL=https://…` | The public URL of the Space (auto-detected from `SPACE_HOST` on HF Spaces). |
 
 ### B2 — Standalone MCP process
 
@@ -107,13 +110,14 @@ The endpoint is served at `/mcp` per the MCP HTTP spec
 
 ### Connecting Claude
 
-- In **claude.ai → Settings → Connectors → Add custom connector**, give the
-  server's public HTTPS URL ending in `/mcp`. If you set `MCP_BEARER_TOKEN`, add
-  the `Authorization: Bearer <secret>` header where the connector dialog allows
-  it. (Remote connectors need HTTPS; some claude.ai setups also require the
-  server to implement OAuth — if yours does, Claude Desktop's remote-MCP option
-  is the lighter path.)
+- In **claude.ai → Settings → Connectors → Add custom connector**:
+  1. Enter the server's public HTTPS URL ending in `/mcp`.
+  2. Under **OAuth Client ID**, enter `shia-aalim-mcp` (or whatever you set
+     `MCP_OAUTH_CLIENT_ID` to). This ensures the connector authenticates
+     reliably instead of attempting dynamic registration.
+  3. Click **Connect**. The OAuth handshake auto-approves (the corpus is public).
 - In **Claude Desktop** you can add the same URL as a remote MCP server.
+  If using bearer-token auth, set `MCP_BEARER_TOKEN` and configure the header.
 
 ---
 

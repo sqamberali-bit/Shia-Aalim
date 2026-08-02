@@ -675,8 +675,13 @@ def _maybe_build_mcp(stack: "Stack"):
         token = os.environ.get("MCP_BEARER_TOKEN") or None
         mcp, mcp_app = mcp_server.build_http_app(stack=stack, bearer_token=token)
         path = mcp.settings.streamable_http_path
-        note = f" (bearer-token protected)" if token else ""
-        print(f"[shia-aalim] remote MCP endpoint enabled at {path}{note}", file=sys.stderr)
+        notes = []
+        if token:
+            notes.append("bearer-token protected")
+        if mcp.settings.auth:
+            notes.append(f"OAuth enabled, client_id={os.environ.get('MCP_OAUTH_CLIENT_ID', 'shia-aalim-mcp')}")
+        suffix = f" ({', '.join(notes)})" if notes else ""
+        print(f"[shia-aalim] remote MCP endpoint enabled at {path}{suffix}", file=sys.stderr)
         return mcp, mcp_app, mcp_server.session_lifespan(mcp)
     except Exception as exc:  # pragma: no cover - defensive
         print(f"[shia-aalim] ENABLE_MCP set but MCP could not start: {exc}", file=sys.stderr)
