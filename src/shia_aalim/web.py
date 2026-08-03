@@ -511,6 +511,18 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
             "default_k": cfg.default_k,
         }
 
+    @app.get("/api/mcp-status")
+    async def mcp_status() -> dict:
+        return {
+            "enabled": os.environ.get("ENABLE_MCP", "0"),
+            "mounted": mcp_ctx is not None,
+            "oauth": os.environ.get("MCP_OAUTH", "0"),
+            "oauth_client_id": os.environ.get("MCP_OAUTH_CLIENT_ID", ""),
+            "issuer_url": os.environ.get("MCP_OAUTH_ISSUER_URL", ""),
+            "space_host": os.environ.get("SPACE_HOST", ""),
+            "error": _mcp_error,
+        }
+
     @app.get("/api/sources")
     async def sources() -> dict:
         return stack.facets()
@@ -661,6 +673,9 @@ def create_app(config: Optional[AppConfig] = None, *, stack: Optional[Stack] = N
     return app
 
 
+_mcp_error: str | None = None
+
+
 def _maybe_build_mcp(stack: "Stack"):
     """Build the mountable MCP app when ENABLE_MCP is set, else return None.
 
@@ -668,6 +683,7 @@ def _maybe_build_mcp(stack: "Stack"):
     extra, etc.) are logged and treated as "MCP off" — they never break the web
     app.
     """
+    global _mcp_error
     if os.environ.get("ENABLE_MCP", "").strip().lower() not in ("1", "true", "yes", "on"):
         return None
     try:
@@ -684,7 +700,10 @@ def _maybe_build_mcp(stack: "Stack"):
         print(f"[shia-aalim] remote MCP endpoint enabled at {path}{suffix}", file=sys.stderr)
         return mcp, mcp_app, mcp_server.session_lifespan(mcp)
     except Exception as exc:  # pragma: no cover - defensive
+        import traceback
+        _mcp_error = traceback.format_exc()
         print(f"[shia-aalim] ENABLE_MCP set but MCP could not start: {exc}", file=sys.stderr)
+        print(_mcp_error, file=sys.stderr)
         return None
 
 
