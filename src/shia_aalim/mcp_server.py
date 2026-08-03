@@ -142,9 +142,10 @@ def _maybe_oauth():
         return None, None
 
     provider = ShiaAalimOAuthProvider()
+    resource_url = issuer.rstrip("/") + "/mcp"
     settings = AuthSettings(
         issuer_url=issuer,
-        resource_server_url=issuer,
+        resource_server_url=resource_url,
         client_registration_options=ClientRegistrationOptions(enabled=True),
     )
     return provider, settings
