@@ -169,15 +169,24 @@ def create_mcp(config: Optional[web.AppConfig] = None, *, stack: Optional[web.St
 
     oauth_provider, auth_settings = _maybe_oauth()
 
-    mcp = FastMCP(
-        "shia-aalim",
+    _common = dict(
         instructions=_INSTRUCTIONS,
         host=os.environ.get("HOST", "127.0.0.1"),
         port=int(os.environ.get("PORT", "8000")),
         transport_security=_transport_security(),
-        auth_server_provider=oauth_provider,
-        auth=auth_settings,
     )
+
+    try:
+        mcp = FastMCP(
+            "shia-aalim",
+            **_common,
+            auth_server_provider=oauth_provider,
+            auth=auth_settings,
+        )
+    except Exception as exc:
+        print(f"[shia-aalim] MCP OAuth init failed, starting without OAuth: {exc}",
+              file=sys.stderr)
+        mcp = FastMCP("shia-aalim", **_common)
 
     @mcp.tool()
     def search_sources(
