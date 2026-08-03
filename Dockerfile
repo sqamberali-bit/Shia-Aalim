@@ -20,7 +20,9 @@ COPY . /app
 # ANTHROPIC_API_KEY and SYNTHESIZE=claude:<model> are set at runtime (no rebuild
 # needed to switch on). The mcp extra lets this same process also expose a remote
 # MCP endpoint at /mcp (see ENABLE_MCP below) so Claude can connect by URL.
-RUN pip install --no-cache-dir -e ".[web,llm,mcp]"
+RUN pip install --no-cache-dir "mcp>=1.20" \
+    && pip install --no-cache-dir -e ".[web,llm,mcp]" \
+    && python -c "from mcp.server.fastmcp import FastMCP; print('MCP FastMCP import OK')"
 
 # Corpus scope: "public" (~60k docs, default, fits small hosts) or "full"
 # (~122k docs incl. Biḥār 101 vols + al-Mīzān 40 vols; needs ~2–4 GB RAM).
