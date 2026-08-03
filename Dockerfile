@@ -20,7 +20,7 @@ COPY . /app
 # ANTHROPIC_API_KEY and SYNTHESIZE=claude:<model> are set at runtime (no rebuild
 # needed to switch on). The mcp extra lets this same process also expose a remote
 # MCP endpoint at /mcp (see ENABLE_MCP below) so Claude can connect by URL.
-RUN pip install --no-cache-dir "mcp>=1.20" \
+RUN pip install --no-cache-dir "mcp>=1.20,<2" \
     && pip install --no-cache-dir -e ".[web,llm,mcp]" \
     && python -c "from mcp.server.fastmcp import FastMCP; print('MCP FastMCP import OK')"
 
