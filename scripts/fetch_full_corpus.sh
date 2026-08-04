@@ -29,10 +29,13 @@ echo ">> Tafsīr al-Mīzān source (40 txt)"
 echo ">> Installing PyMuPDF (Biḥār PDF text extraction)"
 pip install --no-cache-dir "pymupdf>=1.24"
 
-# Wasāʾil al-Shīʿa English volume PDFs (ws<N>_eng.pdf, vols 1-16 so far) ship
-# in the Biḥār source repo under pdfs/ — ingest per-hadith.
-# ʿIlal al-Sharāʾiʿ PDFs ship alongside Biḥār in the same source repo.
-echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil + ʿIlal"
+# Wasāʾil al-Shīʿa volume PDFs (ws<N>*.pdf) ship in the Biḥār source repo
+# under pdfs/ — ingest per-hadith. Vols 1-16 are the English translation;
+# 17-28 are Arabic-only. The deployed index is capped at vol 16 for now: the
+# Arabic volumes' ~13k extra documents push the Space over its memory. Raise
+# or unset WASAIL_MAX_VOL (Space variable or here) when the host has room.
+export WASAIL_MAX_VOL="${WASAIL_MAX_VOL:-16}"
+echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil (vols ≤ ${WASAIL_MAX_VOL}) + ʿIlal"
 python "$ROOT/scripts/ingest.py" \
   --bihar-dir "$SRC/bihar" \
   --almizan-dir "$SRC/almizan" \

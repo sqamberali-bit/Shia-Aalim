@@ -340,13 +340,22 @@ def ingest_wasail(wasail_dir: Path) -> int:
     def _pref(p: Path) -> tuple[int, int]:
         return (0 if "_eng" in p.name.lower() else 1, len(p.name))
 
+    # WASAIL_MAX_VOL caps which volumes are ingested (0/unset = all). Used to
+    # keep the deployed index within a small host's memory: the Arabic-edition
+    # vols 17-28 add ~13k documents, which can push a Space over its RAM.
+    max_vol = int(os.environ.get("WASAIL_MAX_VOL", "0") or 0)
+
     by_vol: dict[int, Path] = {}
     for p in wasail_dir.glob("**/ws*.pdf"):
         v = int(wasail_volume(p) or 0)
         if not v:
             continue
+        if max_vol and v > max_vol:
+            continue
         if v not in by_vol or _pref(p) < _pref(by_vol[v]):
             by_vol[v] = p
+    if max_vol:
+        print(f"  [cap] WASAIL_MAX_VOL={max_vol} — later volumes skipped")
     pdfs = [by_vol[v] for v in sorted(by_vol)]
     if not pdfs:
         print(f"  [skip] no ws*.pdf under {wasail_dir}")
