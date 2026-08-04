@@ -29,14 +29,14 @@ echo ">> Tafsīr al-Mīzān source (40 txt)"
 echo ">> Installing PyMuPDF (Biḥār PDF text extraction)"
 pip install --no-cache-dir "pymupdf>=1.24"
 
-# Wasāʾil al-Shīʿa English volume PDFs (ws<N>_eng.pdf) ship in the same source
-# repo as al-Mīzān, so the clone above already has them — ingest per-hadith.
+# Wasāʾil al-Shīʿa English volume PDFs (ws<N>_eng.pdf, vols 1-16 so far) ship
+# in the Biḥār source repo under pdfs/ — ingest per-hadith.
 # ʿIlal al-Sharāʾiʿ PDFs ship alongside Biḥār in the same source repo.
 echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil + ʿIlal"
 python "$ROOT/scripts/ingest.py" \
   --bihar-dir "$SRC/bihar" \
   --almizan-dir "$SRC/almizan" \
-  --wasail-dir "$SRC/almizan" \
+  --wasail-dir "$SRC/bihar" \
   --ilal-dir "$SRC/bihar"
 
 count="$(find "$ROOT/data/knowledge" -name '*.jsonl' -not -path '*/sample/*' -exec cat {} + 2>/dev/null | wc -l | tr -d ' ')"

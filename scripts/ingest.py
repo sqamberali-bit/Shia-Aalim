@@ -333,12 +333,18 @@ def ingest_wasail(wasail_dir: Path) -> int:
     Only the volumes actually present are ingested — missing ones are skipped, not
     approximated.
     """
-    pdfs = sorted(
-        wasail_dir.glob("**/ws*_eng.pdf"),
-        key=lambda p: int(wasail_volume(p) or 0),
-    )
+    # Tolerate browser-duplicate names like "ws1_eng (2).pdf"; keep one PDF per
+    # volume (the plain-named file wins over a "(n)" copy).
+    by_vol: dict[int, Path] = {}
+    for p in wasail_dir.glob("**/ws*_eng*.pdf"):
+        v = int(wasail_volume(p) or 0)
+        if not v:
+            continue
+        if v not in by_vol or len(p.name) < len(by_vol[v].name):
+            by_vol[v] = p
+    pdfs = [by_vol[v] for v in sorted(by_vol)]
     if not pdfs:
-        print(f"  [skip] no ws*_eng.pdf under {wasail_dir}")
+        print(f"  [skip] no ws*_eng*.pdf under {wasail_dir}")
         return 0
     total = 0
     for pdf in pdfs:
