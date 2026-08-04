@@ -41,6 +41,7 @@ from shia_aalim.ingestion.adapters.shiavault import build_prose_documents  # noq
 from shia_aalim.ingestion.adapters.thaqalayn import build_hadith_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.wasail import build_wasail_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.wasail import volume_from_filename as wasail_volume  # noqa: E402
+from shia_aalim.ingestion.adapters.wasail_arabic import build_wasail_arabic_documents  # noqa: E402
 from shia_aalim.models import ConfidenceLevel, Document, EvidenceType  # noqa: E402
 
 KNOWLEDGE = ROOT / "data" / "knowledge"
@@ -333,23 +334,45 @@ def ingest_wasail(wasail_dir: Path) -> int:
     Only the volumes actually present are ingested — missing ones are skipped, not
     approximated.
     """
-    # Tolerate browser-duplicate names like "ws1_eng (2).pdf"; keep one PDF per
-    # volume (the plain-named file wins over a "(n)" copy).
+    # Tolerate browser-duplicate names like "ws1_eng (2).pdf" and plain Arabic
+    # volume names like "ws18.pdf". Keep one PDF per volume: an _eng (English
+    # translation) file wins over an Arabic one, then the shorter name wins.
+    def _pref(p: Path) -> tuple[int, int]:
+        return (0 if "_eng" in p.name.lower() else 1, len(p.name))
+
     by_vol: dict[int, Path] = {}
-    for p in wasail_dir.glob("**/ws*_eng*.pdf"):
+    for p in wasail_dir.glob("**/ws*.pdf"):
         v = int(wasail_volume(p) or 0)
         if not v:
             continue
-        if v not in by_vol or len(p.name) < len(by_vol[v].name):
+        if v not in by_vol or _pref(p) < _pref(by_vol[v]):
             by_vol[v] = p
     pdfs = [by_vol[v] for v in sorted(by_vol)]
     if not pdfs:
-        print(f"  [skip] no ws*_eng*.pdf under {wasail_dir}")
+        print(f"  [skip] no ws*.pdf under {wasail_dir}")
         return 0
+    def _drop_isolated(docs: list, name: str) -> list:
+        # Real narration numbers run contiguously through a volume; a number
+        # with neither neighbor present is a false marker (e.g. a hadith
+        # number quoted in a cross-reference footnote) — drop, don't mis-cite.
+        nums = {int(d.citation.hadith_number or 0) for d in docs}
+        kept = [d for d in docs
+                if (int(d.citation.hadith_number or 0) - 1 in nums)
+                or (int(d.citation.hadith_number or 0) + 1 in nums)]
+        if len(kept) < len(docs):
+            print(f"  [drop] {name}: {len(docs) - len(kept)} isolated hadith "
+                  f"number(s) (cross-reference artefacts) — skipped")
+        return kept
+
     total = 0
     for pdf in pdfs:
         vol = wasail_volume(pdf) or "0"
+        # English-translation volumes carry "Hadith N" markers; the later
+        # Arabic-edition volumes don't — fall back to the Arabic adapter.
         docs = build_wasail_documents(pdf, volume=vol)
+        if not docs:
+            docs = build_wasail_arabic_documents(pdf, volume=vol)
+        docs = _drop_isolated(docs, pdf.name)
         if docs:
             write_jsonl(docs, KNOWLEDGE / "hadith" / f"wasail-al-shia-v{int(vol):02d}.jsonl")
             total += len(docs)

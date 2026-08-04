@@ -171,9 +171,11 @@ sources:
       Major fiqh-hadith collection organised by legal topic. Ingested from
       English text-layer volume PDFs (ws<N>_eng.pdf), one document per numbered
       narration, cited by volume + section + hadith number with the Arabic matn
-      preserved. PARTIAL: only the volumes present are ingested (vols 1-16 so
-      far; remaining volumes pending as the wasail-al-shia.net translation
-      progresses). These PDFs record no rijāl grade, so narrations are ungraded and
+      preserved. Vols 1-16 are the English translation (Arabic + English per
+      narration); vols 17-28 are Arabic-only Āl al-Bayt edition PDFs (cited by
+      volume + bāb + cumulative hadith number) — swap in the English editions
+      when the wasail-al-shia.net translation reaches them. These PDFs record
+      no rijāl grade, so narrations are ungraded and
       confidence is capped at medium — grade against a rijāl source before
       treating any narration as authentic.
 
