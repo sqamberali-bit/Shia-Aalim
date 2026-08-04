@@ -135,6 +135,36 @@ PROSE_TARGETS = [
     ("books/jami-al-sa-adat-the-collector-of-felicities", "jami-al-saadat", "scholarly_opinion", None, "jami-al-saadat.jsonl"),
     ("books/lohoof-sighs-of-sorrow", "al-luhuf", "historical", None, "al-luhuf.jsonl"),
     ("books/the-event-of-taff-the-earliest-historical-account-of-the-tragedy-of-karbala", "maqtal-abu-mikhnaf", "historical", None, "maqtal-abu-mikhnaf.jsonl"),
+    # --- 2026-08 expansion (all via the Shiavault mirror) ---
+    ("books/kamaaluddin-wa-tamaamun-ni-ma-vol-1", "kamal-al-din", "hadith", "1", "kamal-al-din-v1.jsonl"),
+    ("books/kamaaluddin-wa-tamaamun-ni-ma-vol-2", "kamal-al-din", "hadith", "2", "kamal-al-din-v2.jsonl"),
+    ("books/ghurar-al-hikam-wa-durar-al-kalim-exalted-aphorisms-and-pearls-of-speech",
+     "ghurar-al-hikam", "hadith", None, "ghurar-al-hikam.jsonl"),
+    ("books/nafasul-mahmum-relating-to-the-heart-rending-tragedy-of-karbala",
+     "nafas-al-mahmum", "historical", None, "nafas-al-mahmum.jsonl"),
+    ("books/hayat-al-qulub-vol-1-stories-of-the-prophets", "hayat-al-qulub", "historical", "1", "hayat-al-qulub-v1.jsonl"),
+    ("books/hayat-al-qulub-vol-2", "hayat-al-qulub", "historical", "2", "hayat-al-qulub-v2.jsonl"),
+    ("books/hayat-al-qulub-vol-3", "hayat-al-qulub", "historical", "3", "hayat-al-qulub-v3.jsonl"),
+    ("books/ain-al-hayat-the-essence-of-life", "ayn-al-hayat", "scholarly_opinion", None, "ayn-al-hayat.jsonl"),
+    ("books/al-muraja-at", "al-murajaat", "scholarly_opinion", None, "al-murajaat.jsonl"),
+    ("books/peshawar-nights", "peshawar-nights", "scholarly_opinion", None, "peshawar-nights.jsonl"),
+    ("books/islamic-laws", "islamic-laws-sistani", "scholarly_opinion", None, "islamic-laws-sistani.jsonl"),
+    ("books/islamic-laws-of-ayatullah-khui", "islamic-laws-khui", "scholarly_opinion", None, "islamic-laws-khui.jsonl"),
+    ("books/forty-hadith-an-exposition", "forty-hadith-khomeini", "scholarly_opinion", None, "forty-hadith-khomeini.jsonl"),
+    ("books/the-shiite-islam", "shiite-islam-tabatabai", "scholarly_opinion", None, "shiite-islam-tabatabai.jsonl"),
+]
+
+# The 20-volume "Enlightening Commentary into the Light of the Holy Qur'an"
+# (based on Tafsir Nemooneh) — one PROSE_TARGETS entry per volume.
+PROSE_TARGETS += [
+    (
+        f"books/an-enlightening-commentary-into-the-light-of-the-holy-qur-an-vol-{v}",
+        "enlightening-commentary",
+        "tafsir",
+        str(v),
+        f"enlightening-commentary-v{v}.jsonl",
+    )
+    for v in range(1, 21)
 ]
 
 

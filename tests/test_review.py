@@ -16,13 +16,31 @@ from shia_aalim.sources import load_sources
 
 REGISTRY = DATA / "sources" / "registry.yaml"
 
+# A synthetic not-yet-verified source appended to a COPY of the real registry —
+# the tests must not depend on which live sources happen to be unverified.
+_STUB = """
+  - id: test-unverified-book
+    title: "Test Unverified Book"
+    kind: hadith
+    author: "Test Author"
+    language: ar
+    confidence: unverified
+    notes: "Synthetic test entry."
+"""
 
-def test_build_queue_pending_selects_unverified_and_low():
-    items = build_review_queue(load_sources(REGISTRY), only="pending")
+
+def _registry_with_stub(tmp_path):
+    reg = tmp_path / "registry.yaml"
+    reg.write_text(REGISTRY.read_text(encoding="utf-8") + _STUB, encoding="utf-8")
+    return reg
+
+
+def test_build_queue_pending_selects_unverified_and_low(tmp_path):
+    reg = _registry_with_stub(tmp_path)
+    items = build_review_queue(load_sources(reg), only="pending")
     bands = {it.current_confidence for it in items}
     assert bands <= {"unverified", "low"}
-    # kamal-al-din was marked unverified/not-ingested -> should appear
-    assert any(it.source_id == "kamal-al-din" for it in items)
+    assert any(it.source_id == "test-unverified-book" for it in items)
 
 
 def test_build_queue_by_ids_and_band():
@@ -65,9 +83,8 @@ def test_set_source_confidence_edits_only_target(tmp_path):
 
 
 def test_apply_decisions_promotes_and_audits(tmp_path):
-    # Work on a COPY so the real registry is untouched.
-    reg = tmp_path / "registry.yaml"
-    reg.write_text(REGISTRY.read_text(encoding="utf-8"), encoding="utf-8")
+    # Work on a COPY (with the synthetic stub) so the real registry is untouched.
+    reg = _registry_with_stub(tmp_path)
     audit = tmp_path / "audit.jsonl"
 
     strong = SourceAssessment(
@@ -76,7 +93,7 @@ def test_apply_decisions_promotes_and_audits(tmp_path):
         translation_quality=0.9, notes="verified edition",
     )
     changes = apply_decisions(
-        reg, [ReviewDecision("kamal-al-din", strong, "A. Scholar")],
+        reg, [ReviewDecision("test-unverified-book", strong, "A. Scholar")],
         audit_path=audit, reviewer="A. Scholar", now="2026-08-01T00:00:00Z",
     )
     assert changes[0].applied
@@ -85,11 +102,11 @@ def test_apply_decisions_promotes_and_audits(tmp_path):
 
     # registry file actually updated to high
     updated = {s.id: s.confidence for s in load_sources(reg)}
-    assert updated["kamal-al-din"] is ConfidenceLevel.HIGH
+    assert updated["test-unverified-book"] is ConfidenceLevel.HIGH
 
     # audit trail written with the scores
     rec = json.loads(audit.read_text(encoding="utf-8").splitlines()[0])
-    assert rec["source_id"] == "kamal-al-din" and rec["new_confidence"] == "high"
+    assert rec["source_id"] == "test-unverified-book" and rec["new_confidence"] == "high"
     assert rec["reviewer"] == "A. Scholar" and rec["contributions"]
 
 

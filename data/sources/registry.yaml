@@ -223,14 +223,6 @@ sources:
     confidence: medium
 
   # ---- Further ThaqalaynData (CC0) collections — ingested, ungraded (medium) ----
-  - id: kamal-al-din
-    title: "Kamāl al-Dīn wa Tamām al-Niʿma"
-    kind: hadith
-    author: "Shaykh al-Saduq"
-    language: ar
-    confidence: unverified
-    notes: "NOT ingested — the ThaqalaynData entry is an empty stub (no matn/translation). Upload a real edition to ingest."
-
   - id: kamil-al-ziyarat
     title: "Kāmil al-Ziyārāt"
     kind: hadith
@@ -490,3 +482,124 @@ sources:
     license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
     confidence: medium
     notes: "Classical biography of the Twelve Imams. Prose, chapter-level citations."
+
+  - id: kamal-al-din
+    title: "Kamāl al-Dīn wa Tamām al-Niʿma (Perfection of Faith)"
+    kind: hadith
+    author: "Shaykh al-Ṣadūq (Ibn Bābawayh, d. 381 AH)"
+    language: en
+    url: "https://www.al-islam.org/kamaaluddin-wa-tamaamun-nima-shaykh-saduq"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "al-Ṣadūq's major work on the Twelfth Imam and the ghayba (2 volumes). Narrations ingested as prose with chapter-level citations — grade individual reports against a rijal source."
+
+  - id: ghurar-al-hikam
+    title: "Ghurar al-Ḥikam wa Durar al-Kalim (Exalted Aphorisms)"
+    kind: hadith
+    author: "ʿAbd al-Wāḥid al-Āmidī (d. 510 AH)"
+    language: en
+    url: "https://www.al-islam.org/ghurar-al-hikam-wa-durar-al-kalim-exalted-aphorisms-and-pearls-speech"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Thematic collection of short sayings attributed to Imam ʿAlī (as). Transmitted without chains (mursal) — corroborate against chained sources for doctrinal weight. Chapter-level citations."
+
+  - id: nafas-al-mahmum
+    title: "Nafas al-Mahmūm (The Heart-Rending Tragedy of Karbala)"
+    kind: historical
+    author: "Shaykh ʿAbbās al-Qummī (d. 1359 AH)"
+    language: en
+    url: "https://www.al-islam.org/nafasul-mahmum-relating-heart-rending-tragedy-karbala-shaykh-abbas-qummi"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Widely-read maqtal of Karbala by the compiler of Mafātīḥ al-Jinān. Prose, chapter-level citations."
+
+  - id: hayat-al-qulub
+    title: "Ḥayāt al-Qulūb (Life of the Hearts)"
+    kind: historical
+    author: "ʿAllāma Muḥammad Bāqir al-Majlisī (d. 1110 AH)"
+    language: en
+    url: "https://www.al-islam.org/hayat-al-qulub-vol-1-allamah-muhammad-baqir-al-majlisi"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Majlisī's narrative history: vol 1 stories of the prophets, vol 2 life of the Prophet (S), vol 3 imamate. Prose, chapter-level citations; corroborate reports against primary chains."
+
+  - id: ayn-al-hayat
+    title: "ʿAyn al-Ḥayāt (The Essence of Life)"
+    kind: scholarly_opinion
+    author: "ʿAllāma Muḥammad Bāqir al-Majlisī (d. 1110 AH)"
+    language: en
+    url: "https://www.al-islam.org/ain-al-hayat-essence-life-allamah-muhammad-baqir-majlisi"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Majlisī's commentary on ethical-spiritual counsel of the Prophet (S), largely an exposition of hadith. Prose, chapter-level citations."
+
+  - id: al-murajaat
+    title: "al-Murājaʿāt (The Right Path — Sunni-Shia Correspondence)"
+    kind: scholarly_opinion
+    author: "Sayyid ʿAbd al-Ḥusayn Sharaf al-Dīn al-Mūsawī (d. 1377 AH)"
+    language: en
+    url: "https://www.al-islam.org/al-murajaat-shii-sunni-dialogue-sayyid-abd-al-husayn-sharaf-al-din-al-musawi"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Classic correspondence between Sharaf al-Dīn and Shaykh Salīm al-Bishrī of al-Azhar on imamate. Polemical/comparative genre — present as argumentation, not as neutral fact. Chapter-level citations."
+
+  - id: peshawar-nights
+    title: "Peshawar Nights (Shabhā-ye Peshāwar)"
+    kind: scholarly_opinion
+    author: "Sayyid Muḥammad al-Mūsawī Sultān al-Wāʿiẓīn Shīrāzī (d. 1971)"
+    language: en
+    url: "https://www.al-islam.org/peshawar-nights-sultanul-waizin-shirazi"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Transcript of a famous 1927 Sunni-Shia debate in Peshawar. Polemical/comparative genre — present as argumentation, not as neutral fact. Chapter-level citations."
+
+  - id: islamic-laws-sistani
+    title: "Islamic Laws (Tawḍīḥ al-Masāʾil of Ayatollah al-Sistani)"
+    kind: scholarly_opinion
+    author: "Ayatollah Sayyid Ali al-Husayni al-Sistani"
+    language: en
+    url: "https://www.al-islam.org/islamic-laws-ayatullah-ali-al-husayni-al-sistani"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Practical fiqh rulings (risāla ʿamaliyya). Rulings DIFFER between marājiʿ and are revised over time — always tell users to confirm current rulings with their own marjaʿ / sistani.org. Chapter-level citations."
+
+  - id: islamic-laws-khui
+    title: "Islamic Laws of Ayatollah al-Khūʾī"
+    kind: scholarly_opinion
+    author: "Ayatollah Sayyid Abū al-Qāsim al-Khūʾī (d. 1413 AH)"
+    language: en
+    url: "https://www.al-islam.org/islamic-laws-ayatullah-abul-qasim-al-khui"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Practical fiqh rulings of the late marjaʿ al-Khūʾī. Historical reference for taqlid questions — rulings differ between marājiʿ; direct users to their living marjaʿ. Chapter-level citations."
+
+  - id: forty-hadith-khomeini
+    title: "Forty Hadith — An Exposition (Imam Khomeini)"
+    kind: scholarly_opinion
+    author: "Imam Rūḥullāh al-Mūsawī al-Khumaynī (d. 1409 AH)"
+    language: en
+    url: "https://www.al-islam.org/forty-hadith-exposition-second-revised-edition-imam-khomeini"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Ethical-mystical exposition of forty narrations on the spiritual path. The hadith quoted inside carry their own sources; the exposition is scholarly opinion. Chapter-level citations."
+
+  - id: shiite-islam-tabatabai
+    title: "Shiʿite Islam (ʿAllāma Ṭabāṭabāʾī)"
+    kind: scholarly_opinion
+    author: "ʿAllāma Sayyid Muḥammad Ḥusayn Ṭabāṭabāʾī (d. 1402 AH)"
+    translator: "Sayyid Husayn Nasr"
+    language: en
+    url: "https://www.al-islam.org/shiite-islam-sayyid-muhammad-husayn-tabatabai"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Authoritative modern introduction to Twelver history, thought and spirituality by the author of al-Mīzān. Chapter-level citations."
+
+  - id: enlightening-commentary
+    title: "An Enlightening Commentary into the Light of the Holy Qur'an"
+    kind: tafsir
+    author: "Sayyid Kamāl Faqīh Imānī and a group of scholars (based on Tafsīr Nemūneh, Ayatollah Makārim Shīrāzī)"
+    language: en
+    url: "https://www.al-islam.org/enlightening-commentary-light-holy-quran-vol-1"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "20-volume contemporary English tafsir compiled from classical Shia and Sunni commentaries. Prose, chapter-level citations per volume."
