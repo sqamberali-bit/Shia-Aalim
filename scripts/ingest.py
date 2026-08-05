@@ -451,6 +451,11 @@ OPENITI_TARGETS = [
     ("0436SharifMurtada.ShafiFiImama.", "al-shafi-fi-al-imamah", "scholarly_opinion", "al-shafi-fi-al-imamah.jsonl"),
     ("0588IbnShahrAshub.ManaqibAlAbiTalib.", "manaqib-al-abi-talib", "historical", "manaqib-al-abi-talib.jsonl"),
     ("1413TajDinKhui.MucjamRijal.", "mujam-rijal-al-hadith", "biographical", "mujam-rijal-al-hadith.jsonl"),
+    # -- classical narration-based tafsir + Majma' al-Bayan --
+    ("0329IbnIbrahimQummi.Tafsir.", "tafsir-al-qummi", "tafsir", "tafsir-al-qummi.jsonl"),
+    ("0320IbnMascudCayyashi.Tafsir.", "tafsir-al-ayyashi", "tafsir", "tafsir-al-ayyashi.jsonl"),
+    ("0548IbnHasanTabarsi.TafsirMajmacBayan.", "majma-al-bayan", "tafsir", "majma-al-bayan.jsonl"),
+    ("1112IbnJumcaHuwayzi.TafsirNurThaqalayn.", "nur-al-thaqalayn", "tafsir", "nur-al-thaqalayn.jsonl"),
 ]
 
 

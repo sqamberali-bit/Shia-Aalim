@@ -31,10 +31,10 @@ pip install --no-cache-dir "pymupdf>=1.24"
 
 # Wasāʾil al-Shīʿa volume PDFs (ws<N>*.pdf) ship in the Biḥār source repo
 # under pdfs/ — ingest per-hadith. Vols 1-16 are the English translation;
-# 17-28 are Arabic-only. The deployed index is capped at vol 16 for now: the
-# Arabic volumes' ~13k extra documents push the Space over its memory. Raise
-# or unset WASAIL_MAX_VOL (Space variable or here) when the host has room.
-export WASAIL_MAX_VOL="${WASAIL_MAX_VOL:-16}"
+# 17-28 are Arabic-only. All volumes deploy by default (32 GB holds the full
+# corpus with ~12 GB to spare); set WASAIL_MAX_VOL=16 (Space variable or env)
+# to shrink the index if a smaller host ever needs it.
+export WASAIL_MAX_VOL="${WASAIL_MAX_VOL:-0}"
 
 # 3) OpenITI classical Arabic texts (rijal + early hadith + Mufid's kalam) —
 # small, page-cited, Arabic-only. See OPENITI_TARGETS in scripts/ingest.py.
@@ -63,6 +63,10 @@ done <<'OPENITI'
 0450AH|0436SharifMurtada/0436SharifMurtada.ShafiFiImama/0436SharifMurtada.ShafiFiImama.Shia003996Vols-ara1
 0600AH|0588IbnShahrAshub/0588IbnShahrAshub.ManaqibAlAbiTalib/0588IbnShahrAshub.ManaqibAlAbiTalib.Shia001349Vols-ara1
 1425AH|1413TajDinKhui/1413TajDinKhui.MucjamRijal/1413TajDinKhui.MucjamRijal.Shia002992Vols-ara1
+0350AH|0329IbnIbrahimQummi/0329IbnIbrahimQummi.Tafsir/0329IbnIbrahimQummi.Tafsir.Tafsir04038-ara1
+0325AH|0320IbnMascudCayyashi/0320IbnMascudCayyashi.Tafsir/0320IbnMascudCayyashi.Tafsir.Masaha004648Vols-ara1
+0550AH|0548IbnHasanTabarsi/0548IbnHasanTabarsi.TafsirMajmacBayan/0548IbnHasanTabarsi.TafsirMajmacBayan.Tafsir04003-ara1
+1125AH|1112IbnJumcaHuwayzi/1112IbnJumcaHuwayzi.TafsirNurThaqalayn/1112IbnJumcaHuwayzi.TafsirNurThaqalayn.Shia002389Vols-ara1
 OPENITI
 
 echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil (vols ≤ ${WASAIL_MAX_VOL}) + ʿIlal + OpenITI"

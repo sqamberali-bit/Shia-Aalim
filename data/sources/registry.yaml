@@ -73,9 +73,12 @@ sources:
   - id: majma-al-bayan
     title: "Majmaʿ al-Bayān fī Tafsīr al-Qurʾān"
     kind: tafsir
-    author: "al-Fadl ibn al-Hasan al-Tabrisi (al-Tabarsi)"
+    author: "al-Fadl ibn al-Hasan al-Tabrisi (al-Tabarsi, d. 548 AH)"
     language: ar
+    url: "https://github.com/OpenITI/0550AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
     confidence: high
+    notes: "The classical comprehensive Twelver tafsir (language, readings, occasions, meaning). Ingested from the OpenITI edition — Arabic only, cited by section + printed volume/page."
 
   - id: tafsir-nemuneh
     title: "Tafsir Nemuneh (Amthal)"
@@ -87,10 +90,32 @@ sources:
   - id: tafsir-al-qummi
     title: "Tafsīr al-Qummī"
     kind: tafsir
-    author: "Ali ibn Ibrahim al-Qummi"
+    author: "Ali ibn Ibrahim al-Qummi (d. after 307 AH)"
     language: ar
+    url: "https://github.com/OpenITI/0350AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
     confidence: medium
-    notes: "Early tafsir; some transmitted material is debated — grade at passage level."
+    notes: "Early narration-based tafsir; some transmitted material is debated — grade at passage level. Ingested from the OpenITI edition — Arabic only, cited by section + printed volume/page."
+
+  - id: tafsir-al-ayyashi
+    title: "Tafsīr al-ʿAyyāshī"
+    kind: tafsir
+    author: "Muḥammad ibn Masʿūd al-ʿAyyāshī (d. ~320 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0325AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Early narration-based tafsir (extant through al-Baqara-al-Kahf range in the received text); chains were abridged by later copyists — grade reports at passage level. Arabic only."
+
+  - id: nur-al-thaqalayn
+    title: "Tafsīr Nūr al-Thaqalayn"
+    kind: tafsir
+    author: "ʿAbd ʿAlī al-Ḥuwayzī (d. ~1112 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1125AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Comprehensive narration-based tafsir gathering Ahl al-Bayt reports verse by verse. No grading of the collected reports — grade at passage level. Arabic only."
 
   - id: tafsir-al-burhan
     title: "al-Burhān fī Tafsīr al-Qurʾān"
