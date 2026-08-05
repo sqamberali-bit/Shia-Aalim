@@ -153,6 +153,9 @@ PROSE_TARGETS = [
     ("books/islamic-laws-of-ayatullah-khui", "islamic-laws-khui", "scholarly_opinion", None, "islamic-laws-khui.jsonl"),
     ("books/forty-hadith-an-exposition", "forty-hadith-khomeini", "scholarly_opinion", None, "forty-hadith-khomeini.jsonl"),
     ("books/the-shiite-islam", "shiite-islam-tabatabai", "scholarly_opinion", None, "shiite-islam-tabatabai.jsonl"),
+    ("books/abdullah-ibn-saba-and-other-myths", "abdullah-ibn-saba", "scholarly_opinion", None, "abdullah-ibn-saba.jsonl"),
+    ("books/abd-allah-ibn-saba-myth-exploded", "ibn-saba-myth-exploded", "scholarly_opinion", None, "ibn-saba-myth-exploded.jsonl"),
+    ("books/history-of-the-caliphs", "history-of-the-caliphs", "historical", None, "history-of-the-caliphs.jsonl"),
 ]
 
 # The 20-volume "Enlightening Commentary into the Light of the Holy Qur'an"
