@@ -456,6 +456,21 @@ OPENITI_TARGETS = [
     ("0320IbnMascudCayyashi.Tafsir.", "tafsir-al-ayyashi", "tafsir", "tafsir-al-ayyashi.jsonl"),
     ("0548IbnHasanTabarsi.TafsirMajmacBayan.", "majma-al-bayan", "tafsir", "majma-al-bayan.jsonl"),
     ("1112IbnJumcaHuwayzi.TafsirNurThaqalayn.", "nur-al-thaqalayn", "tafsir", "nur-al-thaqalayn.jsonl"),
+    # -- 2026-08 batch 3: debates, creed, fiqh manuals, usul, diraya --
+    ("0560AbuMansurTabarsi.Ihtijaj.", "al-ihtijaj", "hadith", "al-ihtijaj.jsonl"),
+    ("0400IbnJarirTabariSaghir.DalailImama.", "dalail-al-imamah", "hadith", "dalail-al-imamah.jsonl"),
+    ("0436SharifMurtada.TanzihAnbiya.", "tanzih-al-anbiya", "scholarly_opinion", "tanzih-al-anbiya.jsonl"),
+    ("0726CallamaHilli.BabHadiCashar.", "al-bab-al-hadi-ashar", "scholarly_opinion", "al-bab-al-hadi-ashar.jsonl"),
+    ("1091MuhammadMuhsinFaydKashani.TafsirSafi.", "tafsir-al-safi", "tafsir", "tafsir-al-safi.jsonl"),
+    ("0693IbnAbiFathIrbili.KashfGhumma.", "kashf-al-ghummah", "historical", "kashf-al-ghummah.jsonl"),
+    ("0283AbuIshaqThaqafi.Gharat.", "al-gharat", "historical", "al-gharat.jsonl"),
+    ("0664IbnTawus.IqbalAcmal.", "iqbal-al-amal", "hadith", "iqbal-al-amal.jsonl"),
+    ("0676IbnHasanMuhaqqiqHilli.SharaicIslam.", "sharai-al-islam", "scholarly_opinion", "sharai-al-islam.jsonl"),
+    ("1337MuhammadKazimTabatabaiYazdi.CurwaWuthqa.", "al-urwa-al-wuthqa", "scholarly_opinion", "al-urwa-al-wuthqa.jsonl"),
+    ("0460ShaykhTusi.CiddatUsul.", "uddat-al-usul", "scholarly_opinion", "uddat-al-usul.jsonl"),
+    ("0436SharifMurtada.Dharica.", "al-dharia", "scholarly_opinion", "al-dharia.jsonl"),
+    ("1329MuhammadKazimAkhundKhurasani.KifayatUsul.", "kifayat-al-usul", "scholarly_opinion", "kifayat-al-usul.jsonl"),
+    ("0965ShahidThani.RicayaFiCilmDiraya.", "al-riaya-fi-ilm-al-diraya", "scholarly_opinion", "al-riaya-fi-ilm-al-diraya.jsonl"),
 ]
 
 

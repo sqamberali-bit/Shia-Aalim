@@ -786,6 +786,146 @@ sources:
     confidence: medium
     notes: "The largest modern rijal encyclopaedia (~16,000 narrators, 24 volumes): al-Khu'i's entry-by-entry evaluations with occurrences in the chains of the major collections. Arabic only; cited by printed volume/page."
 
+  - id: al-ihtijaj
+    title: "al-Iḥtijāj ʿalā Ahl al-Lajāj"
+    kind: hadith
+    author: "Aḥmad ibn ʿAlī al-Ṭabrisī (Abū Manṣūr, 6th c. AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0575AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Debates and argumentation of the Prophet (S) and Imams. Reports are largely transmitted without full chains (mursal) — corroborate before doctrinal use. Arabic only."
+
+  - id: dalail-al-imamah
+    title: "Dalāʾil al-Imāma"
+    kind: hadith
+    author: "attributed to Muḥammad ibn Jarīr al-Ṭabarī al-Ṣaghīr (5th c. AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0400AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Narrations and miracles of the Imams and Sayyida Fatima (as). Authorship and some content are debated among rijal scholars — grade at passage level. Arabic only."
+
+  - id: tanzih-al-anbiya
+    title: "Tanzīh al-Anbiyāʾ"
+    kind: scholarly_opinion
+    author: "al-Sharīf al-Murtaḍā (d. 436 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0450AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Kalam defence of the infallibility of prophets and Imams, answering apparent-fault verses/reports. Arabic only."
+
+  - id: al-bab-al-hadi-ashar
+    title: "al-Bāb al-Ḥādī ʿAshar"
+    kind: scholarly_opinion
+    author: "al-ʿAllāma al-Ḥillī (d. 726 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0750AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The classic concise creed manual taught across Twelver seminaries. Arabic only."
+
+  - id: tafsir-al-safi
+    title: "Tafsīr al-Ṣāfī"
+    kind: tafsir
+    author: "Mullā Muḥsin Fayḍ al-Kāshānī (d. 1091 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1100AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Concise tafsir combining narrations of the Ahl al-Bayt with linguistic exegesis. Arabic only."
+
+  - id: kashf-al-ghummah
+    title: "Kashf al-Ghumma fī Maʿrifat al-Aʾimma"
+    kind: historical
+    author: "ʿAlī ibn ʿĪsā al-Irbilī (d. 693 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0700AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Biographies and virtues of the Fourteen Infallibles, drawing on both Shia and Sunni sources. Arabic only."
+
+  - id: al-gharat
+    title: "al-Ghārāt"
+    kind: historical
+    author: "Ibrāhīm ibn Muḥammad al-Thaqafī (d. 283 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0300AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Early history of the raids on Imam Ali's (as) domains during his caliphate — a primary source for the period. Arabic only."
+
+  - id: iqbal-al-amal
+    title: "Iqbāl al-Aʿmāl"
+    kind: hadith
+    author: "Sayyid Ibn Ṭāwūs (d. 664 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0675AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Transmitted supplications and acts for the months of the year — with Misbah al-Mutahajjid, a principal source behind Mafatih al-Jinan. Arabic only."
+
+  - id: sharai-al-islam
+    title: "Sharāʾiʿ al-Islām"
+    kind: scholarly_opinion
+    author: "al-Muḥaqqiq al-Ḥillī (d. 676 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0700AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The classical fiqh manual around which centuries of Twelver jurisprudence (incl. Jawahir al-Kalam) is organised. Historical fiqh — for practice, users follow their living marja'. Arabic only."
+
+  - id: al-urwa-al-wuthqa
+    title: "al-ʿUrwa al-Wuthqā"
+    kind: scholarly_opinion
+    author: "Sayyid Muḥammad Kāẓim al-Ṭabāṭabāʾī al-Yazdī (d. 1337 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1350AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The fiqh text on which contemporary marāji' write their glosses — the backbone of modern risālas. Rulings differ between marāji'; users follow their living marja'. Arabic only."
+
+  - id: uddat-al-usul
+    title: "ʿUddat al-Uṣūl"
+    kind: scholarly_opinion
+    author: "Shaykh al-Ṭūsī (d. 460 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0475AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Foundational classical work of Twelver usul al-fiqh. Arabic only."
+
+  - id: al-dharia
+    title: "al-Dharīʿa ilā Uṣūl al-Sharīʿa"
+    kind: scholarly_opinion
+    author: "al-Sharīf al-Murtaḍā (d. 436 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0450AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The earliest systematic Twelver usul al-fiqh treatise. Arabic only."
+
+  - id: kifayat-al-usul
+    title: "Kifāyat al-Uṣūl"
+    kind: scholarly_opinion
+    author: "al-Ākhūnd Muḥammad Kāẓim al-Khurāsānī (d. 1329 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1350AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The standard advanced usul textbook of the modern hawza. Dense technical Arabic. Arabic only."
+
+  - id: al-riaya-fi-ilm-al-diraya
+    title: "al-Riʿāya fī ʿIlm al-Dirāya"
+    kind: scholarly_opinion
+    author: "al-Shahīd al-Thānī (d. 965 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0975AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Classic manual of hadith science (dirāya): classification of reports, chain terminology, transmission ethics. Arabic only."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir
