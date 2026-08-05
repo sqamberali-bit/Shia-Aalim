@@ -597,6 +597,90 @@ sources:
     confidence: medium
     notes: "Authoritative modern introduction to Twelver history, thought and spirituality by the author of al-Mīzān. Chapter-level citations."
 
+  # ---- OpenITI classical Arabic texts (github.com/OpenITI) ----
+  # Arabic-only, machine-readable editions; cited by section + printed
+  # volume/page of the edition named in each file's header. Medium confidence
+  # (transcription pipeline), content verbatim.
+  - id: rijal-al-najashi
+    title: "Rijāl al-Najāshī"
+    kind: biographical
+    author: "Aḥmad ibn ʿAlī al-Najāshī (d. 450 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0450AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The foremost Twelver rijal work: ~1,270 entries on Shia authors/narrators with their books and chains. Arabic only; entry-level citations by printed page."
+
+  - id: rijal-al-tusi
+    title: "Rijāl al-Ṭūsī (al-Abwāb)"
+    kind: biographical
+    author: "Shaykh al-Ṭūsī (d. 460 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0475AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Narrators arranged by the Imam they narrated from. Arabic only; entry-level citations by printed page."
+
+  - id: rijal-al-kashshi
+    title: "Rijāl al-Kashshī (Ikhtiyār Maʿrifat al-Rijāl, al-Ṭūsī's recension)"
+    kind: biographical
+    author: "al-Kashshī (d. ~340 AH), abridged by Shaykh al-Ṭūsī (d. 460 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0475AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Narrations praising/criticising narrators — the narration-based pillar of Twelver rijal. The reports themselves need isnad evaluation. Arabic only."
+
+  - id: fihrist-al-tusi
+    title: "al-Fihrist (Shaykh al-Ṭūsī)"
+    kind: biographical
+    author: "Shaykh al-Ṭūsī (d. 460 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0475AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Catalogue of Shia authors and their works with transmission paths. Arabic only."
+
+  - id: qurb-al-isnad
+    title: "Qurb al-Isnād"
+    kind: hadith
+    author: "ʿAbd Allāh ibn Jaʿfar al-Ḥimyarī (d. after 297 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0300AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Early collection prized for short chains to the Imams. Arabic only; no per-hadith grades — grade against rijal sources."
+
+  - id: kifayat-al-athar
+    title: "Kifāyat al-Athar fī al-Naṣṣ ʿalā al-Aʾimma al-Ithnā ʿAshar"
+    kind: hadith
+    author: "al-Khazzāz al-Qummī (d. ~400 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0400AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Narrations naming the Twelve Imams, arranged by companion narrator. Arabic only; grade individual reports."
+
+  - id: awail-al-maqalat
+    title: "Awāʾil al-Maqālāt"
+    kind: scholarly_opinion
+    author: "Shaykh al-Mufīd (d. 413 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0425AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "al-Mufid's survey of Imami doctrinal positions vs other schools — a foundational kalam reference. Arabic only."
+
+  - id: tashih-al-itiqadat
+    title: "Taṣḥīḥ Iʿtiqādāt al-Imāmiyya"
+    kind: scholarly_opinion
+    author: "Shaykh al-Mufīd (d. 413 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0425AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "al-Mufid's critical commentary on al-Saduq's creed (the corpus's 'A Shiite Creed') — pair the two for intra-school range. Arabic only."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir

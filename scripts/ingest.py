@@ -36,6 +36,7 @@ from shia_aalim.ingestion.adapters.ilal import volume_part_from_filename as ilal
 from shia_aalim.ingestion.adapters.mafatih import build_mafatih_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.plaintext import build_textbook_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.plaintext import volume_from_filename as txt_volume  # noqa: E402
+from shia_aalim.ingestion.adapters.openiti import build_openiti_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.quran import build_quran_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.shiavault import build_prose_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.thaqalayn import build_hadith_documents  # noqa: E402
@@ -429,6 +430,40 @@ def ingest_ilal(ilal_dir: Path) -> int:
     return total
 
 
+# OpenITI classical Arabic texts: filename-prefix -> (source_id, evidence_type,
+# out file). Arabic-only; cited by section + printed volume/page (see the
+# openiti adapter). Files are matched by prefix so version suffixes can change.
+OPENITI_TARGETS = [
+    ("0450Najashi.Rijal.", "rijal-al-najashi", "biographical", "rijal-al-najashi.jsonl"),
+    ("0460ShaykhTusi.Rijal.", "rijal-al-tusi", "biographical", "rijal-al-tusi.jsonl"),
+    ("0460ShaykhTusi.IkhtiyarMacrifatRijal.", "rijal-al-kashshi", "biographical", "rijal-al-kashshi.jsonl"),
+    ("0460ShaykhTusi.Fihrist.", "fihrist-al-tusi", "biographical", "fihrist-al-tusi.jsonl"),
+    ("0300IbnJacfarHimyari.QurbIsnad.", "qurb-al-isnad", "hadith", "qurb-al-isnad.jsonl"),
+    ("0400IbnMuhammadKhazzaz.KifayatAthar.", "kifayat-al-athar", "hadith", "kifayat-al-athar.jsonl"),
+    ("0413ShaykhMufid.AwailMaqalat.", "awail-al-maqalat", "scholarly_opinion", "awail-al-maqalat.jsonl"),
+    ("0413ShaykhMufid.TashihIctiqadat.", "tashih-al-itiqadat", "scholarly_opinion", "tashih-al-itiqadat.jsonl"),
+]
+
+
+def ingest_openiti(openiti_dir: Path) -> int:
+    """Ingest OpenITI mARkdown texts (classical Arabic, page-cited)."""
+    total = 0
+    for prefix, source_id, etype, out in OPENITI_TARGETS:
+        matches = sorted(openiti_dir.glob(f"{prefix}*"))
+        if not matches:
+            print(f"  [skip] {prefix}* not found under {openiti_dir}")
+            continue
+        docs = build_openiti_documents(
+            matches[0], source_id=source_id, evidence_type=EvidenceType(etype),
+        )
+        if docs:
+            subdir = "biographical" if etype == "biographical" else "hadith" \
+                if etype == "hadith" else "prose"
+            write_jsonl(docs, KNOWLEDGE / subdir / out)
+            total += len(docs)
+    return total
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--quran-dir", default=os.environ.get("QURAN_DIR"))
@@ -442,9 +477,12 @@ def main() -> int:
                         help="directory containing Ilal al-Sharayi hubeali PDFs")
     parser.add_argument("--mafatih-json", default=os.environ.get("MAFATIH_JSON"),
                         help="path to the Mafatih al-Jinan chapters.json")
+    parser.add_argument("--openiti-dir", default=os.environ.get("OPENITI_DIR"),
+                        help="directory containing downloaded OpenITI mARkdown texts")
     args = parser.parse_args()
 
     n_quran = n_hadith = n_prose = n_bihar = n_almizan = n_wasail = n_ilal = n_mafatih = 0
+    n_openiti = 0
     if args.quran_dir:
         print("Ingesting Qur'an...")
         n_quran = ingest_quran(Path(args.quran_dir))
@@ -493,10 +531,17 @@ def main() -> int:
     else:
         print("  [skip] no --mafatih-json / MAFATIH_JSON")
 
+    if args.openiti_dir:
+        print("Ingesting OpenITI classical Arabic texts...")
+        n_openiti = ingest_openiti(Path(args.openiti_dir))
+    else:
+        print("  [skip] no --openiti-dir / OPENITI_DIR")
+
     print(f"\nDone. {n_quran} Qur'an verses, {n_hadith + n_bihar + n_wasail + n_ilal} hadith "
           f"({n_bihar} Bihar, {n_wasail} Wasail, {n_ilal} Ilal), "
           f"{n_prose + n_almizan + n_mafatih} prose passages "
-          f"({n_almizan} al-Mizan, {n_mafatih} Mafatih).")
+          f"({n_almizan} al-Mizan, {n_mafatih} Mafatih), "
+          f"{n_openiti} OpenITI classical-text passages.")
     return 0
 
 
