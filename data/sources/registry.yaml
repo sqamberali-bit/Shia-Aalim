@@ -681,6 +681,86 @@ sources:
     confidence: medium
     notes: "al-Mufid's critical commentary on al-Saduq's creed (the corpus's 'A Shiite Creed') — pair the two for intra-school range. Arabic only."
 
+  - id: basair-al-darajat
+    title: "Baṣāʾir al-Darajāt"
+    kind: hadith
+    author: "Muḥammad ibn al-Ḥasan al-Ṣaffār al-Qummī (d. 290 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0300AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Earliest major collection on the station and knowledge of the Imams. Arabic only; no per-hadith grades — grade against rijal sources."
+
+  - id: al-mahasin
+    title: "al-Maḥāsin"
+    kind: hadith
+    author: "Aḥmad ibn Muḥammad al-Barqī (d. 274/280 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0275AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Early Qummī hadith collection (ethics, etiquette, beliefs) predating al-Kafi. Arabic only; grade individual reports."
+
+  - id: kashf-al-murad
+    title: "Kashf al-Murād fī Sharḥ Tajrīd al-Iʿtiqād"
+    kind: scholarly_opinion
+    author: "al-ʿAllāma al-Ḥillī (d. 726 AH), commentary on Naṣīr al-Dīn al-Ṭūsī"
+    language: ar
+    url: "https://github.com/OpenITI/0750AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The standard commentary on Tajrid al-I'tiqad — the central Twelver kalam textbook. Arabic only."
+
+  - id: ilam-al-wara
+    title: "Iʿlām al-Warā bi-Aʿlām al-Hudā"
+    kind: historical
+    author: "al-Faḍl ibn al-Ḥasan al-Ṭabrisī (d. 548 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0550AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Biographies of the Prophet (S) and the Fourteen Infallibles by the author of Majma' al-Bayan. Arabic only."
+
+  - id: misbah-al-mutahajjid
+    title: "Miṣbāḥ al-Mutahajjid"
+    kind: hadith
+    author: "Shaykh al-Ṭūsī (d. 460 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0475AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Classical manual of transmitted supplications and acts of worship — a principal source behind Mafatih al-Jinan. Arabic only."
+
+  - id: al-shafi-fi-al-imamah
+    title: "al-Shāfī fī al-Imāma"
+    kind: scholarly_opinion
+    author: "al-Sharīf al-Murtaḍā (d. 436 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0450AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Comprehensive kalam defence of the imamate answering Qadi Abd al-Jabbar's al-Mughni. Polemical-theological genre — present as argumentation. Arabic only."
+
+  - id: manaqib-al-abi-talib
+    title: "Manāqib Āl Abī Ṭālib"
+    kind: historical
+    author: "Ibn Shahrāshūb (d. 588 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0600AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Encyclopaedic collection of the virtues of the Prophet (S) and the Imams with sources. Arabic only; corroborate reports against primary chains."
+
+  - id: mujam-rijal-al-hadith
+    title: "Muʿjam Rijāl al-Ḥadīth"
+    kind: biographical
+    author: "Ayatollah Sayyid Abū al-Qāsim al-Khūʾī (d. 1413 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1425AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The largest modern rijal encyclopaedia (~16,000 narrators, 24 volumes): al-Khu'i's entry-by-entry evaluations with occurrences in the chains of the major collections. Arabic only; cited by printed volume/page."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir

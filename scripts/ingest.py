@@ -442,6 +442,15 @@ OPENITI_TARGETS = [
     ("0400IbnMuhammadKhazzaz.KifayatAthar.", "kifayat-al-athar", "hadith", "kifayat-al-athar.jsonl"),
     ("0413ShaykhMufid.AwailMaqalat.", "awail-al-maqalat", "scholarly_opinion", "awail-al-maqalat.jsonl"),
     ("0413ShaykhMufid.TashihIctiqadat.", "tashih-al-itiqadat", "scholarly_opinion", "tashih-al-itiqadat.jsonl"),
+    # -- 2026-08 expansion: early hadith, kalam, history, devotional, rijal --
+    ("0290IbnHasanSaffar.BasairDarajat.", "basair-al-darajat", "hadith", "basair-al-darajat.jsonl"),
+    ("0274AhmadBarqi.Mahasin.", "al-mahasin", "hadith", "al-mahasin.jsonl"),
+    ("0726CallamaHilli.KashfMurad.", "kashf-al-murad", "scholarly_opinion", "kashf-al-murad.jsonl"),
+    ("0548IbnHasanTabarsi.IclamWara.", "ilam-al-wara", "historical", "ilam-al-wara.jsonl"),
+    ("0460ShaykhTusi.MisbahMutahajjad.", "misbah-al-mutahajjid", "hadith", "misbah-al-mutahajjid.jsonl"),
+    ("0436SharifMurtada.ShafiFiImama.", "al-shafi-fi-al-imamah", "scholarly_opinion", "al-shafi-fi-al-imamah.jsonl"),
+    ("0588IbnShahrAshub.ManaqibAlAbiTalib.", "manaqib-al-abi-talib", "historical", "manaqib-al-abi-talib.jsonl"),
+    ("1413TajDinKhui.MucjamRijal.", "mujam-rijal-al-hadith", "biographical", "mujam-rijal-al-hadith.jsonl"),
 ]
 
 

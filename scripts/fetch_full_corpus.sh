@@ -55,6 +55,14 @@ done <<'OPENITI'
 0400AH|0400IbnMuhammadKhazzaz/0400IbnMuhammadKhazzaz.KifayatAthar/0400IbnMuhammadKhazzaz.KifayatAthar.Masaha002493-ara1
 0425AH|0413ShaykhMufid/0413ShaykhMufid.AwailMaqalat/0413ShaykhMufid.AwailMaqalat.Shia001292-ara1
 0425AH|0413ShaykhMufid/0413ShaykhMufid.TashihIctiqadat/0413ShaykhMufid.TashihIctiqadat.Zaydiyya0000325-ara1
+0300AH|0290IbnHasanSaffar/0290IbnHasanSaffar.BasairDarajat/0290IbnHasanSaffar.BasairDarajat.Masaha001945-ara1
+0275AH|0274AhmadBarqi/0274AhmadBarqi.Mahasin/0274AhmadBarqi.Mahasin.Shia001115Vols-ara1
+0750AH|0726CallamaHilli/0726CallamaHilli.KashfMurad/0726CallamaHilli.KashfMurad.Shia004016-ara1
+0550AH|0548IbnHasanTabarsi/0548IbnHasanTabarsi.IclamWara/0548IbnHasanTabarsi.IclamWara.Shia003695Vols-ara1
+0475AH|0460ShaykhTusi/0460ShaykhTusi.MisbahMutahajjad/0460ShaykhTusi.MisbahMutahajjad.Shia000042-ara1
+0450AH|0436SharifMurtada/0436SharifMurtada.ShafiFiImama/0436SharifMurtada.ShafiFiImama.Shia003996Vols-ara1
+0600AH|0588IbnShahrAshub/0588IbnShahrAshub.ManaqibAlAbiTalib/0588IbnShahrAshub.ManaqibAlAbiTalib.Shia001349Vols-ara1
+1425AH|1413TajDinKhui/1413TajDinKhui.MucjamRijal/1413TajDinKhui.MucjamRijal.Shia002992Vols-ara1
 OPENITI
 
 echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil (vols ≤ ${WASAIL_MAX_VOL}) + ʿIlal + OpenITI"
