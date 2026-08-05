@@ -597,37 +597,6 @@ sources:
     confidence: medium
     notes: "Authoritative modern introduction to Twelver history, thought and spirituality by the author of al-Mīzān. Chapter-level citations."
 
-  - id: abdullah-ibn-saba
-    title: "Abdullah Ibn Sabaʾ and Other Myths"
-    kind: scholarly_opinion
-    author: "Sayyid Murtaḍā al-ʿAskarī (d. 1428 AH)"
-    translator: "M.J. Muqaddas (WOFIS)"
-    language: en
-    url: "https://www.al-islam.org/abdullah-ibn-saba-and-other-myths-sayyid-murtadha-al-askari"
-    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
-    confidence: medium
-    notes: "Historiographical critique showing the Ibn Sabaʾ legend rests on Sayf ibn ʿUmar's discredited narrations. Critical-research genre — present as source-critical argumentation. Chapter-level citations."
-
-  - id: ibn-saba-myth-exploded
-    title: "ʿAbd Allah Ibn Saba: Myth Exploded"
-    kind: scholarly_opinion
-    author: "Toyib Olawuyi"
-    language: en
-    url: "https://www.al-islam.org/abd-allah-ibn-saba-myth-exploded-toyib-olawuyi"
-    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
-    confidence: medium
-    notes: "Modern chain-by-chain examination of the Ibn Sabaʾ athar. Critical-research genre — present as source-critical argumentation. Chapter-level citations."
-
-  - id: history-of-the-caliphs
-    title: "History of the Caliphs (Rasūl Jaʿfariyān)"
-    kind: historical
-    author: "Rasūl Jaʿfariyān"
-    language: en
-    url: "https://www.al-islam.org/history-of-the-caliphs-rasul-jafariyan"
-    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
-    confidence: medium
-    notes: "Academic history of the period from the Prophet's (S) demise to the fall of the Umayyads, by the contemporary Qom historian. Prose, chapter-level citations."
-
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir
