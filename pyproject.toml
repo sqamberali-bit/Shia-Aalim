@@ -14,6 +14,10 @@ keywords = ["shia", "islam", "twelver", "rag", "research", "hadith", "quran", "t
 
 dependencies = [
   "PyYAML>=6.0",
+  # Dense-scan retrieval speed (matrix-vector search). The pure-Python
+  # fallback in retrieval/vectorstore.py keeps the package importable without
+  # it, but production search at corpus scale requires numpy.
+  "numpy>=1.24",
 ]
 
 [project.optional-dependencies]
