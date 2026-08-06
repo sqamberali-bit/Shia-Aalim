@@ -130,3 +130,71 @@ def test_bearer_token_guards_the_endpoint(monkeypatch):
         assert client.post("/mcp", json=init, headers=base).status_code == 401
         ok = client.post("/mcp", json=init, headers={**base, "Authorization": "Bearer secret"})
         assert ok.status_code == 200
+
+
+# --- stateless restart-proof tokens (MCP_OAUTH_SECRET) ----------------------
+
+def _oauth_params():
+    from mcp.server.auth.provider import AuthorizationParams
+
+    return AuthorizationParams(
+        state="s1", scopes=["claudeai"], code_challenge="c" * 43,
+        redirect_uri="https://claude.ai/api/mcp/auth_callback",
+        redirect_uri_provided_explicitly=True, resource="https://x/mcp",
+    )
+
+
+def test_tokens_survive_provider_restart(monkeypatch):
+    from shia_aalim.mcp_oauth import ShiaAalimOAuthProvider
+
+    monkeypatch.setenv("MCP_OAUTH_SECRET", "test-secret-123")
+    p1 = ShiaAalimOAuthProvider()
+    client = asyncio.run(p1.get_client("shia-aalim-mcp"))
+    # full handshake on instance 1
+    url = asyncio.run(p1.authorize(client, _oauth_params()))
+    code = url.split("code=")[1].split("&")[0]
+    import urllib.parse
+    code = urllib.parse.unquote(code)
+    ac = asyncio.run(p1.load_authorization_code(client, code))
+    assert ac is not None and ac.code_challenge == "c" * 43
+    tok = asyncio.run(p1.exchange_authorization_code(client, ac))
+
+    # "restart": a brand-new provider instance must accept everything
+    p2 = ShiaAalimOAuthProvider()
+    at = asyncio.run(p2.load_access_token(tok.access_token))
+    assert at is not None and at.client_id == "shia-aalim-mcp" and "claudeai" in at.scopes
+    rt = asyncio.run(p2.load_refresh_token(client, tok.refresh_token))
+    assert rt is not None
+    tok2 = asyncio.run(p2.exchange_refresh_token(client, rt, rt.scopes))
+    assert asyncio.run(p2.load_access_token(tok2.access_token)) is not None
+
+    # unknown (pre-restart DCR) client ids still resolve
+    dyn = asyncio.run(p2.get_client("dyn-forgotten-after-restart"))
+    assert dyn is not None
+
+
+def test_tampered_and_cross_client_tokens_rejected(monkeypatch):
+    from shia_aalim.mcp_oauth import ShiaAalimOAuthProvider
+
+    monkeypatch.setenv("MCP_OAUTH_SECRET", "test-secret-123")
+    p = ShiaAalimOAuthProvider()
+    tok = p._issue("shia-aalim-mcp", ["claudeai"], None)
+    tampered = tok.access_token[:-4] + ("aaaa" if not tok.access_token.endswith("aaaa") else "bbbb")
+    assert asyncio.run(p.load_access_token(tampered)) is None
+    # refresh token bound to its client id
+    other = asyncio.run(p.get_client("someone-else"))
+    assert asyncio.run(p.load_refresh_token(other, tok.refresh_token)) is None
+    # a different secret invalidates everything (rotation = global revoke)
+    monkeypatch.setenv("MCP_OAUTH_SECRET", "rotated")
+    assert asyncio.run(p.load_access_token(tok.access_token)) is None
+
+
+def test_without_secret_falls_back_to_memory(monkeypatch):
+    from shia_aalim.mcp_oauth import ShiaAalimOAuthProvider
+
+    monkeypatch.delenv("MCP_OAUTH_SECRET", raising=False)
+    p1 = ShiaAalimOAuthProvider()
+    tok = p1._issue("shia-aalim-mcp", [], None)
+    assert asyncio.run(p1.load_access_token(tok.access_token)) is not None
+    p2 = ShiaAalimOAuthProvider()  # restart loses memory — documented behavior
+    assert asyncio.run(p2.load_access_token(tok.access_token)) is None

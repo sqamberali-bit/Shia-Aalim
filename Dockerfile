@@ -70,6 +70,12 @@ RUN if [ -n "$SEMANTIC" ]; then \
 # OAuth Client ID to the value of MCP_OAUTH_CLIENT_ID (default: shia-aalim-mcp).
 # The issuer URL is auto-detected from SPACE_HOST on HF Spaces; otherwise set
 # MCP_OAUTH_ISSUER_URL to your public URL.
+#
+# IMPORTANT — persistent connector sessions: set MCP_OAUTH_SECRET to a long
+# random string as a runtime SECRET (HF Space settings -> Variables and
+# secrets; never bake it into this image). With it, tokens are stateless and
+# survive restarts/rebuilds, so connectors never need to re-authenticate.
+# Without it, every restart invalidates all sessions.
 ENV HOST=0.0.0.0 \
     PORT=7860 \
     EMBEDDER=tfidf \
