@@ -1179,6 +1179,17 @@ sources:
     confidence: medium
     notes: "Large compilation of the Imams' miracles from earlier sources. Compilation genre — many reports weak in isnad; grade at passage level. Arabic only."
 
+  - id: fatima-min-al-mahd-ila-al-lahd
+    title: "Fāṭimah al-Zahrāʾ (ʿa): From the Cradle to the Grave"
+    kind: historical
+    author: "Sayyid Muḥammad Kāẓim al-Qazwīnī (d. 1415 AH)"
+    translator: "Tahir Ridha Jaffer"
+    language: en
+    url: "https://www.wofis.com/"
+    license: "WOFIS 2015 edition (per-book copyright); user-supplied PDF"
+    confidence: medium
+    notes: "Comprehensive biography of Sayyida Fatima (as). Ingested from the WOFIS English text-layer PDF; cited by chapter + printed page."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir

@@ -37,6 +37,7 @@ from shia_aalim.ingestion.adapters.mafatih import build_mafatih_documents  # noq
 from shia_aalim.ingestion.adapters.plaintext import build_textbook_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.plaintext import volume_from_filename as txt_volume  # noqa: E402
 from shia_aalim.ingestion.adapters.openiti import build_openiti_documents  # noqa: E402
+from shia_aalim.ingestion.adapters.prose_pdf import build_prose_pdf_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.quran import build_quran_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.rafed_doc import build_rafed_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.shiavault import build_prose_documents  # noqa: E402
@@ -512,6 +513,34 @@ RAFED_TARGETS = [
 ]
 
 
+# Uploaded prose book PDFs (text-layer, page-number headers) found under the
+# Bihar source repo: (glob, source_id, evidence_type, book-title marker,
+# translation credit, out file). See the prose_pdf adapter.
+PROSE_PDF_TARGETS = [
+    ("**/Fatimah-al-Zahra*.pdf", "fatima-min-al-mahd-ila-al-lahd", "historical",
+     "From the Cradle to the Grave", "Tahir Ridha Jaffer (WOFIS, 2015)",
+     "fatima-min-al-mahd-ila-al-lahd.jsonl"),
+]
+
+
+def ingest_prose_pdfs(root_dir: Path) -> int:
+    """Ingest uploaded text-layer book PDFs (see PROSE_PDF_TARGETS)."""
+    total = 0
+    for pattern, source_id, etype, marker, tsource, out in PROSE_PDF_TARGETS:
+        matches = sorted(root_dir.glob(pattern))
+        if not matches:
+            print(f"  [skip] {pattern} not found under {root_dir}")
+            continue
+        docs = build_prose_pdf_documents(
+            matches[0], source_id=source_id, evidence_type=EvidenceType(etype),
+            book_title_marker=marker, translation_source=tsource,
+        )
+        if docs:
+            write_jsonl(docs, KNOWLEDGE / "prose" / out)
+            total += len(docs)
+    return total
+
+
 def ingest_rafed(rafed_dir: Path) -> int:
     """Ingest antiword-extracted Rafed Word books (see RAFED_TARGETS)."""
     total = 0
@@ -591,6 +620,8 @@ def main() -> int:
     if args.bihar_dir:
         print("Ingesting Bihar al-Anwar (hubeali PDFs)...")
         n_bihar = ingest_bihar(Path(args.bihar_dir))
+        print("Ingesting uploaded prose book PDFs...")
+        n_prose += ingest_prose_pdfs(Path(args.bihar_dir))
     else:
         print("  [skip] no --bihar-dir / BIHAR_DIR")
 
