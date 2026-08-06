@@ -1079,6 +1079,106 @@ sources:
     confidence: medium
     notes: "al-Sadr's treatise on revelation and prophethood as the divine path of guidance. Chapter-level citations."
 
+  - id: al-ikhtisas
+    title: "al-Ikhtiṣāṣ"
+    kind: hadith
+    author: "attributed to Shaykh al-Mufīd (d. 413 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0425AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "ATTRIBUTION WARNING: the ascription to al-Mufid is debated among Twelver bibliographers — present as 'the book attributed to al-Mufid'. Narrations on the merits of the Imams and companions; grade individual reports. Arabic only."
+
+  - id: maqtal-al-khwarazmi
+    title: "Maqtal al-Ḥusayn (al-Khwārazmī)"
+    kind: historical
+    author: "al-Muwaffaq al-Khwārazmī (d. 568 AH, Ḥanafī)"
+    language: ar
+    url: "https://github.com/OpenITI/0575AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Early non-Shia (Hanafi) maqtal of Karbala — valuable for comparative corroboration of the Shia maqatil. Arabic only."
+
+  - id: minhaj-al-salihin-khui
+    title: "Minhāj al-Ṣāliḥīn (al-Khūʾī)"
+    kind: scholarly_opinion
+    author: "Ayatollah Sayyid Abū al-Qāsim al-Khūʾī (d. 1413 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1425AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "al-Khu'i's practical fiqh manual (risala amaliyya). Rulings differ between maraji' and are historical for a deceased marja' — users follow their living marja'. Arabic only."
+
+  - id: minhaj-al-salihin-sistani
+    title: "Minhāj al-Ṣāliḥīn — al-ʿIbādāt (al-Sīstānī)"
+    kind: scholarly_opinion
+    author: "Ayatollah Sayyid ʿAlī al-Ḥusaynī al-Sīstānī"
+    language: ar
+    url: "https://books.rafed.net/view/153"
+    license: "Rafed digital library Word edition"
+    confidence: medium
+    notes: "Sistani's Arabic fiqh manual (worship volume, as provided by the Rafed edition). Rulings are revised over time — confirm current rulings at sistani.org. Cited by section + digital-edition locator. Arabic only."
+
+  - id: tarikh-al-yaqubi
+    title: "Tārīkh al-Yaʿqūbī"
+    kind: historical
+    author: "Aḥmad ibn Abī Yaʿqūb al-Yaʿqūbī (d. ~292 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0300AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Early universal history by a historian sympathetic to the Ahl al-Bayt (as) — a primary source for early Islamic history. Arabic only."
+
+  - id: muruj-al-dhahab
+    title: "Murūj al-Dhahab wa-Maʿādin al-Jawhar"
+    kind: historical
+    author: "ʿAlī ibn al-Ḥusayn al-Masʿūdī (d. 346 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0350AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "al-Mas'udi's celebrated history — a major early source. Arabic only."
+
+  - id: ithbat-al-wasiyya
+    title: "Ithbāt al-Waṣiyya lil-Imām ʿAlī ibn Abī Ṭālib"
+    kind: historical
+    author: "attributed to al-Masʿūdī (d. 346 AH)"
+    language: ar
+    url: "https://books.rafed.net/view/2515"
+    license: "Rafed digital library Word edition"
+    confidence: medium
+    notes: "ATTRIBUTION CAVEAT: the ascription to al-Mas'udi is debated — present as 'attributed to al-Mas'udi'. History of the succession/wasiyya through the Imams. Cited by section + digital-edition locator. Arabic only."
+
+  - id: al-kharaij
+    title: "al-Kharāʾij wa-l-Jarāʾiḥ"
+    kind: hadith
+    author: "Quṭb al-Dīn al-Rāwandī (d. 573 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0575AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Narrations of the miracles of the Prophet (S) and Imams. Many reports carry abridged chains — grade at passage level. Arabic only."
+
+  - id: al-thaqib-fi-al-manaqib
+    title: "al-Thāqib fī al-Manāqib"
+    kind: hadith
+    author: "Ibn Ḥamza al-Ṭūsī (d. ~560 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0575AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Manaqib/miracle narrations of the Prophet (S) and Imams. Grade at passage level. Arabic only."
+
+  - id: madinat-al-maajiz
+    title: "Madīnat al-Maʿājiz"
+    kind: hadith
+    author: "Sayyid Hāshim al-Baḥrānī (d. 1107 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1125AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Large compilation of the Imams' miracles from earlier sources. Compilation genre — many reports weak in isnad; grade at passage level. Arabic only."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir
