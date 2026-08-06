@@ -1326,6 +1326,116 @@ sources:
     confidence: medium
     notes: "Sunni comparative source — early biographical dictionary of companions and transmitters."
 
+  - id: al-amali-tusi
+    title: "al-Amālī (Shaykh al-Ṭūsī)"
+    kind: hadith
+    author: "Shaykh al-Ṭūsī (d. 460 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0475AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Dictation sessions of narrations with chains — completes the corpus's Amali trio (Saduq, Mufid, Tusi). Grade individual reports. Arabic only."
+
+  - id: al-amali-murtada
+    title: "al-Amālī (Ghurar al-Fawāʾid) — al-Sharīf al-Murtaḍā"
+    kind: scholarly_opinion
+    author: "al-Sharīf al-Murtaḍā (d. 436 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0450AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Majalis on tafsir, kalam, literature and hadith interpretation. Arabic only."
+
+  - id: al-sarair
+    title: "al-Sarāʾir al-Ḥāwī li-Taḥrīr al-Fatāwī"
+    kind: scholarly_opinion
+    author: "Ibn Idrīs al-Ḥillī (d. 598 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0600AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The fiqh work that reopened ijtihad after Shaykh al-Tusi's era. Arabic only."
+
+  - id: mukhtalaf-al-shia
+    title: "Mukhtalaf al-Shīʿa"
+    kind: scholarly_opinion
+    author: "al-ʿAllāma al-Ḥillī (d. 726 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0750AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Survey of intra-Imami juristic disagreements with al-Hilli's adjudications. Arabic only."
+
+  - id: tadhkirat-al-fuqaha
+    title: "Tadhkirat al-Fuqahāʾ"
+    kind: scholarly_opinion
+    author: "al-ʿAllāma al-Ḥillī (d. 726 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0750AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Comparative fiqh across the Islamic schools from an Imami standpoint. Arabic only."
+
+  - id: jawahir-al-kalam
+    title: "Jawāhir al-Kalām"
+    kind: scholarly_opinion
+    author: "Shaykh Muḥammad Ḥasan al-Najafī (Ṣāḥib al-Jawāhir, d. 1266 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1275AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The monumental commentary on Sharai' al-Islam — the summit of classical Imami fiqh. Arabic only."
+
+  - id: al-makasib
+    title: "al-Makāsib"
+    kind: scholarly_opinion
+    author: "Shaykh Murtaḍā al-Anṣārī (d. 1281 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1300AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "al-Ansari's transactions fiqh — with Fara'id al-Usul, the core of advanced hawza study. Arabic only."
+
+  - id: maalim-al-madrasatayn
+    title: "Maʿālim al-Madrasatayn"
+    kind: scholarly_opinion
+    author: "Sayyid Murtaḍā al-ʿAskarī (d. 1428 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1450AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Comparative study of 'the two schools' (Ahl al-Bayt and the caliphate school) — comparative/polemical genre; present as argumentation with its sources. Arabic only."
+
+  - id: tafsir-furat-al-kufi
+    title: "Tafsīr Furāt al-Kūfī"
+    kind: tafsir
+    author: "Furāt ibn Ibrāhīm al-Kūfī (early 4th c. AH)"
+    language: ar
+    url: "https://books.rafed.net/view/360"
+    license: "Rafed digital library Word edition"
+    confidence: medium
+    notes: "Early narration-based tafsir centred on Ahl al-Bayt (as) reports; chains largely abridged — grade at passage level. Cited by section + digital-edition locator. Arabic only."
+
+  - id: mustamsak-al-urwa
+    title: "Mustamsak al-ʿUrwa al-Wuthqā"
+    kind: scholarly_opinion
+    author: "Sayyid Muḥsin al-Ḥakīm (d. 1390 AH)"
+    language: ar
+    url: "https://books.rafed.net/view/393"
+    license: "Rafed digital library Word edition"
+    confidence: medium
+    notes: "al-Hakim's demonstrative commentary on al-Urwa al-Wuthqa (as provided by the Rafed edition). Cited by section + digital-edition locator. Arabic only."
+
+  - id: durus-fi-ilm-al-usul
+    title: "Durūs fī ʿIlm al-Uṣūl (al-Ḥalaqāt)"
+    kind: scholarly_opinion
+    author: "Shahīd Muḥammad Bāqir al-Ṣadr (d. 1400 AH)"
+    language: ar
+    url: "https://books.rafed.net/view/625"
+    license: "Rafed digital library Word edition"
+    confidence: medium
+    notes: "al-Sadr's modern usul curriculum (the Halaqat, as provided by the Rafed edition). Cited by section + digital-edition locator. Arabic only."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir

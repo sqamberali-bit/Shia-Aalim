@@ -496,6 +496,15 @@ OPENITI_TARGETS = [
     ("0573IbnHibatAllahQutbDinRawandi.Kharaij.", "al-kharaij", "hadith", "al-kharaij.jsonl"),
     ("0560IbnHamzaTusi.ThaqibFiManaqib.", "al-thaqib-fi-al-manaqib", "hadith", "al-thaqib-fi-al-manaqib.jsonl"),
     ("1107HashimBahrani.MadinatMacajiz.", "madinat-al-maajiz", "hadith", "madinat-al-maajiz.jsonl"),
+    # -- 2026-08 batch 6 --
+    ("0460ShaykhTusi.Amali.", "al-amali-tusi", "hadith", "al-amali-tusi.jsonl"),
+    ("0436SharifMurtada.Amali.", "al-amali-murtada", "scholarly_opinion", "al-amali-murtada.jsonl"),
+    ("0598IbnIdrisHilli.Sarair.", "al-sarair", "scholarly_opinion", "al-sarair.jsonl"),
+    ("0726CallamaHilli.MukhtalafShica.", "mukhtalaf-al-shia", "scholarly_opinion", "mukhtalaf-al-shia.jsonl"),
+    ("0726CallamaHilli.TadhkiratFuqaha.", "tadhkirat-al-fuqaha", "scholarly_opinion", "tadhkirat-al-fuqaha.jsonl"),
+    ("1266MuhammadHasanNajafiJawahiri.JawahirKalam.", "jawahir-al-kalam", "scholarly_opinion", "jawahir-al-kalam.jsonl"),
+    ("1281MurtadaAnsari.Makasib.", "al-makasib", "scholarly_opinion", "al-makasib.jsonl"),
+    ("1450MurtadaCaskari.MacalimMadrasatayn.", "maalim-al-madrasatayn", "scholarly_opinion", "maalim-al-madrasatayn.jsonl"),
 ]
 
 
@@ -510,6 +519,9 @@ RAFED_TARGETS = [
     ("1477/alborhan-01", "tafsir-al-burhan", "tafsir", "1", "tafsir-al-burhan-v1.jsonl"),
     ("153/menhaj", "minhaj-al-salihin-sistani", "scholarly_opinion", None, "minhaj-al-salihin-sistani.jsonl"),
     ("2515/esbat-alvasya", "ithbat-al-wasiyya", "historical", None, "ithbat-al-wasiyya.jsonl"),
+    ("360/t-forat", "tafsir-furat-al-kufi", "tafsir", None, "tafsir-furat-al-kufi.jsonl"),
+    ("393/mostamsak", "mustamsak-al-urwa", "scholarly_opinion", None, "mustamsak-al-urwa.jsonl"),
+    ("625/dros-fi-osol", "durus-fi-ilm-al-usul", "scholarly_opinion", None, "durus-fi-ilm-al-usul.jsonl"),
 ]
 
 

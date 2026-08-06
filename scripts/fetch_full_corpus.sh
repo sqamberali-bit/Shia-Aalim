@@ -111,6 +111,14 @@ done <<'OPENITI'
 0325AH|0310Tabari/0310Tabari.Tarikh/0310Tabari.Tarikh.Shamela0009783BK1-ara1.mARkdown
 0425AH|0405HakimNaysaburi/0405HakimNaysaburi.Mustadrak/0405HakimNaysaburi.Mustadrak.JK000467-ara1
 0500AH|0480IbnAhmadHakimHaskani/0480IbnAhmadHakimHaskani.ShawahidTanzil/0480IbnAhmadHakimHaskani.ShawahidTanzil.Shia002550Vols-ara1
+0450AH|0436SharifMurtada/0436SharifMurtada.Amali/0436SharifMurtada.Amali.Masaha003390Vols-ara1
+0475AH|0460ShaykhTusi/0460ShaykhTusi.Amali/0460ShaykhTusi.Amali.Shia001334-ara1
+0600AH|0598IbnIdrisHilli/0598IbnIdrisHilli.Sarair/0598IbnIdrisHilli.Sarair.Shia000049Vols-ara1
+0750AH|0726CallamaHilli/0726CallamaHilli.MukhtalafShica/0726CallamaHilli.MukhtalafShica.Shia000094Vols-ara1
+0750AH|0726CallamaHilli/0726CallamaHilli.TadhkiratFuqaha/0726CallamaHilli.TadhkiratFuqaha.Shia000075Vols-ara1
+1275AH|1266MuhammadHasanNajafiJawahiri/1266MuhammadHasanNajafiJawahiri.JawahirKalam/1266MuhammadHasanNajafiJawahiri.JawahirKalam.Shia000317Vols-ara1
+1300AH|1281MurtadaAnsari/1281MurtadaAnsari.Makasib/1281MurtadaAnsari.Makasib.Shia000376Vols-ara1
+1450AH|1450MurtadaCaskari/1450MurtadaCaskari.MacalimMadrasatayn/1450MurtadaCaskari.MacalimMadrasatayn.Shia001663Vols-ara1
 OPENITI
 
 # 4) Rafed digital-library Word books (Muzaffar's Usul, Miqbas al-Hidaya,
@@ -121,7 +129,7 @@ echo ">> Rafed Word books (usul / diraya / philosophy / al-Burhan v1)"
 mkdir -p "$SRC/rafed"
 RAFED_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 if command -v antiword >/dev/null 2>&1; then
-  for id in 1674 4564 1642 1571 1477 153 2515; do
+  for id in 1674 4564 1642 1571 1477 153 2515 360 393 625; do
     d="$SRC/rafed/$id"
     if [ ! -d "$d" ] || [ -z "$(ls "$d"/*.txt 2>/dev/null)" ]; then
       mkdir -p "$d"
