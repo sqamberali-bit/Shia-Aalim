@@ -120,10 +120,52 @@ sources:
   - id: tafsir-al-burhan
     title: "al-Burhān fī Tafsīr al-Qurʾān"
     kind: tafsir
-    author: "Sayyid Hashim al-Bahrani"
+    author: "Sayyid Hāshim al-Baḥrānī (d. 1107 AH)"
     language: ar
+    url: "https://books.rafed.net/view/1477"
+    license: "Rafed digital library Word edition (Mu'assasat al-Bi'tha print)"
     confidence: medium
-    notes: "Narration-based tafsir; individual reports require rijal evaluation."
+    notes: "Narration-based tafsir; individual reports require rijal evaluation. PARTIAL: volume 1 (through al-Baqara range) is what the Rafed edition provides. Cited by section + digital-edition locator (no print page markers survive conversion). Arabic only."
+
+  - id: usul-al-fiqh-muzaffar
+    title: "Uṣūl al-Fiqh (al-Muẓaffar)"
+    kind: scholarly_opinion
+    author: "Shaykh Muḥammad Riḍā al-Muẓaffar (d. 1383 AH)"
+    language: ar
+    url: "https://books.rafed.net/view/1674"
+    license: "Rafed digital library Word edition"
+    confidence: medium
+    notes: "The standard intermediate usul textbook of the modern hawza. Cited by section + digital-edition locator. Arabic only."
+
+  - id: miqbas-al-hidaya
+    title: "Miqbās al-Hidāya fī ʿIlm al-Dirāya"
+    kind: scholarly_opinion
+    author: "Shaykh ʿAbdullāh al-Māmaqānī (d. 1351 AH)"
+    language: ar
+    url: "https://books.rafed.net/view/4564"
+    license: "Rafed digital library Word edition"
+    confidence: medium
+    notes: "Comprehensive manual of hadith science (diraya) — terminology and classification of reports. As published in the Rafed digital edition. Cited by section + digital-edition locator. Arabic only."
+
+  - id: nihayat-al-hikmah
+    title: "Nihāyat al-Ḥikma"
+    kind: scholarly_opinion
+    author: "ʿAllāma Sayyid Muḥammad Ḥusayn Ṭabāṭabāʾī (d. 1402 AH)"
+    language: ar
+    url: "https://books.rafed.net/view/1642"
+    license: "Rafed digital library Word edition"
+    confidence: medium
+    notes: "The advanced hawza textbook of Sadrian philosophy (hikma muta'aliya). Cited by section + digital-edition locator. Arabic only."
+
+  - id: bidayat-al-hikmah
+    title: "Bidāyat al-Ḥikma"
+    kind: scholarly_opinion
+    author: "ʿAllāma Sayyid Muḥammad Ḥusayn Ṭabāṭabāʾī (d. 1402 AH)"
+    language: ar
+    url: "https://books.rafed.net/view/1571"
+    license: "Rafed digital library Word edition"
+    confidence: medium
+    notes: "The introductory hawza textbook of Islamic philosophy, companion to Nihayat al-Hikma. Cited by section + digital-edition locator. Arabic only."
 
   # ---- Hadith: the Four Books (al-Kutub al-Arbaʿa) ----
   - id: al-kafi

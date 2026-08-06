@@ -7,9 +7,10 @@
 # add Biḥār / al-Mīzān or to swap in a semantic embedder.
 FROM python:3.11-slim
 
-# git + curl to fetch the public corpus; ca-certificates for TLS.
+# git + curl to fetch the public corpus; ca-certificates for TLS;
+# antiword + unzip to extract the Rafed digital-library Word books.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git curl ca-certificates \
+        git curl ca-certificates antiword unzip \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

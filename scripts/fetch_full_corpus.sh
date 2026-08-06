@@ -92,13 +92,38 @@ done <<'OPENITI'
 1025AH|1011IbnShahidThani/1011IbnShahidThani.MacalimDin/1011IbnShahidThani.MacalimDin.Shia002755-ara1
 OPENITI
 
-echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil (vols ≤ ${WASAIL_MAX_VOL}) + ʿIlal + OpenITI"
+# 4) Rafed digital-library Word books (Muzaffar's Usul, Miqbas al-Hidaya,
+# Bidayat/Nihayat al-Hikma, al-Burhan v1) — downloaded as .doc zips from
+# books.rafed.net and extracted with antiword. Needs antiword + unzip (in the
+# Docker image); skipped gracefully if the download or tools are unavailable.
+echo ">> Rafed Word books (usul / diraya / philosophy / al-Burhan v1)"
+mkdir -p "$SRC/rafed"
+RAFED_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+if command -v antiword >/dev/null 2>&1; then
+  for id in 1674 4564 1642 1571 1477; do
+    d="$SRC/rafed/$id"
+    if [ ! -d "$d" ] || [ -z "$(ls "$d"/*.txt 2>/dev/null)" ]; then
+      mkdir -p "$d"
+      curl -fsSL -m 300 -A "$RAFED_UA" "https://books.rafed.net/api/download/$id/doc" \
+        -o "$d/book.zip" \
+        && (cd "$d" && unzip -o -q book.zip \
+            && for f in *.doc; do antiword -m UTF-8 "$f" > "${f%.doc}.txt" 2>/dev/null; done) \
+        || echo "   (rafed book $id fetch failed — skipped)"
+      sleep 3
+    fi
+  done
+else
+  echo "   (antiword not installed — Rafed books skipped)"
+fi
+
+echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil (vols ≤ ${WASAIL_MAX_VOL}) + ʿIlal + OpenITI + Rafed"
 python "$ROOT/scripts/ingest.py" \
   --bihar-dir "$SRC/bihar" \
   --almizan-dir "$SRC/almizan" \
   --wasail-dir "$SRC/bihar" \
   --ilal-dir "$SRC/bihar" \
-  --openiti-dir "$SRC/openiti"
+  --openiti-dir "$SRC/openiti" \
+  --rafed-dir "$SRC/rafed"
 
 count="$(find "$ROOT/data/knowledge" -name '*.jsonl' -not -path '*/sample/*' -exec cat {} + 2>/dev/null | wc -l | tr -d ' ')"
 echo ">> Full corpus ready — ${count} documents under data/knowledge/"

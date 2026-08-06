@@ -38,6 +38,7 @@ from shia_aalim.ingestion.adapters.plaintext import build_textbook_documents  # 
 from shia_aalim.ingestion.adapters.plaintext import volume_from_filename as txt_volume  # noqa: E402
 from shia_aalim.ingestion.adapters.openiti import build_openiti_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.quran import build_quran_documents  # noqa: E402
+from shia_aalim.ingestion.adapters.rafed_doc import build_rafed_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.shiavault import build_prose_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.thaqalayn import build_hadith_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.wasail import build_wasail_documents  # noqa: E402
@@ -488,6 +489,36 @@ OPENITI_TARGETS = [
 ]
 
 
+# Rafed Word-book texts: (book-dir/txt-file-prefix, source_id, evidence_type,
+# volume, out file). Extracted at fetch time via antiword (see
+# fetch_full_corpus.sh); Arabic-only, section + sequential locators.
+RAFED_TARGETS = [
+    ("1674/usul-alfiqh", "usul-al-fiqh-muzaffar", "scholarly_opinion", None, "usul-al-fiqh-muzaffar.jsonl"),
+    ("4564/meqbas", "miqbas-al-hidaya", "scholarly_opinion", None, "miqbas-al-hidaya.jsonl"),
+    ("1642/nihayat", "nihayat-al-hikmah", "scholarly_opinion", None, "nihayat-al-hikmah.jsonl"),
+    ("1571/bedaiatolhekma", "bidayat-al-hikmah", "scholarly_opinion", None, "bidayat-al-hikmah.jsonl"),
+    ("1477/alborhan-01", "tafsir-al-burhan", "tafsir", "1", "tafsir-al-burhan-v1.jsonl"),
+]
+
+
+def ingest_rafed(rafed_dir: Path) -> int:
+    """Ingest antiword-extracted Rafed Word books (see RAFED_TARGETS)."""
+    total = 0
+    for prefix, source_id, etype, volume, out in RAFED_TARGETS:
+        matches = sorted(rafed_dir.glob(f"{prefix}*.txt"))
+        if not matches:
+            print(f"  [skip] {prefix}*.txt not found under {rafed_dir}")
+            continue
+        docs = build_rafed_documents(
+            matches[0], source_id=source_id, evidence_type=EvidenceType(etype), volume=volume,
+        )
+        if docs:
+            subdir = "prose"
+            write_jsonl(docs, KNOWLEDGE / subdir / out)
+            total += len(docs)
+    return total
+
+
 def ingest_openiti(openiti_dir: Path) -> int:
     """Ingest OpenITI mARkdown texts (classical Arabic, page-cited)."""
     total = 0
@@ -522,6 +553,8 @@ def main() -> int:
                         help="path to the Mafatih al-Jinan chapters.json")
     parser.add_argument("--openiti-dir", default=os.environ.get("OPENITI_DIR"),
                         help="directory containing downloaded OpenITI mARkdown texts")
+    parser.add_argument("--rafed-dir", default=os.environ.get("RAFED_DIR"),
+                        help="directory containing antiword-extracted Rafed book texts")
     args = parser.parse_args()
 
     n_quran = n_hadith = n_prose = n_bihar = n_almizan = n_wasail = n_ilal = n_mafatih = 0
@@ -579,6 +612,12 @@ def main() -> int:
         n_openiti = ingest_openiti(Path(args.openiti_dir))
     else:
         print("  [skip] no --openiti-dir / OPENITI_DIR")
+
+    if args.rafed_dir:
+        print("Ingesting Rafed Word-book texts...")
+        n_openiti += ingest_rafed(Path(args.rafed_dir))
+    else:
+        print("  [skip] no --rafed-dir / RAFED_DIR")
 
     print(f"\nDone. {n_quran} Qur'an verses, {n_hadith + n_bihar + n_wasail + n_ilal} hadith "
           f"({n_bihar} Bihar, {n_wasail} Wasail, {n_ilal} Ilal), "
