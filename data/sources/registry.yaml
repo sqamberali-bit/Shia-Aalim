@@ -1190,6 +1190,142 @@ sources:
     confidence: medium
     notes: "Comprehensive biography of Sayyida Fatima (as). Ingested from the WOFIS English text-layer PDF; cited by chapter + printed page."
 
+  # ---- Sunni sources — COMPARATIVE research category ----
+  # Ingested so comparative/polemical claims can be checked against the Sunni
+  # canon directly. Every entry is marked "[Sunni source]" and its documents
+  # are tagged sunni-comparative: cite these AS Sunni sources; never present
+  # them as Twelver positions. Gradings per Sunni hadith sciences, not rijal
+  # al-Shia. All Arabic, OpenITI editions, page-cited.
+  - id: sahih-al-bukhari
+    title: "Ṣaḥīḥ al-Bukhārī [Sunni source]"
+    kind: hadith
+    author: "Muḥammad ibn Ismāʿīl al-Bukhārī (d. 256 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0275AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — the foremost Sunni hadith collection."
+
+  - id: sahih-muslim
+    title: "Ṣaḥīḥ Muslim [Sunni source]"
+    kind: hadith
+    author: "Muslim ibn al-Ḥajjāj (d. 261 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0275AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — second of the two Sahihs."
+
+  - id: musnad-ahmad
+    title: "Musnad Aḥmad ibn Ḥanbal [Sunni source]"
+    kind: hadith
+    author: "Aḥmad ibn Ḥanbal (d. 241 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0250AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — vast musnad-arranged collection."
+
+  - id: sunan-al-tirmidhi
+    title: "Sunan al-Tirmidhī [Sunni source]"
+    kind: hadith
+    author: "Muḥammad ibn ʿĪsā al-Tirmidhī (d. 279 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0300AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — carries per-hadith gradings (Sunni methodology)."
+
+  - id: sunan-al-nasai
+    title: "Sunan al-Nasāʾī (al-Mujtabā) [Sunni source]"
+    kind: hadith
+    author: "Aḥmad ibn Shuʿayb al-Nasāʾī (d. 303 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0325AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source."
+
+  - id: sunan-abi-dawud
+    title: "Sunan Abī Dāwūd [Sunni source]"
+    kind: hadith
+    author: "Abū Dāwūd al-Sijistānī (d. 275 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0275AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source."
+
+  - id: sunan-ibn-majah
+    title: "Sunan Ibn Mājah [Sunni source]"
+    kind: hadith
+    author: "Muḥammad ibn Yazīd Ibn Mājah (d. 273 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0275AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source."
+
+  - id: al-mustadrak-hakim
+    title: "al-Mustadrak ʿalā al-Ṣaḥīḥayn [Sunni source]"
+    kind: hadith
+    author: "al-Ḥākim al-Naysābūrī (d. 405 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0425AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — rich in Ahl al-Bayt merits with al-Hakim's gradings; al-Dhahabi's later critiques noted in Sunni scholarship."
+
+  - id: khasais-al-nasai
+    title: "Khaṣāʾiṣ Amīr al-Muʾminīn ʿAlī [Sunni source]"
+    kind: hadith
+    author: "Aḥmad ibn Shuʿayb al-Nasāʾī (d. 303 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0325AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — al-Nasa'i's collection of Imam Ali's (as) merits from Sunni chains; central to comparative imamate research."
+
+  - id: shawahid-al-tanzil
+    title: "Shawāhid al-Tanzīl [Sunni source]"
+    kind: tafsir
+    author: "al-Ḥākim al-Ḥaskānī (d. after 470 AH, Ḥanafī)"
+    language: ar
+    url: "https://github.com/OpenITI/0500AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — Hanafi collection of verses revealed about the Ahl al-Bayt (as) with Sunni chains."
+
+  - id: tarikh-al-tabari
+    title: "Tārīkh al-Ṭabarī [Sunni source]"
+    kind: historical
+    author: "Muḥammad ibn Jarīr al-Ṭabarī (d. 310 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0325AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — the central early chronicle; reports carry their transmitters (incl. problematic ones like Sayf ibn Umar) — evaluate per report."
+
+  - id: ansab-al-ashraf
+    title: "Ansāb al-Ashrāf [Sunni source]"
+    kind: historical
+    author: "Aḥmad ibn Yaḥyā al-Balādhurī (d. 279 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0300AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — early genealogical history."
+
+  - id: tabaqat-ibn-sad
+    title: "al-Ṭabaqāt al-Kubrā [Sunni source]"
+    kind: biographical
+    author: "Muḥammad Ibn Saʿd (d. 230 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0250AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Sunni comparative source — early biographical dictionary of companions and transmitters."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir

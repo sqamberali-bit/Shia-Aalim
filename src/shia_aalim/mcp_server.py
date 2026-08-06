@@ -122,7 +122,13 @@ _INSTRUCTIONS = (
     "vols 17-28). For narrator evaluations, classical kalam positions, or "
     "topics in those works, ALSO call `search_sources` with Arabic terms — "
     "e.g. the narrator's Arabic name (زرارة بن أعين) or Arabic keywords "
-    "(ثقة، ضعيف، الإمامة) — then translate findings for the user."
+    "(ثقة، ضعيف، الإمامة) — then translate findings for the user. "
+    "COMPARATIVE Sunni sources: the corpus also carries the Sunni canon "
+    "(the Sahihs, four Sunan, Musnad Ahmad, al-Mustadrak, Khasa'is al-Nasa'i, "
+    "Shawahid al-Tanzil, Tarikh al-Tabari, Ansab al-Ashraf, Tabaqat Ibn Sa'd) "
+    "for comparative research — their titles are marked [Sunni source]. ALWAYS "
+    "attribute them explicitly as Sunni sources, never as Twelver positions, "
+    "and note that their gradings follow Sunni hadith methodology."
 )
 
 

@@ -559,22 +559,45 @@ def ingest_rafed(rafed_dir: Path) -> int:
     return total
 
 
+# Sunni canonical works ingested for COMPARATIVE research: same OpenITI
+# format, tagged "sunni-comparative" and registered with explicit Sunni-source
+# markers so the assistant never presents them as Twelver positions.
+OPENITI_SUNNI_TARGETS = [
+    ("0256Bukhari.Sahih.", "sahih-al-bukhari", "hadith", "sahih-al-bukhari.jsonl"),
+    ("0261Muslim.Sahih.", "sahih-muslim", "hadith", "sahih-muslim.jsonl"),
+    ("0241IbnHanbal.Musnad.", "musnad-ahmad", "hadith", "musnad-ahmad.jsonl"),
+    ("0279Tirmidhi.Sunan.", "sunan-al-tirmidhi", "hadith", "sunan-al-tirmidhi.jsonl"),
+    ("0303Nasai.SunanSughra.", "sunan-al-nasai", "hadith", "sunan-al-nasai.jsonl"),
+    ("0275AbuDawudSijistani.Sunan.", "sunan-abi-dawud", "hadith", "sunan-abi-dawud.jsonl"),
+    ("0273IbnMaja.Sunan.", "sunan-ibn-majah", "hadith", "sunan-ibn-majah.jsonl"),
+    ("0405HakimNaysaburi.Mustadrak.", "al-mustadrak-hakim", "hadith", "al-mustadrak-hakim.jsonl"),
+    ("0303Nasai.KhasaisAmirMumininCali.", "khasais-al-nasai", "hadith", "khasais-al-nasai.jsonl"),
+    ("0480IbnAhmadHakimHaskani.ShawahidTanzil.", "shawahid-al-tanzil", "tafsir", "shawahid-al-tanzil.jsonl"),
+    ("0310Tabari.Tarikh.", "tarikh-al-tabari", "historical", "tarikh-al-tabari.jsonl"),
+    ("0279Baladhuri.AnsabAshraf.", "ansab-al-ashraf", "historical", "ansab-al-ashraf.jsonl"),
+    ("0230IbnSacd.TabaqatKubra.", "tabaqat-ibn-sad", "biographical", "tabaqat-ibn-sad.jsonl"),
+]
+
+
 def ingest_openiti(openiti_dir: Path) -> int:
     """Ingest OpenITI mARkdown texts (classical Arabic, page-cited)."""
     total = 0
-    for prefix, source_id, etype, out in OPENITI_TARGETS:
-        matches = sorted(openiti_dir.glob(f"{prefix}*"))
-        if not matches:
-            print(f"  [skip] {prefix}* not found under {openiti_dir}")
-            continue
-        docs = build_openiti_documents(
-            matches[0], source_id=source_id, evidence_type=EvidenceType(etype),
-        )
-        if docs:
-            subdir = "biographical" if etype == "biographical" else "hadith" \
-                if etype == "hadith" else "prose"
-            write_jsonl(docs, KNOWLEDGE / subdir / out)
-            total += len(docs)
+    for targets, extra in ((OPENITI_TARGETS, None),
+                           (OPENITI_SUNNI_TARGETS, ["sunni-comparative"])):
+        for prefix, source_id, etype, out in targets:
+            matches = sorted(openiti_dir.glob(f"{prefix}*"))
+            if not matches:
+                print(f"  [skip] {prefix}* not found under {openiti_dir}")
+                continue
+            docs = build_openiti_documents(
+                matches[0], source_id=source_id, evidence_type=EvidenceType(etype),
+                extra_tags=extra,
+            )
+            if docs:
+                subdir = "biographical" if etype == "biographical" else "hadith" \
+                    if etype == "hadith" else "prose"
+                write_jsonl(docs, KNOWLEDGE / subdir / out)
+                total += len(docs)
     return total
 
 

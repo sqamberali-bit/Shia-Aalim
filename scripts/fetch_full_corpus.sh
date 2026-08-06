@@ -98,6 +98,19 @@ done <<'OPENITI'
 0575AH|0573IbnHibatAllahQutbDinRawandi/0573IbnHibatAllahQutbDinRawandi.Kharaij/0573IbnHibatAllahQutbDinRawandi.Kharaij.Shia001344Vols-ara1
 0575AH|0560IbnHamzaTusi/0560IbnHamzaTusi.ThaqibFiManaqib/0560IbnHamzaTusi.ThaqibFiManaqib.Shia001341-ara1
 1125AH|1107HashimBahrani/1107HashimBahrani.MadinatMacajiz/1107HashimBahrani.MadinatMacajiz.Shia001423Vols-ara1
+0250AH|0230IbnSacd/0230IbnSacd.TabaqatKubra/0230IbnSacd.TabaqatKubra.ShamAY0035884-ara1.mARkdown
+0250AH|0241IbnHanbal/0241IbnHanbal.Musnad/0241IbnHanbal.Musnad.Shamela0025794-ara1.mARkdown
+0275AH|0256Bukhari/0256Bukhari.Sahih/0256Bukhari.Sahih.JK000110-ara1.completed
+0275AH|0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.Shamela0001727-ara1.mARkdown
+0275AH|0273IbnMaja/0273IbnMaja.Sunan/0273IbnMaja.Sunan.JK000141-ara1
+0275AH|0275AbuDawudSijistani/0275AbuDawudSijistani.Sunan/0275AbuDawudSijistani.Sunan.JK000142-ara1
+0300AH|0279Baladhuri/0279Baladhuri.AnsabAshraf/0279Baladhuri.AnsabAshraf.Shamela0009773-ara1.mARkdown
+0300AH|0279Tirmidhi/0279Tirmidhi.Sunan/0279Tirmidhi.Sunan.JK000140-ara1.completed
+0325AH|0303Nasai/0303Nasai.KhasaisAmirMumininCali/0303Nasai.KhasaisAmirMumininCali.JK000669-ara1.mARkdown
+0325AH|0303Nasai/0303Nasai.SunanSughra/0303Nasai.SunanSughra.JK000130-ara1.mARkdown
+0325AH|0310Tabari/0310Tabari.Tarikh/0310Tabari.Tarikh.Shamela0009783BK1-ara1.mARkdown
+0425AH|0405HakimNaysaburi/0405HakimNaysaburi.Mustadrak/0405HakimNaysaburi.Mustadrak.JK000467-ara1
+0500AH|0480IbnAhmadHakimHaskani/0480IbnAhmadHakimHaskani.ShawahidTanzil/0480IbnAhmadHakimHaskani.ShawahidTanzil.Shia002550Vols-ara1
 OPENITI
 
 # 4) Rafed digital-library Word books (Muzaffar's Usul, Miqbas al-Hidaya,

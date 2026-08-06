@@ -126,6 +126,7 @@ def build_openiti_documents(
     confidence: ConfidenceLevel = ConfidenceLevel.MEDIUM,
     max_chars: int = 1500,
     min_chars: int = 40,
+    extra_tags: Optional[list[str]] = None,
 ) -> list[Document]:
     """Chunk an OpenITI text into cited Arabic :class:`Document`s.
 
@@ -171,6 +172,15 @@ def build_openiti_documents(
             next_vol, next_page = vol, page
         elif next_page != "0":
             chunks[i] = (section, next_vol, next_page, text)
+    # ...and chunks after the LAST marker borrow the last page seen (they lie
+    # on or after it) — same approximation, other direction.
+    prev_vol, prev_page = "0", "0"
+    for i in range(len(chunks)):
+        section, vol, page, text = chunks[i]
+        if page != "0":
+            prev_vol, prev_page = vol, page
+        elif prev_page != "0":
+            chunks[i] = (section, prev_vol, prev_page, text)
 
     docs: list[Document] = []
     for counter, (section, vol, page, text) in enumerate(chunks):
@@ -191,7 +201,7 @@ def build_openiti_documents(
                 evidence_type=evidence_type,
                 citation=citation,
                 confidence=confidence,
-                tags=[source_id, "openiti"],
+                tags=[source_id, "openiti"] + (extra_tags or []),
                 language="ar",
             )
         )
