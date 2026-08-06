@@ -926,6 +926,117 @@ sources:
     confidence: medium
     notes: "Classic manual of hadith science (dirāya): classification of reports, chain terminology, transmission ethics. Arabic only."
 
+  - id: kitab-sulaym
+    title: "Kitāb Sulaym ibn Qays"
+    kind: hadith
+    author: "attributed to Sulaym ibn Qays al-Hilālī (d. ~76 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0100AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "IMPORTANT: attribution and textual reliability are DISPUTED among Twelver scholars — the received text shows later interpolation, and rijal verdicts on it range from reliance to rejection. Present its reports as 'the book attributed to Sulaym states…', never as an authenticated whole; corroborate any doctrinal point from chained sources. Arabic only."
+
+  - id: rawdat-al-waizin
+    title: "Rawḍat al-Wāʿiẓīn"
+    kind: hadith
+    author: "al-Fattāl al-Nīsābūrī (d. 508 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0525AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Preachers' compendium of narrations on beliefs, ethics and the Ahl al-Bayt (as), mostly transmitted without full chains (mursal) — corroborate before doctrinal use. Arabic only."
+
+  - id: al-fusul-al-ashara
+    title: "al-Fuṣūl al-ʿAshara fī al-Ghayba"
+    kind: scholarly_opinion
+    author: "Shaykh al-Mufīd (d. 413 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0425AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "al-Mufid's ten kalam chapters answering objections about the occultation of the Twelfth Imam (aj). Arabic only."
+
+  - id: jamal-al-usbu
+    title: "Jamāl al-Usbūʿ"
+    kind: hadith
+    author: "Sayyid Ibn Ṭāwūs (d. 664 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0675AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Transmitted devotions for the days of the week, especially Friday. Arabic only."
+
+  - id: misbah-al-kafami
+    title: "al-Miṣbāḥ (Junnat al-Amān al-Wāqiya) — Miṣbāḥ al-Kafʿamī"
+    kind: hadith
+    author: "Ibrāhīm al-Kafʿamī (d. 905 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0925AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "Ingested as the same-author stand-in for al-Balad al-Amin (not found in reachable sources): al-Kaf'ami's major du'a/ziyara compendium, a principal source behind Mafatih al-Jinan. Arabic only."
+
+  - id: al-luma-al-dimashqiyya
+    title: "al-Lumʿa al-Dimashqiyya"
+    kind: scholarly_opinion
+    author: "al-Shahīd al-Awwal (d. 786 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0800AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The concise fiqh manual of the First Martyr — a seminary staple. Historical fiqh; for practice users follow their living marja'. Arabic only."
+
+  - id: al-rawda-al-bahiyya
+    title: "al-Rawḍa al-Bahiyya fī Sharḥ al-Lumʿa al-Dimashqiyya (Sharḥ al-Lumʿa)"
+    kind: scholarly_opinion
+    author: "al-Shahīd al-Thānī (d. 965 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0975AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The Second Martyr's commentary on al-Lum'a — the classic intermediate fiqh textbook of the hawza. Arabic only."
+
+  - id: faraid-al-usul
+    title: "Farāʾid al-Uṣūl (al-Rasāʾil)"
+    kind: scholarly_opinion
+    author: "Shaykh Murtaḍā al-Anṣārī (d. 1281 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1300AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "al-Ansari's transformative work on the procedural principles (qat', zann, bara'a, istishab) — with Kifayat al-Usul, the core of advanced hawza usul. Arabic only."
+
+  - id: maalim-al-din
+    title: "Maʿālim al-Dīn wa Malādh al-Mujtahidīn (Maʿālim al-Uṣūl)"
+    kind: scholarly_opinion
+    author: "Ḥasan ibn Zayn al-Dīn (Ibn al-Shahīd al-Thānī, d. 1011 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1025AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The usul introduction that opened seminary study for centuries. Arabic only."
+
+  - id: adab-as-salat
+    title: "Adab as-Salat (The Disciplines of the Prayer)"
+    kind: scholarly_opinion
+    author: "Imam Rūḥullāh al-Mūsawī al-Khumaynī (d. 1409 AH)"
+    language: en
+    url: "https://www.al-islam.org/adab-as-salat-disciplines-prayer-second-revised-edition-sayyid-ruhullah-musawi-khomeini"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "Imam Khomeini's mystical-ethical exposition of the inner disciplines of prayer. Chapter-level citations."
+
+  - id: the-revealer-the-messenger
+    title: "The Revealer, The Messenger, The Message"
+    kind: scholarly_opinion
+    author: "Shahīd Muḥammad Bāqir al-Ṣadr (d. 1400 AH)"
+    translator: "Mahmoud M. Ayoub"
+    language: en
+    url: "https://www.al-islam.org/revealer-messenger-message-ayatullah-muhammad-baqir-al-sadr"
+    license: "al-islam.org (per-book copyright); ingested via Shiavault mirror"
+    confidence: medium
+    notes: "al-Sadr's treatise on revelation and prophethood as the divine path of guidance. Chapter-level citations."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir

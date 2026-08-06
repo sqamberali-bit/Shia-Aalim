@@ -154,6 +154,10 @@ PROSE_TARGETS = [
     ("books/islamic-laws-of-ayatullah-khui", "islamic-laws-khui", "scholarly_opinion", None, "islamic-laws-khui.jsonl"),
     ("books/forty-hadith-an-exposition", "forty-hadith-khomeini", "scholarly_opinion", None, "forty-hadith-khomeini.jsonl"),
     ("books/the-shiite-islam", "shiite-islam-tabatabai", "scholarly_opinion", None, "shiite-islam-tabatabai.jsonl"),
+    ("books/adab-as-salat-the-disciplines-of-the-prayer-second-revised-edition",
+     "adab-as-salat", "scholarly_opinion", None, "adab-as-salat.jsonl"),
+    ("books/the-revealer-the-messenger-the-message",
+     "the-revealer-the-messenger", "scholarly_opinion", None, "the-revealer-the-messenger.jsonl"),
 ]
 
 # The 20-volume "Enlightening Commentary into the Light of the Holy Qur'an"
@@ -471,6 +475,16 @@ OPENITI_TARGETS = [
     ("0436SharifMurtada.Dharica.", "al-dharia", "scholarly_opinion", "al-dharia.jsonl"),
     ("1329MuhammadKazimAkhundKhurasani.KifayatUsul.", "kifayat-al-usul", "scholarly_opinion", "kifayat-al-usul.jsonl"),
     ("0965ShahidThani.RicayaFiCilmDiraya.", "al-riaya-fi-ilm-al-diraya", "scholarly_opinion", "al-riaya-fi-ilm-al-diraya.jsonl"),
+    # -- 2026-08 batch 4 --
+    ("0085SulaymIbnQaysHilali.KitabSulaym.", "kitab-sulaym", "hadith", "kitab-sulaym.jsonl"),
+    ("0508FattalNaysaburi.RawdatWacizin.", "rawdat-al-waizin", "hadith", "rawdat-al-waizin.jsonl"),
+    ("0413ShaykhMufid.FusulCashara.", "al-fusul-al-ashara", "scholarly_opinion", "al-fusul-al-ashara.jsonl"),
+    ("0664IbnTawus.JamalUsbuc.", "jamal-al-usbu", "hadith", "jamal-al-usbu.jsonl"),
+    ("0905IbnCaliTaqiDinKafcami.Misbah.", "misbah-al-kafami", "hadith", "misbah-al-kafami.jsonl"),
+    ("0786ShahidAwwal.LumcaDimashqiyya.", "al-luma-al-dimashqiyya", "scholarly_opinion", "al-luma-al-dimashqiyya.jsonl"),
+    ("0965ShahidThani.RawdaBahiyya.", "al-rawda-al-bahiyya", "scholarly_opinion", "al-rawda-al-bahiyya.jsonl"),
+    ("1281MurtadaAnsari.FaraidUsul.", "faraid-al-usul", "scholarly_opinion", "faraid-al-usul.jsonl"),
+    ("1011IbnShahidThani.MacalimDin.", "maalim-al-din", "scholarly_opinion", "maalim-al-din.jsonl"),
 ]
 
 

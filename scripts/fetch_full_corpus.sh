@@ -81,6 +81,15 @@ done <<'OPENITI'
 0450AH|0436SharifMurtada/0436SharifMurtada.Dharica/0436SharifMurtada.Dharica.Masaha003448Vols-ara1
 1350AH|1329MuhammadKazimAkhundKhurasani/1329MuhammadKazimAkhundKhurasani.KifayatUsul/1329MuhammadKazimAkhundKhurasani.KifayatUsul.Shia002773-ara1
 0975AH|0965ShahidThani/0965ShahidThani.RicayaFiCilmDiraya/0965ShahidThani.RicayaFiCilmDiraya.Shia002943-ara1
+0100AH|0085SulaymIbnQaysHilali/0085SulaymIbnQaysHilali.KitabSulaym/0085SulaymIbnQaysHilali.KitabSulaym.Shia001265-ara1
+0525AH|0508FattalNaysaburi/0508FattalNaysaburi.RawdatWacizin/0508FattalNaysaburi.RawdatWacizin.Shia001171-ara1.completed
+0425AH|0413ShaykhMufid/0413ShaykhMufid.FusulCashara/0413ShaykhMufid.FusulCashara.Shia001302-ara1
+0675AH|0664IbnTawus/0664IbnTawus.JamalUsbuc/0664IbnTawus.JamalUsbuc.Shia001372-ara1
+0925AH|0905IbnCaliTaqiDinKafcami/0905IbnCaliTaqiDinKafcami.Misbah/0905IbnCaliTaqiDinKafcami.Misbah.Masaha001075-ara1
+0800AH|0786ShahidAwwal/0786ShahidAwwal.LumcaDimashqiyya/0786ShahidAwwal.LumcaDimashqiyya.Shia000120-ara1
+0975AH|0965ShahidThani/0965ShahidThani.RawdaBahiyya/0965ShahidThani.RawdaBahiyya.Masaha001142Vols-ara1
+1300AH|1281MurtadaAnsari/1281MurtadaAnsari.FaraidUsul/1281MurtadaAnsari.FaraidUsul.Shia002766Vols-ara1
+1025AH|1011IbnShahidThani/1011IbnShahidThani.MacalimDin/1011IbnShahidThani.MacalimDin.Shia002755-ara1
 OPENITI
 
 echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil (vols ≤ ${WASAIL_MAX_VOL}) + ʿIlal + OpenITI"
