@@ -505,6 +505,7 @@ OPENITI_TARGETS = [
     ("1266MuhammadHasanNajafiJawahiri.JawahirKalam.", "jawahir-al-kalam", "scholarly_opinion", "jawahir-al-kalam.jsonl"),
     ("1281MurtadaAnsari.Makasib.", "al-makasib", "scholarly_opinion", "al-makasib.jsonl"),
     ("1450MurtadaCaskari.MacalimMadrasatayn.", "maalim-al-madrasatayn", "scholarly_opinion", "maalim-al-madrasatayn.jsonl"),
+    ("0400IbnCaliHarrani.TuhafCuqul.", "tuhaf-al-uqul-ar", "hadith", "tuhaf-al-uqul-ar.jsonl"),
 ]
 
 

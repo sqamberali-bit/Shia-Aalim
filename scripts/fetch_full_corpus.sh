@@ -119,6 +119,7 @@ done <<'OPENITI'
 1275AH|1266MuhammadHasanNajafiJawahiri/1266MuhammadHasanNajafiJawahiri.JawahirKalam/1266MuhammadHasanNajafiJawahiri.JawahirKalam.Shia000317Vols-ara1
 1300AH|1281MurtadaAnsari/1281MurtadaAnsari.Makasib/1281MurtadaAnsari.Makasib.Shia000376Vols-ara1
 1450AH|1450MurtadaCaskari/1450MurtadaCaskari.MacalimMadrasatayn/1450MurtadaCaskari.MacalimMadrasatayn.Shia001663Vols-ara1
+0400AH|0400IbnCaliHarrani/0400IbnCaliHarrani.TuhafCuqul/0400IbnCaliHarrani.TuhafCuqul.Shia001153-ara1
 OPENITI
 
 # 4) Rafed digital-library Word books (Muzaffar's Usul, Miqbas al-Hidaya,

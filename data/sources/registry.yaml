@@ -1436,6 +1436,16 @@ sources:
     confidence: medium
     notes: "al-Sadr's modern usul curriculum (the Halaqat, as provided by the Rafed edition). Cited by section + digital-edition locator. Arabic only."
 
+  - id: tuhaf-al-uqul-ar
+    title: "Tuḥaf al-ʿUqūl (Arabic edition)"
+    kind: hadith
+    author: "al-Ḥasan ibn ʿAlī ibn Shuʿba al-Ḥarrānī (4th c. AH)"
+    language: ar
+    url: "https://github.com/OpenITI/0400AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The Arabic asl of Tuhaf al-Uqul, complementing the English edition (id: tuhaf-al-uqul) so Arabic queries match the original wording. Chains were deliberately omitted by the compiler (mursal) — corroborate against chained sources. Cited by section + printed page."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir
