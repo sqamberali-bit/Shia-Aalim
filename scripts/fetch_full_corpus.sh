@@ -120,6 +120,7 @@ done <<'OPENITI'
 1300AH|1281MurtadaAnsari/1281MurtadaAnsari.Makasib/1281MurtadaAnsari.Makasib.Shia000376Vols-ara1
 1450AH|1450MurtadaCaskari/1450MurtadaCaskari.MacalimMadrasatayn/1450MurtadaCaskari.MacalimMadrasatayn.Shia001663Vols-ara1
 0400AH|0400IbnCaliHarrani/0400IbnCaliHarrani.TuhafCuqul/0400IbnCaliHarrani.TuhafCuqul.Shia001153-ara1
+1225AH|1209MuhammadMahdiNaraqi/1209MuhammadMahdiNaraqi.JamicSacadat/1209MuhammadMahdiNaraqi.JamicSacadat.Shia004042Vols-ara1
 OPENITI
 
 # 4) Rafed digital-library Word books (Muzaffar's Usul, Miqbas al-Hidaya,
@@ -146,6 +147,14 @@ else
   echo "   (antiword not installed — Rafed books skipped)"
 fi
 
+# 5) The Scale of Wisdom (Mizan al-Hikmah selection, English) bilingual PDF.
+echo ">> Scale of Wisdom (Mizan al-Hikmah) PDF"
+mkdir -p "$SRC/mizanhikmah"
+[ -f "$SRC/mizanhikmah/scale-of-wisdom.pdf" ] || curl -fsSL -m 300 -A "$RAFED_UA" \
+  "https://www.islamic-laws.com/Mizan%20al-Hikmah%20(Scale%20of%20Wisdom).pdf" \
+  -o "$SRC/mizanhikmah/scale-of-wisdom.pdf" \
+  || echo "   (Scale of Wisdom fetch failed — it will be skipped)"
+
 echo ">> Ingesting Biḥār + al-Mīzān + Wasāʾil (vols ≤ ${WASAIL_MAX_VOL}) + ʿIlal + OpenITI + Rafed"
 python "$ROOT/scripts/ingest.py" \
   --bihar-dir "$SRC/bihar" \
@@ -153,7 +162,8 @@ python "$ROOT/scripts/ingest.py" \
   --wasail-dir "$SRC/bihar" \
   --ilal-dir "$SRC/bihar" \
   --openiti-dir "$SRC/openiti" \
-  --rafed-dir "$SRC/rafed"
+  --rafed-dir "$SRC/rafed" \
+  --mizan-pdf "$SRC/mizanhikmah/scale-of-wisdom.pdf"
 
 count="$(find "$ROOT/data/knowledge" -name '*.jsonl' -not -path '*/sample/*' -exec cat {} + 2>/dev/null | wc -l | tr -d ' ')"
 echo ">> Full corpus ready — ${count} documents under data/knowledge/"

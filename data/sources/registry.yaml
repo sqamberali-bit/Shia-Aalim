@@ -1446,6 +1446,27 @@ sources:
     confidence: medium
     notes: "The Arabic asl of Tuhaf al-Uqul, complementing the English edition (id: tuhaf-al-uqul) so Arabic queries match the original wording. Chains were deliberately omitted by the compiler (mursal) — corroborate against chained sources. Cited by section + printed page."
 
+  - id: mizan-al-hikmah
+    title: "Mīzān al-Ḥikma (The Scale of Wisdom) — selection, English"
+    kind: hadith
+    author: "Muḥammad Muḥammadī Rayshahrī (d. 1443 AH)"
+    translator: "N. Virjee, A. Kadhim, M. Dasht Bozorgi, Z. Alsalami, A. Virjee (ICAS Press)"
+    language: en
+    url: "https://www.al-islam.org/mizan-al-hikmah-scale-wisdom"
+    license: "ICAS Press (per-book copyright); ingested from the bilingual PDF"
+    confidence: medium
+    notes: "The one-volume English selection of the 10-volume Arabic Mizan al-Hikma, arranged by theme. Each narration keeps its inline ORIGINAL-source reference (Bihar, Kafi, Mustadrak...) — verify against those primary collections (many are in this corpus). The PDF's Arabic text layer is corrupted and was NOT ingested; the full Arabic edition is not available from reachable sources. Cited by theme chapter + PDF page of the bilingual edition."
+
+  - id: jami-al-saadat-ar
+    title: "Jāmiʿ al-Saʿādāt (Arabic edition)"
+    kind: scholarly_opinion
+    author: "Muḥammad Mahdī al-Narāqī (d. 1209 AH)"
+    language: ar
+    url: "https://github.com/OpenITI/1225AH"
+    license: "OpenITI corpus (CC BY-NC-SA)"
+    confidence: medium
+    notes: "The complete Arabic asl of Naraqi's ethics compendium, complementing the partial English edition (id: jami-al-saadat). Ingested in lieu of Mi'raj al-Sa'ada — the requested Persian work by his son Ahmad Naraqi that popularizes this book — which is unavailable in any reachable Arabic/English edition. Cited by section + printed volume/page."
+
   - id: enlightening-commentary
     title: "An Enlightening Commentary into the Light of the Holy Qur'an"
     kind: tafsir

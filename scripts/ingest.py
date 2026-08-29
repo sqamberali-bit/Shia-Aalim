@@ -40,6 +40,7 @@ from shia_aalim.ingestion.adapters.openiti import build_openiti_documents  # noq
 from shia_aalim.ingestion.adapters.prose_pdf import build_prose_pdf_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.quran import build_quran_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.rafed_doc import build_rafed_documents  # noqa: E402
+from shia_aalim.ingestion.adapters.scale_of_wisdom import build_scale_of_wisdom_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.shiavault import build_prose_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.thaqalayn import build_hadith_documents  # noqa: E402
 from shia_aalim.ingestion.adapters.wasail import build_wasail_documents  # noqa: E402
@@ -506,6 +507,7 @@ OPENITI_TARGETS = [
     ("1281MurtadaAnsari.Makasib.", "al-makasib", "scholarly_opinion", "al-makasib.jsonl"),
     ("1450MurtadaCaskari.MacalimMadrasatayn.", "maalim-al-madrasatayn", "scholarly_opinion", "maalim-al-madrasatayn.jsonl"),
     ("0400IbnCaliHarrani.TuhafCuqul.", "tuhaf-al-uqul-ar", "hadith", "tuhaf-al-uqul-ar.jsonl"),
+    ("1209MuhammadMahdiNaraqi.JamicSacadat.", "jami-al-saadat-ar", "scholarly_opinion", "jami-al-saadat-ar.jsonl"),
 ]
 
 
@@ -631,6 +633,8 @@ def main() -> int:
                         help="directory containing downloaded OpenITI mARkdown texts")
     parser.add_argument("--rafed-dir", default=os.environ.get("RAFED_DIR"),
                         help="directory containing antiword-extracted Rafed book texts")
+    parser.add_argument("--mizan-pdf", default=os.environ.get("MIZAN_PDF"),
+                        help="path to the Scale of Wisdom (Mizan al-Hikmah) bilingual PDF")
     args = parser.parse_args()
 
     n_quran = n_hadith = n_prose = n_bihar = n_almizan = n_wasail = n_ilal = n_mafatih = 0
@@ -696,6 +700,15 @@ def main() -> int:
         n_openiti += ingest_rafed(Path(args.rafed_dir))
     else:
         print("  [skip] no --rafed-dir / RAFED_DIR")
+
+    if args.mizan_pdf and Path(args.mizan_pdf).exists():
+        print("Ingesting Mizan al-Hikmah (Scale of Wisdom, English)...")
+        docs = build_scale_of_wisdom_documents(Path(args.mizan_pdf))
+        if docs:
+            write_jsonl(docs, KNOWLEDGE / "hadith" / "mizan-al-hikmah.jsonl")
+            n_openiti += len(docs)
+    else:
+        print("  [skip] no --mizan-pdf / MIZAN_PDF")
 
     print(f"\nDone. {n_quran} Qur'an verses, {n_hadith + n_bihar + n_wasail + n_ilal} hadith "
           f"({n_bihar} Bihar, {n_wasail} Wasail, {n_ilal} Ilal), "
